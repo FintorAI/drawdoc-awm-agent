@@ -3,6 +3,14 @@
   "graphs": {
     "drawdoc-awm": "./drawdoc_agent.py:agent"
   },
-  "env": "../../.env"
+  "env": ".env",
+  "default_input": {
+    "messages": [
+      {
+        "role": "user",
+        "content": "Run Encompass API test now. Loan 65ec32a1-99df-4685-92ce-41a08fd3b64e fields [\"4000\", \"4002\", \"4004\", \"353\"]. Loan 387596ee-7090-47ca-8385-206e22c9c9da attachment d78186cc-a8a2-454f-beaf-19f0e6c3aa8c."
+      }
+    ]
+  }
 }
 

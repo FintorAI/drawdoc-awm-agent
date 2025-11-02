@@ -1,5 +1,7 @@
-copilotagent>=0.1.9
+copilotagent>=0.1.16
+cuteagent>=0.2.24
 langchain>=1.0.0
 langchain-anthropic>=1.0.0
 langchain-core>=1.0.0
+python-dotenv>=1.0.0
 
