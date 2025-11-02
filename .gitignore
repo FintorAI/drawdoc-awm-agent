@@ -45,3 +45,6 @@ Thumbs.db
 
 # Logs
 *.log
+
+#local files
+local_*
