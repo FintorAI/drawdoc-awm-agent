@@ -29,17 +29,6 @@ logging.getLogger('watchfiles').setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
-# Add local baseCopilotAgent source to path for development
-baseCopilotAgent_path = Path(__file__).parent.parent.parent / "baseCopilotAgent" / "src"
-if str(baseCopilotAgent_path) not in sys.path:
-    sys.path.insert(0, str(baseCopilotAgent_path))
-
-# Remove any cached imports
-if 'copilotagent' in sys.modules:
-    del sys.modules['copilotagent']
-if 'copilotagent.encompass_connect' in sys.modules:
-    del sys.modules['copilotagent.encompass_connect']
-
 from copilotagent import create_deep_agent, EncompassConnect
 from langchain_core.tools import tool
 from dotenv import load_dotenv
@@ -110,6 +99,26 @@ def _get_encompass_client() -> EncompassConnect:
     )
 
 
+def _get_output_directory() -> Path:
+    """Get the output directory for saving files.
+    
+    - Local development: Uses tmp/ directory in the agent folder
+    - LangGraph Cloud: Uses /tmp directory (ephemeral, per-run storage)
+    
+    Files are NOT stored in state to avoid bloating the conversation context.
+    Only file paths are returned in tool responses.
+    """
+    # Check if we have a local tmp directory (for local development)
+    local_tmp_dir = Path(__file__).parent / "tmp"
+    
+    if local_tmp_dir.exists() and os.access(local_tmp_dir, os.W_OK):
+        # Local development - use local tmp directory
+        return local_tmp_dir
+    else:
+        # LangGraph Cloud or restricted environment - use system /tmp
+        return Path("/tmp")
+
+
 @tool
 def read_loan_fields(loan_id: str, field_ids: list[str]) -> dict[str, Any]:
     """Read one or multiple fields from an Encompass loan.
@@ -149,6 +158,172 @@ def read_loan_fields(loan_id: str, field_ids: list[str]) -> dict[str, Any]:
     logger.info(f"[READ_FIELDS] Success - Read {len(result)} fields in {read_time:.2f}s")
     
     return result
+
+
+@tool
+def get_loan_documents(loan_id: str, max_documents: int = 10) -> dict[str, Any]:
+    """List documents in an Encompass loan with their attachment IDs.
+
+    This tool retrieves documents associated with a loan, including document
+    metadata and attachment IDs which can be used with download_loan_document.
+    
+    Large responses are saved to a JSON file to avoid token limits.
+    Returns only a summary with key validation data.
+
+    Args:
+        loan_id: The Encompass loan GUID
+        max_documents: Maximum number of documents to return in response (default: 10)
+                      Full list is always saved to JSON file
+
+    Returns:
+        Dictionary containing:
+        - total_documents: Total count of documents
+        - total_attachments: Total count of attachments across all documents
+        - file_path: Path to JSON file with complete document list
+        - sample_documents: Summary of first N documents (title, ID, attachment count)
+        - showing_first: How many documents are in the sample
+
+    Example:
+        >>> get_loan_documents("loan-guid", max_documents=5)
+        {
+            "total_documents": 159,
+            "total_attachments": 207,
+            "file_path": "/tmp/loan_documents_387596ee.json",
+            "sample_documents": [
+                {"title": "W2", "documentId": "0985d4a6-f92...", "attachment_count": 1},
+                ...
+            ],
+            "showing_first": 5
+        }
+    """
+    import logging
+    import time
+    import tempfile
+    import json
+    
+    logger = logging.getLogger(__name__)
+    logger.info(f"[LIST_DOCS] Starting - Loan: {loan_id[:8]}...")
+    
+    start_time = time.time()
+    client = _get_encompass_client()
+    
+    documents = client.get_loan_documents(loan_id)
+    elapsed = time.time() - start_time
+    
+    # Count attachments
+    total_attachments = sum(len(doc.get('attachments', [])) for doc in documents)
+    
+    logger.info(f"[LIST_DOCS] Success - {len(documents)} documents, {total_attachments} attachments in {elapsed:.2f}s")
+    
+    # Save full list to JSON file (always, to avoid bloating conversation)
+    output_dir = _get_output_directory()
+    file_path = output_dir / f'loan_documents_{loan_id[:8]}_{int(time.time())}.json'
+    
+    with open(file_path, 'w') as f:
+        json.dump(documents, f, indent=2)
+    
+    logger.info(f"[LIST_DOCS] Saved full document list to {file_path}")
+    
+    # Extract key info for validation - just titles and attachment counts
+    sample_docs_summary = []
+    for doc in documents[:max_documents]:
+        sample_docs_summary.append({
+            "title": doc.get('title', 'N/A'),
+            "documentId": doc.get('documentId', 'N/A')[:12] + "...",  # Truncate ID
+            "attachment_count": len(doc.get('attachments', [])),
+            "first_attachment_id": doc.get('attachments', [{}])[0].get('attachmentId', 'N/A') if doc.get('attachments') else None
+        })
+    
+    return {
+        "total_documents": len(documents),
+        "total_attachments": total_attachments,
+        "file_path": str(file_path),
+        "sample_documents": sample_docs_summary,  # Just summaries, not full data
+        "showing_first": min(max_documents, len(documents)),
+        "loan_id": loan_id,
+        "message": f"Full document list ({len(documents)} docs) saved to JSON file. Use read_file on '{file_path}' if you need all details."
+    }
+
+
+@tool
+def get_loan_entity(loan_id: str) -> dict[str, Any]:
+    """Get complete loan data including all fields and custom fields.
+
+    This tool retrieves the full loan entity from Encompass, including standard fields,
+    custom fields, and other loan metadata. The full data is saved to a JSON file to
+    avoid token limits.
+
+    Args:
+        loan_id: The Encompass loan GUID
+
+    Returns:
+        Dictionary containing:
+        - field_count: Number of populated fields in the response
+        - loan_number: The loan number (if available)
+        - file_path: Path to JSON file with complete loan data
+        - key_fields: Sample of important loan fields
+        - loan_id: The loan ID
+
+    Example:
+        >>> get_loan_entity("loan-guid")
+        {
+            "field_count": 247,
+            "loan_number": "12345",
+            "file_path": "/tmp/loan_entity_65ec32a1.json",
+            "key_fields": {
+                "loanNumber": "12345",
+                "borrowerFirstName": "John",
+                "borrowerLastName": "Doe"
+            },
+            "loan_id": "65ec32a1-99df-4685-92ce-41a08fd3b64e"
+        }
+    """
+    import logging
+    import time
+    import json
+    
+    logger = logging.getLogger(__name__)
+    logger.info(f"[GET_LOAN] Starting - Loan: {loan_id[:8]}...")
+    
+    start_time = time.time()
+    client = _get_encompass_client()
+    
+    loan_data = client.get_loan_entity(loan_id)
+    elapsed = time.time() - start_time
+    
+    # Count populated fields
+    field_count = len(loan_data)
+    loan_number = loan_data.get('loanNumber', 'N/A')
+    
+    logger.info(f"[GET_LOAN] Success - {field_count} fields retrieved in {elapsed:.2f}s")
+    
+    # Save full loan data to JSON file to avoid bloating conversation
+    output_dir = _get_output_directory()
+    file_path = output_dir / f'loan_entity_{loan_id[:8]}_{int(time.time())}.json'
+    
+    with open(file_path, 'w') as f:
+        json.dump(loan_data, f, indent=2)
+    
+    logger.info(f"[GET_LOAN] Saved full loan data to {file_path}")
+    
+    # Extract key fields for quick reference
+    key_fields = {}
+    important_fields = [
+        'loanNumber', 'borrowerFirstName', 'borrowerLastName',
+        'loanAmount', 'propertyStreetAddress', 'propertyCity', 'propertyState'
+    ]
+    for field in important_fields:
+        if field in loan_data:
+            key_fields[field] = loan_data[field]
+    
+    return {
+        "field_count": field_count,
+        "loan_number": loan_number,
+        "file_path": str(file_path),
+        "key_fields": key_fields,
+        "loan_id": loan_id,
+        "message": f"Full loan entity saved to file. Use read_file tool on '{file_path}' to see all fields."
+    }
 
 
 @tool
@@ -214,7 +389,6 @@ def download_loan_document(
     """
     import logging
     import time
-    import tempfile
     
     logger = logging.getLogger(__name__)
     logger.info(f"[DOWNLOAD] Starting - Loan: {loan_id[:8]}..., Attachment: {attachment_id[:8]}...")
@@ -225,17 +399,19 @@ def download_loan_document(
     # Download the document
     document_bytes = client.download_attachment(loan_id, attachment_id)
     
-    # Save to temporary file (avoids putting binary data in message history)
-    temp_file = tempfile.NamedTemporaryFile(mode='wb', suffix='.pdf', delete=False)
-    temp_file.write(document_bytes)
-    temp_file.close()
+    # Save to file (avoids putting binary data in message history)
+    output_dir = _get_output_directory()
+    file_path = output_dir / f'document_{attachment_id[:8]}_{int(time.time())}.pdf'
+    
+    with open(file_path, 'wb') as f:
+        f.write(document_bytes)
     
     download_time = time.time() - start_time
     size_kb = len(document_bytes) / 1024
-    logger.info(f"[DOWNLOAD] Success - {len(document_bytes):,} bytes ({size_kb:.2f} KB) saved to {temp_file.name} in {download_time:.2f}s")
+    logger.info(f"[DOWNLOAD] Success - {len(document_bytes):,} bytes ({size_kb:.2f} KB) saved to {file_path} in {download_time:.2f}s")
     
     return {
-        "file_path": temp_file.name,
+        "file_path": str(file_path),
         "file_size_bytes": len(document_bytes),
         "file_size_kb": round(size_kb, 2),
         "attachment_id": attachment_id,
@@ -360,14 +536,19 @@ CRITICAL RULES - FOLLOW THESE EXACTLY:
 - We are ONLY testing READ operations (read fields, download documents, extract data)
 
 IMMEDIATE ACTIONS when you see loan/attachment IDs:
-1. Use write_todos to create 3-phase test plan (read fields, download document, extract data)
+1. Use write_todos to create 5-phase test plan (see planner_prompt.md)
 2. Execute Phase 1 immediately
-3. Execute using ONLY these 3 tools:
-   - read_loan_fields(loan_id, field_ids)
-   - download_loan_document(loan_id, attachment_id) → returns file_path
-   - extract_document_data(file_path, extraction_schema, doc_type)
+3. Execute ALL 5 READ tools in order:
+   Phase 1: read_loan_fields(loan_id, field_ids) → read specific loan fields
+   Phase 2: get_loan_documents(loan_id, max_documents=5) → lists documents, saves full list to CSV
+   Phase 3: get_loan_entity(loan_id) → gets loan data, saves full data to JSON file
+   Phase 4: download_loan_document(loan_id, attachment_id) → download doc, returns file_path
+   Phase 5: extract_document_data(file_path, extraction_schema, doc_type) → extract with AI
 
-IMPORTANT: Pass the file_path from download_loan_document result to extract_document_data.
+IMPORTANT NOTES:
+- Large responses are automatically saved to files to avoid token limits
+- Tools return file_path for saved data - you can read files if needed with read_file tool
+- Pass the file_path from download_loan_document result to extract_document_data
 
 If message has loan IDs = START TESTING IMMEDIATELY. Do not ask questions."""
 
@@ -382,11 +563,17 @@ DEFAULT_INITIAL_MESSAGE = f"""Test the Encompass integration tools. Please:
 1. Read loan fields from loan {TEST_LOAN_ID}
    - Get fields: {', '.join(TEST_FIELD_IDS)} (Loan Amount, Borrower First Name, Borrower Last Name, Loan Number)
 
-2. Download the W-2 document
+2. Get loan documents list from loan {TEST_LOAN_WITH_DOCS}
+   - Show all documents and attachments available
+
+3. Get complete loan entity from loan {TEST_LOAN_ID}
+   - Show field count and loan number
+
+4. Download the W-2 document
    - Loan: {TEST_LOAN_WITH_DOCS}
    - Attachment: {TEST_ATTACHMENT_ID}
 
-3. Extract data from the W-2 document
+5. Extract data from the W-2 document
    - Extract: employer name, employee name, and tax year
 
 Create a plan and execute each step, showing me the results."""
@@ -398,6 +585,8 @@ agent = create_deep_agent(
     planning_prompt=planning_prompt,
     tools=[
         read_loan_fields,
+        get_loan_documents,
+        get_loan_entity,
         write_loan_field,
         download_loan_document,
         extract_document_data,
@@ -433,39 +622,63 @@ def test_encompass_tools():
         print(f"❌ Error: {e}")
     print()
 
-    # Test 2: Download document
-    print("Test 2: Downloading document...")
+    # Test 2: Get loan documents
+    print("Test 2: Getting loan documents list...")
+    try:
+        result = get_loan_documents.invoke({"loan_id": TEST_LOAN_WITH_DOCS, "max_documents": 5})
+        print(f"✅ Success: Found {result['total_documents']} documents with {result['total_attachments']} attachments")
+        print(f"   Full list saved to: {result.get('file_path', 'N/A')}")
+        if result.get('sample_documents'):
+            print(f"   First document: {result['sample_documents'][0].get('title', 'N/A')}")
+            print(f"   Sample shows {result['showing_first']} of {result['total_documents']} documents")
+    except Exception as e:
+        print(f"❌ Error: {e}")
+    print()
+
+    # Test 3: Get loan entity
+    print("Test 3: Getting complete loan entity...")
+    try:
+        result = get_loan_entity.invoke({"loan_id": TEST_LOAN_ID})
+        print(f"✅ Success: Retrieved {result['field_count']} fields")
+        print(f"   Loan Number: {result.get('loan_number', 'N/A')}")
+        print(f"   Full data saved to: {result.get('file_path', 'N/A')}")
+        if result.get('key_fields'):
+            print(f"   Key fields: {list(result['key_fields'].keys())}")
+    except Exception as e:
+        print(f"❌ Error: {e}")
+    print()
+
+    # Test 4: Download document
+    print("Test 4: Downloading document...")
     try:
         result = download_loan_document.invoke(
             {
                 "loan_id": TEST_LOAN_WITH_DOCS,
                 "attachment_id": TEST_ATTACHMENT_ID,
-                "save_to_memory": False,  # Save to temp file
             }
         )
-        print(f"✅ Success: Downloaded {result['document_bytes_length']} bytes")
+        print(f"✅ Success: Downloaded {result['file_size_bytes']} bytes ({result['file_size_kb']} KB)")
         if "file_path" in result:
             print(f"   Saved to: {result['file_path']}")
     except Exception as e:
         print(f"❌ Error: {e}")
     print()
 
-    # Test 3: Extract data
-    print("Test 3: Extracting data with LandingAI...")
+    # Test 5: Extract data
+    print("Test 5: Extracting data with LandingAI...")
     try:
         # First download the document
         doc_result = download_loan_document.invoke(
             {
                 "loan_id": TEST_LOAN_WITH_DOCS,
                 "attachment_id": TEST_ATTACHMENT_ID,
-                "save_to_memory": True,
             }
         )
 
         # Use the pre-configured W-2 schema
         extract_result = extract_document_data.invoke(
             {
-                "document_source": {"base64_data": doc_result["base64_data"]},
+                "file_path": doc_result["file_path"],
                 "extraction_schema": TEST_W2_SCHEMA,
                 "document_type": "W2",
             }
@@ -488,27 +701,40 @@ def test_encompass_tools():
 
 
 def demo_agent_workflow():
-    """Demonstrate the agent workflow with a complete document processing example using test data."""
+    """Demonstrate the agent workflow with a complete 5-phase test using test data."""
     from langchain_core.messages import HumanMessage
 
     print("=" * 80)
-    print("Demo: Agent Workflow - Process W-2 Document")
+    print("Demo: Agent Workflow - Complete 5-Phase Encompass Test")
     print("=" * 80)
     print()
     print("Using test data:")
-    print(f"  Loan: {TEST_LOAN_WITH_DOCS}")
-    print(f"  Attachment: {TEST_ATTACHMENT_ID}")
+    print(f"  TEST_LOAN_ID: {TEST_LOAN_ID}")
+    print(f"  TEST_LOAN_WITH_DOCS: {TEST_LOAN_WITH_DOCS}")
+    print(f"  TEST_ATTACHMENT_ID: {TEST_ATTACHMENT_ID}")
+    print(f"  TEST_FIELD_IDS: {TEST_FIELD_IDS}")
     print()
 
-    # Define the task using test constants
-    task = f"""Process the W-2 document from loan {TEST_LOAN_WITH_DOCS}.
-    
-    Steps:
-    1. Download the document with attachment ID: {TEST_ATTACHMENT_ID}
-    2. Extract the employer name, employee name, and tax year
-    3. Show me the extracted data
-    
-    Use the tools available to complete this task."""
+    # Define the comprehensive task using test constants
+    task = f"""Test all Encompass READ operations. Execute the complete 5-phase test:
+
+Phase 1: Read loan fields from loan {TEST_LOAN_ID}
+- Get fields: {', '.join(TEST_FIELD_IDS)} (Loan Amount, First Name, Last Name, Loan Number)
+
+Phase 2: Get loan documents list from loan {TEST_LOAN_WITH_DOCS}
+- Show all documents and attachments available
+
+Phase 3: Get complete loan entity from loan {TEST_LOAN_ID}
+- Show field count and loan number
+
+Phase 4: Download the W-2 document
+- Loan: {TEST_LOAN_WITH_DOCS}
+- Attachment: {TEST_ATTACHMENT_ID}
+
+Phase 5: Extract data from the W-2 document
+- Extract: employer name, employee name, and tax year
+
+Create a plan with write_todos and execute all 5 phases, showing results for each."""
 
     print(f"Task: {task}")
     print()
@@ -550,20 +776,24 @@ if __name__ == "__main__":
         print("This agent provides Encompass document processing capabilities.")
         print()
         print("Available commands:")
-        print("  --test-tools  Test individual Encompass tools")
-        print("  --demo        Run a complete agent workflow demo")
+        print("  --test-tools  Test individual Encompass tools (5 comprehensive READ tests)")
+        print("  --demo        Run complete 5-phase agent workflow with planning")
         print()
-        print("Available tools:")
-        print("  1. read_loan_fields      - Read field values from Encompass loans")
-        print("  2. write_loan_field      - Write/update field values in Encompass")
-        print("  3. download_loan_document - Download documents from Encompass")
-        print("  4. extract_document_data  - Extract data from documents with AI")
+        print("5-Phase Test Flow:")
+        print("  Phase 1: read_loan_fields       - Read specific field values")
+        print("  Phase 2: get_loan_documents     - List all documents and attachments")
+        print("  Phase 3: get_loan_entity        - Get complete loan data")
+        print("  Phase 4: download_loan_document - Download document attachments")
+        print("  Phase 5: extract_document_data  - AI extraction of structured data")
+        print()
+        print("Additional tools:")
+        print("  - write_loan_field - Write/update field values (not used in READ tests)")
         print()
         print("Configuration:")
         print("  - API credentials are loaded from .env file")
-        print("  - Loan IDs and test data are provided as inputs to tools/graph")
+        print("  - Test data (loan IDs, attachment IDs) defined in TEST_* constants")
         print()
         print("Example usage:")
-        print("  python drawdoc_agent.py --test-tools")
-        print("  python drawdoc_agent.py --demo")
+        print("  python drawdoc_agent.py --test-tools  # Run 5 individual tool tests")
+        print("  python drawdoc_agent.py --demo        # Run full workflow with agent")
         print()
