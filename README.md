@@ -9,16 +9,17 @@
 
 ## 📋 Overview
 
-A LangGraph agent that specializes in processing Encompass loan documents and extracting structured data using LandingAI. The agent has 4 specialized tools for interacting with the Encompass API and follows a structured 5-phase workflow for document production.
+A LangGraph agent that specializes in processing Encompass loan documents and extracting structured data using LandingAI. The agent has 6 specialized tools for interacting with the Encompass API and follows a structured 5-phase testing workflow for comprehensive READ operations.
 
 ---
 
 ## ✨ Features
 
-- ✅ **4 Specialized Tools** - Read/write loan fields, download documents, extract data
-- ✅ **Encompass API Integration** - Direct access to loan data and documents
-- ✅ **LandingAI Document Extraction** - Automated structured data extraction
-- ✅ **Structured 5-Phase Workflow** - Analysis → Markup → Drawing → QA → Delivery
+- ✅ **6 Specialized Tools** - 5 READ operations + 1 WRITE operation for Encompass
+- ✅ **Encompass API Integration** - Direct access to loan data, documents, and entities
+- ✅ **LandingAI Document Extraction** - Automated structured data extraction with AI
+- ✅ **Comprehensive 5-Phase Testing** - Read Fields → List Docs → Get Entity → Download → Extract
+- ✅ **Token-Optimized** - Large responses saved to files, avoiding 200K token limits
 - ✅ **Custom Planning** - Local `planner_prompt.md` for workflow customization
 - ✅ **LangGraph Cloud Ready** - Deploy and auto-update from GitHub
 
@@ -103,7 +104,74 @@ result = read_loan_fields.invoke({
 
 ---
 
-### 2. `write_loan_field`
+### 2. `get_loan_documents`
+List all documents and attachments in an Encompass loan.
+
+**Parameters:**
+- `loan_id` (str): The Encompass loan GUID
+- `max_documents` (int, optional): Maximum documents to return in response (default: 10)
+
+**Example:**
+```python
+result = get_loan_documents.invoke({
+    "loan_id": "387596ee-7090-47ca-8385-206e22c9c9da",
+    "max_documents": 5
+})
+# Returns: {
+#   "total_documents": 159,
+#   "total_attachments": 207,
+#   "file_path": "/tmp/loan_documents_387596ee.json",
+#   "sample_documents": [
+#     {"title": "W2", "documentId": "0985d4a6-f92...", "attachment_count": 1},
+#     ...
+#   ],
+#   "showing_first": 5,
+#   "loan_id": "..."
+# }
+```
+
+**Returns:**
+- Total counts for documents and attachments
+- JSON file path with complete document list (always saved)
+- Sample summaries of first N documents (title, ID, attachment count only)
+- **Token-optimized**: Full data saved to JSON, only summaries in conversation
+
+---
+
+### 3. `get_loan_entity`
+Get complete loan data including all fields and custom fields.
+
+**Parameters:**
+- `loan_id` (str): The Encompass loan GUID
+
+**Example:**
+```python
+result = get_loan_entity.invoke({
+    "loan_id": "65ec32a1-99df-4685-92ce-41a08fd3b64e"
+})
+# Returns: {
+#   "field_count": 247,
+#   "loan_number": "12345",
+#   "file_path": "/tmp/loan_entity_65ec32a1.json",
+#   "key_fields": {
+#     "loanNumber": "12345",
+#     "borrowerFirstName": "John",
+#     "borrowerLastName": "Doe"
+#   },
+#   "loan_id": "..."
+# }
+```
+
+**Returns:**
+- Field count showing how many fields have data
+- Loan number for quick reference
+- JSON file path with complete loan entity data
+- Key fields extracted for quick access (borrower name, loan amount, etc.)
+- **Token-optimized**: Full loan data saved to file, not returned in conversation
+
+---
+
+### 4. `write_loan_field`
 Update a single field value in an Encompass loan.
 
 **Parameters:**
@@ -122,54 +190,50 @@ result = write_loan_field.invoke({
 
 ---
 
-### 3. `download_loan_document`
-Download a document attachment from an Encompass loan.
+### 5. `download_loan_document`
+Download a document attachment from an Encompass loan to a temporary file.
 
 **Parameters:**
 - `loan_id` (str): The Encompass loan GUID
 - `attachment_id` (str): The attachment entity ID
-- `save_to_memory` (bool): 
-  - `True`: Returns base64 data (keeps in agent state)
-  - `False`: Saves to temp file
 
 **Example:**
 ```python
-# Option A - Keep in Memory (for immediate processing)
 result = download_loan_document.invoke({
     "loan_id": "387596ee-7090-47ca-8385-206e22c9c9da",
-    "attachment_id": "d78186cc-a8a2-454f-beaf-19f0e6c3aa8c",
-    "save_to_memory": True
+    "attachment_id": "d78186cc-a8a2-454f-beaf-19f0e6c3aa8c"
 })
-# Returns: {"document_bytes_length": 583789, "base64_data": "...", "storage_type": "memory"}
-
-# Option B - Save to Temp File (for large documents)
-result = download_loan_document.invoke({
-    "loan_id": "387596ee-7090-47ca-8385-206e22c9c9da",
-    "attachment_id": "d78186cc-a8a2-454f-beaf-19f0e6c3aa8c",
-    "save_to_memory": False
-})
-# Returns: {"document_bytes_length": 583789, "file_path": "/tmp/...", "storage_type": "temp_file"}
+# Returns: {
+#   "file_path": "/tmp/encompass_doc_abc123.pdf",
+#   "file_size_bytes": 583789,
+#   "file_size_kb": 570.11,
+#   "attachment_id": "...",
+#   "loan_id": "..."
+# }
 ```
+
+**Returns:**
+- `file_path`: Path to temporary file containing the document
+- `file_size_bytes`: Size of document in bytes
+- `file_size_kb`: Size in kilobytes for readability
+- The file path can be passed directly to `extract_document_data`
 
 ---
 
-### 4. `extract_document_data`
+### 6. `extract_document_data`
 Extract structured data from documents using LandingAI.
 
 **Parameters:**
-- `document_source` (dict): Either:
-  - `{"base64_data": "..."}` for in-memory documents
-  - `{"file_path": "/path/to/file"}` for file documents
+- `file_path` (str): Path to the PDF file (from `download_loan_document` result)
 - `extraction_schema` (dict): JSON schema defining what to extract
-- `document_type` (str, optional): Label for document type
+- `document_type` (str, optional): Label for document type (default: "Document")
 
 **Example - W-2 Extraction:**
 ```python
 # Step 1: Download document
 doc = download_loan_document.invoke({
     "loan_id": "387596ee-7090-47ca-8385-206e22c9c9da",
-    "attachment_id": "d78186cc-a8a2-454f-beaf-19f0e6c3aa8c",
-    "save_to_memory": True
+    "attachment_id": "d78186cc-a8a2-454f-beaf-19f0e6c3aa8c"
 })
 
 # Step 2: Define schema
@@ -194,9 +258,9 @@ schema = {
     }
 }
 
-# Step 3: Extract
+# Step 3: Extract using file_path from download result
 result = extract_document_data.invoke({
-    "document_source": {"base64_data": doc["base64_data"]},
+    "file_path": doc["file_path"],
     "extraction_schema": schema,
     "document_type": "W2"
 })
@@ -205,34 +269,55 @@ result = extract_document_data.invoke({
 
 ---
 
-## 🔄 Document Workflow
+## 🔄 5-Phase Testing Workflow
 
-The agent follows a structured 5-phase approach:
+The agent follows a structured 5-phase comprehensive READ testing approach:
 
-### Phase 1: Document Analysis
-- Understand requirements
-- Review templates and source materials
-- Identify key sections and annotation needs
+### Phase 1: Read Loan Fields
+**Goal:** Test reading specific field values from Encompass loans
 
-### Phase 2: Annotation and Markup
-- Add annotations and callouts
-- Highlight critical information
-- Insert explanatory notes
+**Actions:**
+- Call `read_loan_fields(loan_id, field_ids)` with specific field IDs
+- Verify correct field values are returned
 
-### Phase 3: Drawing and Visual Elements
-- Create charts and diagrams
-- Design visual components
-- Add signatures, stamps, seals
+**Reports:** Display actual field values (Loan Amount, Borrower Name, etc.)
 
-### Phase 4: Review and Quality Assurance
-- Verify element placement
-- Check completeness and accuracy
-- Ensure AWM standards compliance
+### Phase 2: List All Documents
+**Goal:** Test listing all documents and attachments in a loan
 
-### Phase 5: Export and Delivery
-- Prepare final format
-- Generate supporting documents
-- Create delivery package
+**Actions:**
+- Call `get_loan_documents(loan_id)` to retrieve document metadata
+- Get attachment IDs needed for downloading
+
+**Reports:** Show document count, attachment count, and document titles
+
+### Phase 3: Get Complete Loan Entity
+**Goal:** Test retrieving complete loan data with all fields
+
+**Actions:**
+- Call `get_loan_entity(loan_id)` to get full loan object
+- Verify comprehensive data access
+
+**Reports:** Display field count, loan number, and sample fields
+
+### Phase 4: Download Document
+**Goal:** Test downloading document attachments from Encompass
+
+**Actions:**
+- Call `download_loan_document(loan_id, attachment_id)` to download
+- Save to temporary file for processing
+
+**Reports:** Confirm download success, show file size and path
+
+### Phase 5: Extract Document Data
+**Goal:** Test AI-powered structured data extraction from documents
+
+**Actions:**
+- Use file path from Phase 4 download
+- Call `extract_document_data(file_path, schema, doc_type)` with extraction schema
+- Verify extracted data matches expectations
+
+**Reports:** Display extracted fields and complete test summary
 
 ---
 
@@ -308,31 +393,69 @@ The agent follows a structured 5-phase approach:
 
 ---
 
-## 💡 Complete Workflow Example
+## 💡 Complete 5-Phase Testing Example
+
+### Running the Test Suite
+
+**Option 1: Individual Tool Tests**
+```bash
+cd agents/DrawDoc-AWM
+python drawdoc_agent.py --test-tools
+```
+
+This runs all 5 tests sequentially:
+- ✅ Test 1: Read loan fields
+- ✅ Test 2: Get loan documents list
+- ✅ Test 3: Get complete loan entity
+- ✅ Test 4: Download document
+- ✅ Test 5: Extract data with AI
+
+**Option 2: Agent Workflow Demo**
+```bash
+python drawdoc_agent.py --demo
+```
+
+This invokes the agent with a comprehensive 5-phase test task that creates a plan and executes all phases.
+
+### Programmatic Testing Example
 
 ```python
 from langchain_core.messages import HumanMessage
 
-# Task: Process a W-2 and update loan fields
+# Task: Complete 5-phase Encompass READ operation test
 task = """
-Process the W-2 document from loan 387596ee-7090-47ca-8385-206e22c9c9da:
+Test all Encompass READ operations. Execute the complete 5-phase test:
 
-1. Download attachment d78186cc-a8a2-454f-beaf-19f0e6c3aa8c
-2. Extract employer name, employee name, and wages
-3. Read the current borrower name from the loan (field 4002)
-4. If the extracted employee name matches, update the loan amount field (4000) with the extracted wages
-5. Provide a summary of what was done
+Phase 1: Read loan fields from loan 65ec32a1-99df-4685-92ce-41a08fd3b64e
+- Get fields: 4000, 4002, 4004, 353
+
+Phase 2: Get loan documents list from loan 387596ee-7090-47ca-8385-206e22c9c9da
+- Show all documents and attachments available
+
+Phase 3: Get complete loan entity from loan 65ec32a1-99df-4685-92ce-41a08fd3b64e
+- Show field count and loan number
+
+Phase 4: Download the W-2 document
+- Loan: 387596ee-7090-47ca-8385-206e22c9c9da
+- Attachment: d78186cc-a8a2-454f-beaf-19f0e6c3aa8c
+
+Phase 5: Extract data from the W-2 document
+- Extract: employer name, employee name, and tax year
+
+Create a plan with write_todos and execute all 5 phases, showing results for each.
 """
 
 result = agent.invoke({"messages": [HumanMessage(content=task)]})
 ```
 
 The agent will automatically:
-1. Call `download_loan_document` to get the W-2
-2. Call `extract_document_data` to extract information
-3. Call `read_loan_fields` to check borrower name
-4. Call `write_loan_field` to update if needed
-5. Provide a natural language summary
+1. Create a 5-phase todo plan with `write_todos`
+2. Execute Phase 1: Call `read_loan_fields` to get specific fields
+3. Execute Phase 2: Call `get_loan_documents` to list all documents
+4. Execute Phase 3: Call `get_loan_entity` to get complete loan data
+5. Execute Phase 4: Call `download_loan_document` to download attachment
+6. Execute Phase 5: Call `extract_document_data` to extract structured data
+7. Provide comprehensive test summary with results from all phases
 
 ---
 
@@ -423,8 +546,8 @@ git push origin main
 
 ```
 DrawDoc-AWM/
-├── drawdoc_agent.py       # Main agent with 4 tools
-├── planner_prompt.md      # Custom planning workflow
+├── drawdoc_agent.py       # Main agent with 6 tools (5 READ + 1 WRITE)
+├── planner_prompt.md      # 5-phase testing workflow
 ├── requirements.txt       # Dependencies (copilotagent>=0.1.9)
 ├── langgraph.json         # LangGraph Cloud config
 ├── .env                   # Local credentials (gitignored)
@@ -484,9 +607,10 @@ python-dotenv>=1.0.0        # Environment variable loading
 - ✅ Rotate tokens regularly
 
 ### Document Storage
-- Use `save_to_memory=True` for immediate processing
-- Use `save_to_memory=False` for large documents
+- Documents are automatically saved to temporary files
+- File paths are returned and can be passed to `extract_document_data`
 - Temp files are auto-cleaned by the OS
+- No need to manage file cleanup manually
 
 ### Schema Design
 - Provide detailed descriptions to help AI understand
@@ -495,14 +619,19 @@ python-dotenv>=1.0.0        # Environment variable loading
 - Start simple, add fields incrementally
 
 ### Performance
-- Download + Extract workflow: ~10-15 seconds
-- Field operations: < 2 seconds
-- Batch operations: Use multiple tool calls in sequence
+- Phase 1 (Read Fields): < 2 seconds
+- Phase 2 (List Documents): < 3 seconds
+- Phase 3 (Get Entity): < 3 seconds
+- Phase 4 (Download Document): 2-5 seconds depending on file size
+- Phase 5 (Extract Data): 8-12 seconds for AI extraction
+- **Total 5-Phase Test**: ~15-25 seconds end-to-end
 
 ---
 
 **Ready for LangGraph Cloud deployment!** 🚀
 
 **Status**: ✅ Production Ready  
-**Version**: 2.0 (LangGraph Tools)
+**Version**: 2.1 (6 Tools + 5-Phase Testing)  
+**Tools**: 5 READ + 1 WRITE operations  
+**Testing**: Comprehensive 5-phase workflow
 
