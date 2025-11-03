@@ -4,40 +4,12 @@ This agent is specialized for drawing and annotating documents for AWM
 (Asset and Wealth Management) workflows with Encompass integration.
 """
 
-# ==============================================================================
-# DEVELOPMENT MODE CONFIGURATION
-# ==============================================================================
-# Set USE_LOCAL_COPILOTAGENT=true in .env to use local development version
-# Set USE_LOCAL_COPILOTAGENT=false (or omit) to use PyPI version
-#
-# Local version enables testing unreleased features and bug fixes before
-# deploying to PyPI.
-#
-# Installation (one-time setup):
-#   pip install -e /Users/masoud/Desktop/WORK/DeepCopilotAgent2/baseCopilotAgent
-# ==============================================================================
-
 import os
 import sys
 import logging
 from pathlib import Path
 from typing import Any, Literal, Optional
 from dotenv import load_dotenv
-
-# Load environment variables first so we can check USE_LOCAL_COPILOTAGENT
-load_dotenv(Path(__file__).parent / ".env")
-
-# Check if we should use local copilotagent
-USE_LOCAL = os.getenv("USE_LOCAL_COPILOTAGENT", "false").lower() == "true"
-
-if USE_LOCAL:
-    # Add local baseCopilotAgent to path
-    local_path = Path(__file__).parent.parent.parent / "baseCopilotAgent" / "src"
-    if local_path.exists():
-        sys.path.insert(0, str(local_path))
-        print(f"🔧 DEV MODE: Using LOCAL copilotagent from {local_path}")
-    else:
-        print(f"⚠️  LOCAL path not found: {local_path}, falling back to installed version")
 
 # Configure logging to output to terminal/stdout
 logging.basicConfig(
@@ -55,34 +27,14 @@ logging.getLogger('langgraph').setLevel(logging.WARNING)
 logging.getLogger('uvicorn').setLevel(logging.WARNING)
 logging.getLogger('watchfiles').setLevel(logging.WARNING)
 
-# Enable AI model response logging for debugging
-# Set to INFO to see model responses, WARNING to hide them
-AI_DEBUG_MODE = os.getenv("AI_DEBUG_MODE", "false").lower() == "true"
-if AI_DEBUG_MODE:
-    logging.getLogger('langchain').setLevel(logging.DEBUG)
-    logging.getLogger('langchain_anthropic').setLevel(logging.DEBUG)
-    logging.getLogger('langchain_core').setLevel(logging.DEBUG)
-    print("🐛 AI DEBUG MODE: Model responses will be logged")
-
 logger = logging.getLogger(__name__)
 
 from copilotagent import create_deep_agent, EncompassConnect
-from langchain_core.tools import tool, InjectedToolCallId
-from langchain_core.messages import ToolMessage
-from langchain.agents.middleware.types import AgentMiddleware, AgentState
-from langgraph.types import Command
-from typing import Annotated, TypedDict
-from typing_extensions import NotRequired
-from datetime import datetime, UTC
+from langchain_core.tools import tool
+from dotenv import load_dotenv
 
-# Verify which version is loaded
-import copilotagent
-if USE_LOCAL and "baseCopilotAgent" in copilotagent.__file__:
-    print(f"✅ Using LOCAL copilotagent: {copilotagent.__file__}")
-elif not USE_LOCAL and "site-packages" in copilotagent.__file__:
-    print(f"✅ Using PyPI copilotagent: {copilotagent.__file__}")
-else:
-    print(f"⚠️  Unexpected copilotagent location: {copilotagent.__file__}")
+# Load environment variables from .env file
+load_dotenv(Path(__file__).parent / ".env")
 
 # =============================================================================
 # TEST DATA - Hardcoded test values that are known to work
@@ -124,292 +76,6 @@ TEST_W2_SCHEMA = {
         },
     },
 }
-
-# =============================================================================
-# DOCREPO S3 STORAGE - Per-client S3 document storage
-# =============================================================================
-
-def _create_docrepo_bucket(client_id: str) -> dict[str, Any]:
-    """Create an S3 bucket for a client in docRepo.
-    
-    This is idempotent - if the bucket already exists, it returns success.
-    
-    Args:
-        client_id: The client identifier
-        
-    Returns:
-        Dictionary containing:
-        - bucket_created: Boolean indicating if bucket was newly created
-        - bucket_exists: Boolean indicating if bucket exists after call
-        - client_id: The client ID used
-        - bucket_name: The S3 bucket name
-        - message: Status message
-    """
-    import requests
-    import logging
-    
-    logger = logging.getLogger(__name__)
-    
-    # Get docRepo configuration from environment
-    create_api_base = os.getenv("DOCREPO_CREATE_API_BASE", "https://dnobbdlzyb.execute-api.us-west-1.amazonaws.com/prod")
-    auth_token = os.getenv("DOCREPO_AUTH_TOKEN", "esfuse-token")
-    
-    try:
-        logger.info(f"[DOCREPO] Creating bucket for client: {client_id}")
-        
-        headers = {
-            "Authorization": f"Bearer {auth_token}",
-            "Content-Type": "application/json"
-        }
-        
-        response = requests.post(
-            f"{create_api_base}/create-bucket",
-            json={"clientId": client_id},
-            headers=headers,
-            timeout=30
-        )
-        
-        if response.status_code == 200:
-            result = response.json()
-            bucket_name = result.get("bucketName", "")
-            was_created = result.get("created", False)
-            
-            if was_created:
-                logger.info(f"[DOCREPO] Bucket created - {bucket_name}")
-            else:
-                logger.info(f"[DOCREPO] Bucket already exists - {bucket_name}")
-            
-            return {
-                "bucket_created": was_created,
-                "bucket_exists": True,
-                "client_id": result.get("clientId", client_id),
-                "bucket_name": bucket_name,
-                "message": result.get("message", "Bucket ready")
-            }
-        else:
-            logger.error(f"[DOCREPO] Bucket creation failed - Status {response.status_code}: {response.text}")
-            return {
-                "bucket_created": False,
-                "bucket_exists": False,
-                "client_id": client_id,
-                "error": f"Failed with status {response.status_code}",
-                "message": response.text
-            }
-            
-    except Exception as e:
-        logger.error(f"[DOCREPO] Exception creating bucket: {e}")
-        return {
-            "bucket_created": False,
-            "bucket_exists": False,
-            "client_id": client_id,
-            "error": str(e),
-            "message": f"Failed to create bucket: {str(e)}"
-        }
-
-
-def _upload_to_docrepo_s3(
-    document_bytes: bytes,
-    client_id: str,
-    doc_id: str,
-    data_object: dict[str, Any] | None = None,
-) -> dict[str, Any]:
-    """Upload a document to docRepo S3 storage.
-    
-    This uploads documents to per-client S3 buckets for persistent storage
-    and generates signed URLs for UI access. If the bucket doesn't exist,
-    it will be created automatically.
-    
-    Args:
-        document_bytes: The PDF document content as bytes
-        client_id: The client identifier (e.g., "docAgent")
-        doc_id: The document identifier (e.g., attachment ID)
-        data_object: Optional structured data to store with the document
-        
-    Returns:
-        Dictionary containing:
-        - s3_uploaded: Boolean indicating success
-        - client_id: The client ID used
-        - doc_id: The document ID used
-        - message: Status message
-        - (error if failed)
-    """
-    import base64
-    import requests
-    import logging
-    
-    logger = logging.getLogger(__name__)
-    
-    # Get docRepo configuration from environment
-    put_api_base = os.getenv("DOCREPO_PUT_API_BASE", "https://ekrhupxp1d.execute-api.us-west-1.amazonaws.com/prod")
-    auth_token = os.getenv("DOCREPO_AUTH_TOKEN", "esfuse-token")
-    
-    if not auth_token:
-        logger.warning("[DOCREPO] No auth token configured, skipping S3 upload")
-        return {
-            "s3_uploaded": False,
-            "message": "DocRepo auth token not configured in environment"
-        }
-    
-    try:
-        # Encode document as base64
-        content_base64 = base64.b64encode(document_bytes).decode('utf-8')
-        
-        # Prepare payload
-        payload = {
-            "clientId": client_id,
-            "docId": doc_id,
-            "content_base64": content_base64,
-        }
-        
-        # Add data object if provided
-        if data_object:
-            payload["dataObject"] = data_object
-        
-        # Upload to docRepo
-        logger.info(f"[DOCREPO] Uploading to S3 - Client: {client_id}, Doc: {doc_id}")
-        
-        headers = {
-            "Authorization": f"Bearer {auth_token}",
-            "Content-Type": "application/json"
-        }
-        
-        response = requests.post(
-            f"{put_api_base}/put",
-            json=payload,
-            headers=headers,
-            timeout=60
-        )
-        
-        if response.status_code == 200:
-            result = response.json()
-            logger.info(f"[DOCREPO] Success - Uploaded to S3 for client {client_id}")
-            return {
-                "s3_uploaded": True,
-                "client_id": client_id,
-                "doc_id": doc_id,
-                "message": result.get("message", "Uploaded"),
-                "data_object_stored": result.get("dataObjectStored", False),
-            }
-        elif response.status_code == 400 and "No S3 bucket" in response.text:
-            # Bucket doesn't exist - create it and retry
-            logger.info(f"[DOCREPO] Bucket doesn't exist, creating it for client {client_id}")
-            bucket_result = _create_docrepo_bucket(client_id)
-            
-            if not bucket_result.get("bucket_exists"):
-                logger.error(f"[DOCREPO] Failed to create bucket: {bucket_result.get('message')}")
-                return {
-                    "s3_uploaded": False,
-                    "client_id": client_id,
-                    "doc_id": doc_id,
-                    "error": "Failed to create bucket",
-                    "message": bucket_result.get("message", "Bucket creation failed")
-                }
-            
-            # Retry upload after creating bucket
-            logger.info(f"[DOCREPO] Retrying upload after bucket creation")
-            response = requests.post(
-                f"{put_api_base}/put",
-                json=payload,
-                headers=headers,
-                timeout=60
-            )
-            
-            if response.status_code == 200:
-                result = response.json()
-                logger.info(f"[DOCREPO] Success - Uploaded to S3 for client {client_id} (after bucket creation)")
-                return {
-                    "s3_uploaded": True,
-                    "client_id": client_id,
-                    "doc_id": doc_id,
-                    "message": result.get("message", "Uploaded"),
-                    "data_object_stored": result.get("dataObjectStored", False),
-                    "bucket_created": True,
-                }
-            else:
-                logger.error(f"[DOCREPO] Upload failed after bucket creation - Status {response.status_code}: {response.text}")
-                return {
-                    "s3_uploaded": False,
-                    "client_id": client_id,
-                    "doc_id": doc_id,
-                    "error": f"Upload failed with status {response.status_code}",
-                    "message": response.text
-                }
-        else:
-            logger.error(f"[DOCREPO] Upload failed - Status {response.status_code}: {response.text}")
-            return {
-                "s3_uploaded": False,
-                "client_id": client_id,
-                "doc_id": doc_id,
-                "error": f"Upload failed with status {response.status_code}",
-                "message": response.text
-            }
-            
-    except Exception as e:
-        logger.error(f"[DOCREPO] Exception during upload: {e}")
-        return {
-            "s3_uploaded": False,
-            "client_id": client_id,
-            "doc_id": doc_id,
-            "error": str(e),
-            "message": f"Failed to upload to S3: {str(e)}"
-        }
-
-
-def _get_docrepo_signed_url(client_id: str, doc_id: str) -> dict[str, Any]:
-    """Get a signed URL for a document from docRepo S3.
-    
-    Args:
-        client_id: The client identifier
-        doc_id: The document identifier
-        
-    Returns:
-        Dictionary containing signed URL and document info
-    """
-    import requests
-    import logging
-    
-    logger = logging.getLogger(__name__)
-    
-    # Get docRepo configuration from environment
-    get_api_base = os.getenv("DOCREPO_GET_API_BASE", "https://m49lxh6q5d.execute-api.us-west-1.amazonaws.com/prod")
-    auth_token = os.getenv("DOCREPO_AUTH_TOKEN", "esfuse-token")
-    
-    try:
-        headers = {
-            "Authorization": f"Bearer {auth_token}"
-        }
-        
-        response = requests.get(
-            f"{get_api_base}/doc",
-            params={"clientId": client_id, "docId": doc_id},
-            headers=headers,
-            timeout=30
-        )
-        
-        if response.status_code == 200:
-            result = response.json()
-            logger.info(f"[DOCREPO] Retrieved signed URL for client {client_id}, doc {doc_id}")
-            return {
-                "success": True,
-                "url": result.get("url"),
-                "expires_in_seconds": result.get("expiresInSeconds", 300),
-                "has_data_object": result.get("hasDataObject", False),
-                "data_object": result.get("dataObject"),
-            }
-        else:
-            logger.error(f"[DOCREPO] Failed to get URL - Status {response.status_code}")
-            return {
-                "success": False,
-                "error": f"Status {response.status_code}",
-                "message": response.text
-            }
-            
-    except Exception as e:
-        logger.error(f"[DOCREPO] Exception getting URL: {e}")
-        return {
-            "success": False,
-            "error": str(e)
-        }
 
 # =============================================================================
 # ENCOMPASS TOOLS - Tools for interacting with Encompass API
@@ -650,38 +316,11 @@ def get_loan_entity(loan_id: str) -> dict[str, Any]:
         if field in loan_data:
             key_fields[field] = loan_data[field]
     
-    # Extract borrower and employment information for validation
-    borrower_info = {}
-    if 'applications' in loan_data and len(loan_data['applications']) > 0:
-        borrower = loan_data['applications'][0].get('borrower', {})
-        
-        # Parse alias names (comma-separated string) into a list
-        alias_names_str = borrower.get('aliasName', '')
-        alias_names = [name.strip() for name in alias_names_str.split(',')] if alias_names_str else []
-        
-        borrower_info = {
-            'first_name': borrower.get('firstName', ''),
-            'middle_name': borrower.get('middleName', ''),
-            'last_name': borrower.get('lastNameWithSuffix', ''),
-            'full_name': borrower.get('fullName', ''),
-            'alias_names': alias_names,
-            'employment': []
-        }
-        
-        # Extract employment history
-        for employment in borrower.get('employment', []):
-            emp_record = {
-                'employer_name': employment.get('employerName', ''),
-                'current_employment': employment.get('currentEmploymentIndicator', False)
-            }
-            borrower_info['employment'].append(emp_record)
-    
     return {
         "field_count": field_count,
         "loan_number": loan_number,
         "file_path": str(file_path),
         "key_fields": key_fields,
-        "borrower_info": borrower_info,
         "loan_id": loan_id,
         "message": f"Full loan entity saved to file. Use read_file tool on '{file_path}' to see all fields."
     }
@@ -720,12 +359,11 @@ def write_loan_field(loan_id: str, field_id: str, value: Any) -> dict[str, Any]:
 def download_loan_document(
     loan_id: str,
     attachment_id: str,
-    tool_call_id: Annotated[str, InjectedToolCallId],
-) -> Command:
-    """Get a W-2 document from Encompass and upload to S3 for UI access.
+) -> dict[str, Any]:
+    """Download a document attachment from an Encompass loan to a temporary file.
 
-    This tool downloads a document from Encompass, saves it locally for extraction,
-    and uploads it to docRepo S3 storage so the UI can display it.
+    This tool downloads a document from Encompass and saves it to a temporary file.
+    The file path can then be passed to extract_document_data for AI extraction.
 
     Args:
         loan_id: The Encompass loan GUID
@@ -733,42 +371,35 @@ def download_loan_document(
 
     Returns:
         Dictionary containing:
-        - file_path: Path to the local temporary file for extraction
+        - file_path: Path to the temporary file containing the document
         - file_size_bytes: Size of the downloaded document in bytes
         - file_size_kb: Size in kilobytes for readability
         - attachment_id: The attachment ID that was downloaded
         - loan_id: The loan ID it came from
-        - s3_info: Information about S3 upload (client_id, doc_id, s3_uploaded status)
 
     Example:
         >>> download_loan_document("loan-guid", "attachment-guid")
         {
-            "file_path": "/tmp/document_abc123.pdf",
+            "file_path": "/tmp/encompass_doc_abc123.pdf",
             "file_size_bytes": 583789,
             "file_size_kb": 570.11,
             "attachment_id": "attachment-guid",
-            "loan_id": "loan-guid",
-            "s3_info": {
-                "s3_uploaded": true,
-                "client_id": "loan-guid",
-                "doc_id": "attachment-guid",
-                "message": "Uploaded"
-            }
+            "loan_id": "loan-guid"
         }
     """
     import logging
     import time
     
     logger = logging.getLogger(__name__)
-    logger.info(f"[GET_W2] Starting - Loan: {loan_id[:8]}..., Attachment: {attachment_id[:8]}...")
+    logger.info(f"[DOWNLOAD] Starting - Loan: {loan_id[:8]}..., Attachment: {attachment_id[:8]}...")
     
     start_time = time.time()
     client = _get_encompass_client()
     
-    # Download the document from Encompass
+    # Download the document
     document_bytes = client.download_attachment(loan_id, attachment_id)
     
-    # Save to local file for extraction tool
+    # Save to file (avoids putting binary data in message history)
     output_dir = _get_output_directory()
     file_path = output_dir / f'document_{attachment_id[:8]}_{int(time.time())}.pdf'
     
@@ -777,60 +408,15 @@ def download_loan_document(
     
     download_time = time.time() - start_time
     size_kb = len(document_bytes) / 1024
-    logger.info(f"[GET_W2] Downloaded - {len(document_bytes):,} bytes ({size_kb:.2f} KB) saved to {file_path} in {download_time:.2f}s")
+    logger.info(f"[DOWNLOAD] Success - {len(document_bytes):,} bytes ({size_kb:.2f} KB) saved to {file_path} in {download_time:.2f}s")
     
-    # Upload to docRepo S3 for UI access
-    # Use consistent client_id "docAgent" for all documents
-    s3_result = _upload_to_docrepo_s3(
-        document_bytes=document_bytes,
-        client_id="docAgent",  # Consistent client ID for all documents
-        doc_id=f"{loan_id}_{attachment_id}",  # FULL IDs (not truncated) - UI needs these to fetch from DocRepo
-        data_object={
-            "document_type": "W2",
-            "loan_id": loan_id,
-            "attachment_id": attachment_id,
-            "file_size_bytes": len(document_bytes),
-            "uploaded_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-            "source": "encompass"
-        }
-    )
-    
-    # Create display name for the file
-    file_display_name = f"W-2 Document ({datetime.now(UTC).year})"
-    
-    # Create loan file metadata for UI
-    import json
-    loan_file_metadata = {
-        "name": file_display_name,
-        "size": len(document_bytes),
-        "type": "application/pdf",
-        "document_type": "W2",
-        "uploaded_at": datetime.now(UTC).isoformat(),
-        "s3_client_id": s3_result.get("client_id", "docAgent"),
-        "s3_doc_id": s3_result.get("doc_id"),
-        "s3_uploaded": s3_result.get("s3_uploaded", False),
-    }
-    
-    # Return Command to update loan_files state
-    result_summary = {
+    return {
         "file_path": str(file_path),
         "file_size_bytes": len(document_bytes),
         "file_size_kb": round(size_kb, 2),
-        "s3_uploaded": s3_result.get("s3_uploaded", False),
-        "added_to_ui": True
+        "attachment_id": attachment_id,
+        "loan_id": loan_id,
     }
-    
-    return Command(
-        update={
-            "loan_files": {file_display_name: loan_file_metadata},
-            "messages": [
-                ToolMessage(
-                    content=json.dumps(result_summary),
-                    tool_call_id=tool_call_id
-                )
-            ],
-        }
-    )
 
 
 @tool
@@ -935,201 +521,68 @@ def extract_document_data(
     return result
 
 
-@tool
-def compare_extracted_data(comparison_rules: list[dict[str, Any]]) -> dict[str, Any]:
-    """Compare extracted data using deterministic string matching.
-    
-    This tool performs exact string comparison to validate if extracted values match
-    expected values. It uses case-insensitive matching with whitespace normalization.
-    
-    Args:
-        comparison_rules: List of comparison rules, each containing:
-            - target: The actual value to validate (string)
-            - acceptable: List of acceptable variations (list of strings)
-            - label: Optional label for this comparison (string)
-    
-    Returns:
-        Dictionary containing:
-        - matches: List of successful matches with details
-        - mismatches: List of failed matches with details
-        - total_rules: Total number of rules checked
-        - passed_rules: Number of rules that passed
-        - failed_rules: Number of rules that failed
-        - overall_status: "PASS" if all rules pass, "FAIL" otherwise
-    
-    Example:
-        >>> rules = [
-        ...     {
-        ...         "target": "Alva Sorenson",
-        ...         "acceptable": ["Alva Scott Sorensen", "Alva Sorensen"],
-        ...         "label": "Employee Name"
-        ...     },
-        ...     {
-        ...         "target": "Hynds Bros Inc",
-        ...         "acceptable": ["Hynds Bros", "Hynds Brothers"],
-        ...         "label": "Employer Name"
-        ...     }
-        ... ]
-        >>> compare_extracted_data(rules)
-        {
-            "matches": [
-                {
-                    "label": "Employee Name",
-                    "target": "Alva Sorenson",
-                    "matched_with": "Alva Sorensen",
-                    "status": "MATCH"
-                }
-            ],
-            "mismatches": [
-                {
-                    "label": "Employer Name",
-                    "target": "Hynds Bros Inc",
-                    "acceptable": ["Hynds Bros", "Hynds Brothers"],
-                    "status": "NO_MATCH"
-                }
-            ],
-            "total_rules": 2,
-            "passed_rules": 1,
-            "failed_rules": 1,
-            "overall_status": "FAIL"
-        }
-    """
-    import logging
-    
-    logger = logging.getLogger(__name__)
-    logger.info(f"[COMPARE] Starting validation of {len(comparison_rules)} rules")
-    
-    def normalize_string(s: str) -> str:
-        """Normalize string for comparison: lowercase and strip whitespace."""
-        if not s:
-            return ""
-        return str(s).lower().strip()
-    
-    matches = []
-    mismatches = []
-    
-    for i, rule in enumerate(comparison_rules):
-        target = rule.get('target', '')
-        acceptable = rule.get('acceptable', [])
-        label = rule.get('label', f'Rule {i+1}')
-        
-        # Normalize target
-        normalized_target = normalize_string(target)
-        
-        # Check if target matches any acceptable value
-        match_found = False
-        matched_value = None
-        
-        for acceptable_value in acceptable:
-            normalized_acceptable = normalize_string(acceptable_value)
-            if normalized_target == normalized_acceptable:
-                match_found = True
-                matched_value = acceptable_value
-                break
-        
-        if match_found:
-            # Determine if this was a primary or alias match
-            # First item in acceptable list is typically the primary value
-            is_alias_match = len(acceptable) > 1 and matched_value != acceptable[0]
-            
-            matches.append({
-                'label': label,
-                'target': target,
-                'matched_with': matched_value,
-                'is_alias': is_alias_match,
-                'status': 'MATCH'
-            })
-            
-            if is_alias_match:
-                logger.info(f"[COMPARE] ✓ {label}: '{target}' matches alias '{matched_value}'")
-            else:
-                logger.info(f"[COMPARE] ✓ {label}: '{target}' matches '{matched_value}'")
-        else:
-            mismatches.append({
-                'label': label,
-                'target': target,
-                'acceptable': acceptable,
-                'status': 'NO_MATCH'
-            })
-            logger.warning(f"[COMPARE] ✗ {label}: '{target}' does not match any of {acceptable}")
-    
-    passed_rules = len(matches)
-    failed_rules = len(mismatches)
-    total_rules = len(comparison_rules)
-    overall_status = "PASS" if failed_rules == 0 else "FAIL"
-    
-    logger.info(f"[COMPARE] Complete - {passed_rules}/{total_rules} rules passed")
-    
-    return {
-        'matches': matches,
-        'mismatches': mismatches,
-        'total_rules': total_rules,
-        'passed_rules': passed_rules,
-        'failed_rules': failed_rules,
-        'overall_status': overall_status
-    }
-
-
 # =============================================================================
 # AGENT CONFIGURATION
 # =============================================================================
 
 # System prompt for the DrawDoc-AWM agent
-drawdoc_instructions = """You are an Encompass W-2 document validation assistant. Your ONLY job is to validate W-2 tax documents against loan entity data.
+drawdoc_instructions = """You are an Encompass API testing assistant. Your ONLY job is to TEST Encompass READ operations.
 
 CRITICAL RULES - FOLLOW THESE EXACTLY:
-- If you see ANY loan IDs or attachment IDs in a message → IMMEDIATELY create todos and run validation
+- If you see ANY loan IDs, field IDs, or attachment IDs in a message → IMMEDIATELY create todos and run tests
 - DO NOT ask for clarification or more information
 - DO NOT create documentation, markdown files, or guides  
-- We are ONLY testing READ operations and VALIDATION
+- DO NOT use write_file, edit_file, or write_loan_field tools
+- We are ONLY testing READ operations (read fields, download documents, extract data)
 
 IMMEDIATE ACTIONS when you see loan/attachment IDs:
-1. write_todos - Create 4-phase validation plan (see planner_prompt.md)
+1. Use write_todos to create 5-phase test plan (see planner_prompt.md)
 2. Execute Phase 1 immediately
-3. Execute ALL 4 phases in order:
-   Phase 1: get_loan_entity(loan_id) → get borrower name and employment history
-   Phase 2: download_loan_document(loan_id, attachment_id) → Download W-2, upload to S3
-   Phase 3: extract_document_data(file_path, schema, "W2") → extract employee/employer with AI
-   Phase 4: compare_extracted_data(rules) → validate consistency
+3. Execute ALL 5 READ tools in order:
+   Phase 1: read_loan_fields(loan_id, field_ids) → read specific loan fields
+   Phase 2: get_loan_documents(loan_id, max_documents=5) → lists documents, saves full list to CSV
+   Phase 3: get_loan_entity(loan_id) → gets loan data, saves full data to JSON file
+   Phase 4: download_loan_document(loan_id, attachment_id) → download doc, returns file_path
+   Phase 5: extract_document_data(file_path, extraction_schema, doc_type) → extract with AI
 
 IMPORTANT NOTES:
 - Large responses are automatically saved to files to avoid token limits
 - Tools return file_path for saved data - you can read files if needed with read_file tool
 - Pass the file_path from download_loan_document result to extract_document_data
-- Phase 2 uploads documents to S3 for UI access - s3_info contains client_id, doc_id, and upload status
-- Keep validation reports clear and concise - focus on results, not methodology
 
-If message has loan IDs = START VALIDATION IMMEDIATELY. Do not ask questions."""
+If message has loan IDs = START TESTING IMMEDIATELY. Do not ask questions."""
 
 # Load local planning prompt if it exists
 planner_prompt_file = Path(__file__).parent / "planner_prompt.md"
 planning_prompt = planner_prompt_file.read_text() if planner_prompt_file.exists() else None
 
-# Define the default starting message for automatic W-2 validation testing
-# This message will be automatically injected when the agent starts with no messages
-# The actual test IDs are defined in the planning prompt
-DEFAULT_STARTING_MESSAGE = """Run the W-2 validation test using the configured test loan and W-2 attachment."""
+# Define the default initial message for LangGraph Studio
+# This message will automatically trigger the agent to test the Encompass tools
+DEFAULT_INITIAL_MESSAGE = f"""Test the Encompass integration tools. Please:
 
-# Minimal middleware to add loan_files state field
-class LoanFilesState(AgentState):
-    """State schema with loan_files field."""
-    loan_files: NotRequired[dict[str, dict]]
+1. Read loan fields from loan {TEST_LOAN_ID}
+   - Get fields: {', '.join(TEST_FIELD_IDS)} (Loan Amount, Borrower First Name, Borrower Last Name, Loan Number)
 
-class LoanFilesMiddleware(AgentMiddleware):
-    """Minimal middleware that adds loan_files to state."""
-    state_schema = LoanFilesState
-    def __init__(self):
-        super().__init__()
-        self.tools = []  # No tools needed
+2. Get loan documents list from loan {TEST_LOAN_WITH_DOCS}
+   - Show all documents and attachments available
+
+3. Get complete loan entity from loan {TEST_LOAN_ID}
+   - Show field count and loan number
+
+4. Download the W-2 document
+   - Loan: {TEST_LOAN_WITH_DOCS}
+   - Attachment: {TEST_ATTACHMENT_ID}
+
+5. Extract data from the W-2 document
+   - Extract: employer name, employee name, and tax year
+
+Create a plan and execute each step, showing me the results."""
 
 # Create the DrawDoc-AWM agent with Encompass tools
-# Test IDs are embedded in DEFAULT_STARTING_MESSAGE using Python constants
 agent = create_deep_agent(
     agent_type="DrawDoc-AWM",
-    middleware=(LoanFilesMiddleware(),),  # Add loan_files to state
     system_prompt=drawdoc_instructions,
     planning_prompt=planning_prompt,
-    default_starting_message=DEFAULT_STARTING_MESSAGE,
     tools=[
         read_loan_fields,
         get_loan_documents,
@@ -1137,7 +590,6 @@ agent = create_deep_agent(
         write_loan_field,
         download_loan_document,
         extract_document_data,
-        compare_extracted_data,
     ],
 )
 
