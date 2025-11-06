@@ -74,6 +74,7 @@ from langgraph.types import Command
 from typing import Annotated, TypedDict
 from typing_extensions import NotRequired
 from datetime import datetime, UTC
+from extraction_schemas import get_extraction_schema, list_supported_document_types
 
 # Verify which version is loaded
 import copilotagent
@@ -85,45 +86,14 @@ else:
     print(f"⚠️  Unexpected copilotagent location: {copilotagent.__file__}")
 
 # =============================================================================
-# TEST DATA - Hardcoded test values that are known to work
+# TEST DATA - Sample values for tool testing only
 # =============================================================================
-
-# Loan ID for field reading tests
-TEST_LOAN_ID = "65ec32a1-99df-4685-92ce-41a08fd3b64e"
-
-# Loan ID that has documents attached
-TEST_LOAN_WITH_DOCS = "387596ee-7090-47ca-8385-206e22c9c9da"
-
-# Document ID for metadata tests
-TEST_DOCUMENT_ID = "0985d4a6-f928-4254-87db-8ccaeae2f5e9"
-
-# Attachment ID for download and extraction tests (W-2 document)
-TEST_ATTACHMENT_ID = "d78186cc-a8a2-454f-beaf-19f0e6c3aa8c"
-
-# Common field IDs to test
-TEST_FIELD_IDS = ["4000", "4002", "4004", "353"]  # Loan Amount, First Name, Last Name, Loan Number
-
-# Sample extraction schema for W-2 documents
-TEST_W2_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "employer_name": {
-            "type": "string",
-            "title": "Employer Name",
-            "description": "Name of the employer/company from W-2",
-        },
-        "employee_name": {
-            "type": "string",
-            "title": "Employee Name",
-            "description": "Full name of the employee from W-2",
-        },
-        "tax_year": {
-            "type": "string",
-            "title": "Tax Year",
-            "description": "The tax year for this W-2 form",
-        },
-    },
-}
+# NOTE: All real test data (loan IDs, borrower names) are now configured in:
+# - DEFAULT_STARTING_MESSAGE (below) - for automatic agent startup
+# - planner_prompt.md - for agent instructions
+#
+# Individual tool tests are disabled - use --demo for full workflow testing
+# =============================================================================
 
 # =============================================================================
 # DOCREPO S3 STORAGE - Per-client S3 document storage
@@ -414,6 +384,75 @@ def _get_docrepo_signed_url(client_id: str, doc_id: str) -> dict[str, Any]:
 # =============================================================================
 # ENCOMPASS TOOLS - Tools for interacting with Encompass API
 # =============================================================================
+
+
+def _find_document_with_llm(documents: list[dict[str, Any]], target_type: str) -> dict[str, Any] | None:
+    """Use LLM to semantically match target document type to loan documents.
+    
+    Args:
+        documents: List of document dicts with title, documentId, documentType
+        target_type: Target document type (e.g., "W-2", "Bank Statement")
+        
+    Returns:
+        Matching document dict or None if no match found
+        
+    Example:
+        >>> docs = get_loan_documents(loan_id)
+        >>> w2_doc = _find_document_with_llm(docs, "W-2")
+        >>> print(w2_doc['title'])
+    """
+    import os
+    from langchain_anthropic import ChatAnthropic
+    
+    if not documents:
+        return None
+    
+    # Initialize LLM
+    llm = ChatAnthropic(
+        model="claude-sonnet-4-20250514",
+        api_key=os.getenv("ANTHROPIC_API_KEY"),
+        temperature=0  # Deterministic for document matching
+    )
+    
+    # Build document list for LLM with relevant details
+    doc_descriptions = []
+    for i, doc in enumerate(documents):
+        attachments = doc.get('attachments', [])
+        doc_descriptions.append(
+            f"{i+1}. Title: '{doc.get('title', 'Untitled')}' "
+            f"(Type: {doc.get('documentType', 'N/A')}, "
+            f"Attachments: {len(attachments)})"
+        )
+    
+    doc_list = "\n".join(doc_descriptions)
+    
+    # Create prompt for LLM
+    prompt = f"""You are helping find a {target_type} document in a loan file.
+
+Here are the available documents:
+
+{doc_list}
+
+Which document number (1-{len(documents)}) most likely contains {target_type} tax forms?
+
+Return ONLY the number (e.g., "5" for document 5). 
+If no document clearly matches, return "0"."""
+    
+    try:
+        response = llm.invoke(prompt)
+        match_num = int(response.content.strip())
+        
+        if 1 <= match_num <= len(documents):
+            return documents[match_num - 1]
+        else:
+            return None
+            
+    except (ValueError, AttributeError) as e:
+        # Failed to parse LLM response
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"[LLM_MATCH] Failed to parse LLM response: {e}")
+        return None
 
 
 def _get_encompass_client() -> EncompassConnect:
@@ -717,6 +756,304 @@ def write_loan_field(loan_id: str, field_id: str, value: Any) -> dict[str, Any]:
 
 
 @tool
+def find_loan(
+    tool_call_id: Annotated[str, InjectedToolCallId],
+    borrower_name: str | None = None,
+    loan_number: str | None = None,
+) -> Command:
+    """Find a loan by borrower name or loan number and save loan ID to state.
+
+    Use this tool to look up a loan when you have a borrower name or loan number
+    but need the loan GUID for other operations. The loan GUID is automatically
+    saved to state and used by all subsequent tools.
+
+    You must provide at least one search parameter (borrower_name or loan_number).
+    If multiple loans match the search, you will need to ask the user which loan
+    to use and then call this tool again with the loan_number to disambiguate.
+
+    Args:
+        borrower_name: Full borrower name in "LastName, FirstName MiddleName" format 
+                       as stored in Encompass (e.g., "Sorensen, Alva Scott")
+        loan_number: Loan number (e.g., "2509946673")
+
+    Returns:
+        Command that updates state with loan_id if exactly one match is found,
+        or returns matching loans for user disambiguation if multiple matches found.
+
+    Example:
+        >>> find_loan(borrower_name="Sorensen, Alva Scott")
+        # If one match: saves loan_id to state
+        # If multiple: returns list of loans for user to choose
+    """
+    import logging
+    import json
+    
+    logger = logging.getLogger(__name__)
+    
+    # Validate inputs
+    if not borrower_name and not loan_number:
+        error_result = {
+            "error": "Must provide either borrower_name or loan_number",
+            "matching_loans": [],
+            "count": 0
+        }
+        return Command(
+            update={
+                "messages": [
+                    ToolMessage(
+                        content=json.dumps(error_result),
+                        tool_call_id=tool_call_id
+                    )
+                ]
+            }
+        )
+    
+    # Search for loans
+    search_param = f"Name: {borrower_name}" if borrower_name else f"Number: {loan_number}"
+    logger.info(f"[FIND_LOAN] Searching for loan - {search_param}")
+    
+    client = _get_encompass_client()
+    
+    try:
+        results = client.search_loans_pipeline(
+            borrower_name=borrower_name,
+            loan_number=loan_number
+        )
+    except Exception as e:
+        logger.error(f"[FIND_LOAN] Search failed: {e}")
+        error_result = {
+            "error": f"Search failed: {str(e)}",
+            "matching_loans": [],
+            "count": 0
+        }
+        return Command(
+            update={
+                "messages": [
+                    ToolMessage(
+                        content=json.dumps(error_result),
+                        tool_call_id=tool_call_id
+                    )
+                ]
+            }
+        )
+    
+    # Handle results based on count
+    if len(results) == 0:
+        logger.warning(f"[FIND_LOAN] No loans found for {search_param}")
+        no_match_result = {
+            "error": f"No loans found matching {search_param}",
+            "matching_loans": [],
+            "count": 0
+        }
+        return Command(
+            update={
+                "messages": [
+                    ToolMessage(
+                        content=json.dumps(no_match_result),
+                        tool_call_id=tool_call_id
+                    )
+                ]
+            }
+        )
+    
+    if len(results) == 1:
+        # Exactly one match - save loan_id to state
+        loan = results[0]
+        loan_guid = loan["loanGuid"]
+        
+        logger.info(f"[FIND_LOAN] Found loan - GUID: {loan_guid[:8]}..., Number: {loan['loanNumber']}")
+        
+        success_result = {
+            "loan_id": loan_guid,
+            "loan_number": loan["loanNumber"],
+            "borrower_name": loan["borrowerName"],
+            "loan_folder": loan["loanFolder"],
+            "count": 1,
+            "message": f"Found loan and saved to state. Loan ID: {loan_guid}"
+        }
+        
+        return Command(
+            update={
+                "loan_id": loan_guid,  # Save to state for other tools
+                "messages": [
+                    ToolMessage(
+                        content=json.dumps(success_result),
+                        tool_call_id=tool_call_id
+                    )
+                ]
+            }
+        )
+    
+    # Multiple matches - ask user to disambiguate
+    logger.warning(f"[FIND_LOAN] Found {len(results)} loans matching {search_param}")
+    
+    multi_match_result = {
+        "count": len(results),
+        "matching_loans": [
+            {
+                "loan_number": loan["loanNumber"],
+                "borrower_name": loan["borrowerName"],
+                "loan_folder": loan["loanFolder"],
+                "loan_guid_preview": loan["loanGuid"][:12] + "..."
+            }
+            for loan in results
+        ],
+        "action_needed": "Multiple loans found. Please ask the user which loan to use, then call find_loan again with the specific loan_number to select the correct loan.",
+        "message": f"Found {len(results)} loans. User must choose one by loan number."
+    }
+    
+    return Command(
+        update={
+            "messages": [
+                ToolMessage(
+                    content=json.dumps(multi_match_result),
+                    tool_call_id=tool_call_id
+                )
+            ]
+        }
+    )
+
+
+@tool
+def find_attachment(
+    tool_call_id: Annotated[str, InjectedToolCallId],
+    loan_id: str,
+    target_document_type: str = "W-2",
+) -> Command:
+    """Find document attachment ID using LLM semantic matching and save to state.
+    
+    This tool gets all documents for a loan, uses an LLM to semantically match
+    the target document type to the correct document, retrieves its attachments,
+    and saves the first attachment ID to state for use in download phase.
+    
+    Args:
+        loan_id: The loan GUID (from state, set by find_loan in Phase 0)
+        target_document_type: Type of document to find (e.g., "W-2", "Bank Statement")
+        
+    Returns:
+        Command that updates state with attachment_id if a match is found
+        
+    Example:
+        >>> find_attachment(loan_id, "W-2")
+        # Uses LLM to find W-2 document, saves attachment_id to state
+    """
+    import logging
+    import json
+    
+    logger = logging.getLogger(__name__)
+    logger.info(f"[FIND_ATTACHMENT] Searching for {target_document_type} in loan {loan_id[:8]}...")
+    
+    client = _get_encompass_client()
+    
+    try:
+        # Get all documents for the loan (raw list for LLM processing)
+        documents = client.get_loan_documents_raw(loan_id)
+        logger.info(f"[FIND_ATTACHMENT] Found {len(documents)} total documents")
+        
+        # Create simplified document list for state (only title, documentId, attachment count)
+        simplified_docs = [
+            {
+                "title": doc.get("title", "Untitled"),
+                "documentId": doc.get("id"),  # API uses "id" not "documentId"
+                "attachment_count": len(doc.get("attachments", []))
+            }
+            for doc in documents
+        ]
+        
+        # Use LLM to find matching document
+        matched_doc = _find_document_with_llm(documents, target_document_type)
+        
+        if not matched_doc:
+            logger.warning(f"[FIND_ATTACHMENT] LLM could not find matching {target_document_type} document")
+            error_result = {
+                "error": f"No {target_document_type} document found",
+                "total_documents": len(documents),
+                "message": f"LLM could not identify a {target_document_type} document among {len(documents)} documents"
+            }
+            return Command(
+                update={
+                    "messages": [
+                        ToolMessage(
+                            content=json.dumps(error_result),
+                            tool_call_id=tool_call_id
+                        )
+                    ]
+                }
+            )
+        
+        doc_id = matched_doc.get('id') or matched_doc.get('documentId')  # API uses "id"
+        doc_title = matched_doc.get('title', 'Unknown')
+        logger.info(f"[FIND_ATTACHMENT] LLM matched: '{doc_title}' (ID: {doc_id[:12]}...)")
+        
+        # Get attachments for the matched document
+        attachments = matched_doc.get('attachments', [])
+        
+        if not attachments:
+            logger.warning(f"[FIND_ATTACHMENT] Document has no attachments")
+            error_result = {
+                "error": f"Matched document '{doc_title}' has no attachments",
+                "matched_document": doc_title,
+                "document_id": doc_id
+            }
+            return Command(
+                update={
+                    "messages": [
+                        ToolMessage(
+                            content=json.dumps(error_result),
+                            tool_call_id=tool_call_id
+                        )
+                    ]
+                }
+            )
+        
+        # Use the first attachment - API uses "entityId" not "attachmentId"
+        attachment_id = attachments[0].get('entityId') or attachments[0].get('attachmentId')
+        attachment_name = attachments[0].get('entityName', 'N/A')
+        logger.info(f"[FIND_ATTACHMENT] Found attachment: '{attachment_name}' ID: {attachment_id[:12]}...")
+        
+        # Create summary for response (don't include full document list in message)
+        success_result = {
+            "attachment_id": attachment_id,
+            "document_title": doc_title,
+            "document_id": doc_id,
+            "document_type": matched_doc.get('documentType', 'N/A'),
+            "total_attachments": len(attachments),
+            "total_documents_in_loan": len(documents),
+            "message": f"Found {target_document_type} document and saved attachment ID to state"
+        }
+        
+        return Command(
+            update={
+                "attachment_id": attachment_id,  # Save to state for Phase 3
+                "loan_documents": simplified_docs,  # Save simplified list to state (title + ID only)
+                "messages": [
+                    ToolMessage(
+                        content=json.dumps(success_result),
+                        tool_call_id=tool_call_id
+                    )
+                ]
+            }
+        )
+        
+    except Exception as e:
+        logger.error(f"[FIND_ATTACHMENT] Error: {e}")
+        error_result = {
+            "error": f"Failed to find attachment: {str(e)}",
+            "target_type": target_document_type
+        }
+        return Command(
+            update={
+                "messages": [
+                    ToolMessage(
+                        content=json.dumps(error_result),
+                        tool_call_id=tool_call_id
+                    )
+                ]
+            }
+        )
+
+
+@tool
 def download_loan_document(
     loan_id: str,
     attachment_id: str,
@@ -843,10 +1180,15 @@ def extract_document_data(
 
     This tool uses AI to extract specific fields from a PDF document based on a schema
     you provide. Pass the file_path from download_loan_document result.
+    
+    Extraction schemas are defined in extraction_schemas.py. Use get_extraction_schema()
+    to load the appropriate schema for your document type.
 
     Args:
         file_path: Path to the PDF file (from download_loan_document result)
-        extraction_schema: JSON schema defining what to extract. Format:
+        extraction_schema: JSON schema defining what to extract. 
+            Load using: get_extraction_schema("W-2") from extraction_schemas.py
+            Format:
             {
                 "type": "object",
                 "properties": {
@@ -865,30 +1207,13 @@ def extract_document_data(
         - doc_type: The document type you specified
         - extraction_method: The method used (landingai-agentic)
 
-    Example schema for W-2:
-        {
-            "type": "object",
-            "properties": {
-                "employer_name": {
-                    "type": "string",
-                    "title": "Employer Name",
-                    "description": "Name of the employer from W-2"
-                },
-                "employee_name": {
-                    "type": "string",
-                    "title": "Employee Name",
-                    "description": "Full name of the employee"
-                },
-                "wages": {
-                    "type": "number",
-                    "title": "Total Wages",
-                    "description": "Total wages from box 1"
-                }
-            }
-        }
-
     Example:
-        >>> schema = {"type": "object", "properties": {...}}
+        >>> from extraction_schemas import get_extraction_schema
+        >>> 
+        >>> # Get the W-2 schema
+        >>> schema = get_extraction_schema("W-2")
+        >>> 
+        >>> # Extract from downloaded document
         >>> download_result = download_loan_document(loan_id, attachment_id)
         >>> extract_document_data(download_result["file_path"], schema, "W2")
         {
@@ -1078,28 +1403,33 @@ def compare_extracted_data(comparison_rules: list[dict[str, Any]]) -> dict[str, 
 drawdoc_instructions = """You are an Encompass W-2 document validation assistant. Your ONLY job is to validate W-2 tax documents against loan entity data.
 
 CRITICAL RULES - FOLLOW THESE EXACTLY:
-- If you see ANY loan IDs or attachment IDs in a message → IMMEDIATELY create todos and run validation
+- If you see ANY borrower names or loan numbers in a message → IMMEDIATELY create todos and run validation
 - DO NOT ask for clarification or more information
 - DO NOT create documentation, markdown files, or guides  
 - We are ONLY testing READ operations and VALIDATION
 
-IMMEDIATE ACTIONS when you see loan/attachment IDs:
-1. write_todos - Create 4-phase validation plan (see planner_prompt.md)
-2. Execute Phase 1 immediately
-3. Execute ALL 4 phases in order:
-   Phase 1: get_loan_entity(loan_id) → get borrower name and employment history
-   Phase 2: download_loan_document(loan_id, attachment_id) → Download W-2, upload to S3
-   Phase 3: extract_document_data(file_path, schema, "W2") → extract employee/employer with AI
-   Phase 4: compare_extracted_data(rules) → validate consistency
+IMMEDIATE ACTIONS when you see borrower/loan identifiers:
+1. write_todos - Create 7-step validation plan (see planner_prompt.md)
+2. Execute Step 0 immediately
+3. Execute ALL 7 steps in order:
+   Step 0: find_loan(borrower_name) → Find loan GUID and save to state
+   Step 1: find_attachment(loan_id, "W-2") → Use LLM to find W-2 attachment, save to state
+   Step 2: get_loan_entity(loan_id) → Get borrower name and employment (use loan_id from state)
+   Step 3: download_loan_document(loan_id, attachment_id) → Retrieve W-2 (use both from state)
+   Step 4: extract_document_data(file_path, schema, "W2") → Extract employee/employer with AI
+   Step 5: compare_extracted_data(rules) → Validate consistency
+   Step 6: write_file(validation_report.md) → Save final validation report
 
 IMPORTANT NOTES:
 - Large responses are automatically saved to files to avoid token limits
 - Tools return file_path for saved data - you can read files if needed with read_file tool
 - Pass the file_path from download_loan_document result to extract_document_data
-- Phase 2 uploads documents to S3 for UI access - s3_info contains client_id, doc_id, and upload status
+- Step 0 saves loan_id to state - all subsequent tools use this automatically
+- Step 1 uses LLM to find W-2 document and saves attachment_id to state
+- Step 3 uploads documents to S3 for UI access - s3_info contains client_id, doc_id, and upload status
 - Keep validation reports clear and concise - focus on results, not methodology
 
-If message has loan IDs = START VALIDATION IMMEDIATELY. Do not ask questions."""
+If message has borrower name/loan number = START VALIDATION IMMEDIATELY. Do not ask questions."""
 
 # Load local planning prompt if it exists
 planner_prompt_file = Path(__file__).parent / "planner_prompt.md"
@@ -1107,13 +1437,16 @@ planning_prompt = planner_prompt_file.read_text() if planner_prompt_file.exists(
 
 # Define the default starting message for automatic W-2 validation testing
 # This message will be automatically injected when the agent starts with no messages
-# The actual test IDs are defined in the planning prompt
-DEFAULT_STARTING_MESSAGE = """Run the W-2 validation test using the configured test loan and W-2 attachment."""
+# The actual test values (borrower name, loan number) are defined in the planning prompt
+DEFAULT_STARTING_MESSAGE = """Run the W-2 validation test for borrower: Sorensen, Alva Scott."""
 
-# Minimal middleware to add loan_files state field
+# Minimal middleware to add loan_files, loan_id, attachment_id, and loan_documents state fields
 class LoanFilesState(AgentState):
-    """State schema with loan_files field."""
+    """State schema with loan_files, loan_id, attachment_id, and loan_documents fields."""
     loan_files: NotRequired[dict[str, dict]]
+    loan_id: NotRequired[str]  # Stores the loan GUID from find_loan tool
+    attachment_id: NotRequired[str]  # Stores the W-2 attachment ID from find_attachment tool
+    loan_documents: NotRequired[list[dict]]  # Simplified list: [{title, documentId, attachment_count}]
 
 class LoanFilesMiddleware(AgentMiddleware):
     """Minimal middleware that adds loan_files to state."""
@@ -1131,6 +1464,8 @@ agent = create_deep_agent(
     planning_prompt=planning_prompt,
     default_starting_message=DEFAULT_STARTING_MESSAGE,
     tools=[
+        find_loan,
+        find_attachment,
         read_loan_fields,
         get_loan_documents,
         get_loan_entity,
@@ -1147,150 +1482,46 @@ agent = create_deep_agent(
 
 
 def test_encompass_tools():
-    """Test the Encompass tools with sample data using hardcoded test values."""
+    """Individual tool testing is disabled - use --demo for full workflow."""
     print("=" * 80)
-    print("Testing DrawDoc-AWM Agent with Encompass Tools")
+    print("Individual Tool Testing")
     print("=" * 80)
     print()
-    print("Using test data:")
-    print(f"  TEST_LOAN_ID: {TEST_LOAN_ID}")
-    print(f"  TEST_LOAN_WITH_DOCS: {TEST_LOAN_WITH_DOCS}")
-    print(f"  TEST_ATTACHMENT_ID: {TEST_ATTACHMENT_ID}")
-    print(f"  TEST_FIELD_IDS: {TEST_FIELD_IDS}")
+    print("❌ Individual tool tests are disabled.")
     print()
-
-    # Test 1: Read fields
-    print("Test 1: Reading loan fields...")
-    try:
-        result = read_loan_fields.invoke(
-            {"loan_id": TEST_LOAN_ID, "field_ids": TEST_FIELD_IDS}
-        )
-        print(f"✅ Success: {result}")
-    except Exception as e:
-        print(f"❌ Error: {e}")
+    print("The DrawDoc-AWM agent now uses a fully integrated workflow where:")
+    print("  - Loan IDs are found dynamically by borrower name")
+    print("  - Attachment IDs are found using LLM semantic matching")
+    print("  - All data flows through state")
     print()
-
-    # Test 2: Get loan documents
-    print("Test 2: Getting loan documents list...")
-    try:
-        result = get_loan_documents.invoke({"loan_id": TEST_LOAN_WITH_DOCS, "max_documents": 5})
-        print(f"✅ Success: Found {result['total_documents']} documents with {result['total_attachments']} attachments")
-        print(f"   Full list saved to: {result.get('file_path', 'N/A')}")
-        if result.get('sample_documents'):
-            print(f"   First document: {result['sample_documents'][0].get('title', 'N/A')}")
-            print(f"   Sample shows {result['showing_first']} of {result['total_documents']} documents")
-    except Exception as e:
-        print(f"❌ Error: {e}")
+    print("To test the complete 7-step workflow:")
+    print("  python drawdoc_agent.py --demo")
     print()
-
-    # Test 3: Get loan entity
-    print("Test 3: Getting complete loan entity...")
-    try:
-        result = get_loan_entity.invoke({"loan_id": TEST_LOAN_ID})
-        print(f"✅ Success: Retrieved {result['field_count']} fields")
-        print(f"   Loan Number: {result.get('loan_number', 'N/A')}")
-        print(f"   Full data saved to: {result.get('file_path', 'N/A')}")
-        if result.get('key_fields'):
-            print(f"   Key fields: {list(result['key_fields'].keys())}")
-    except Exception as e:
-        print(f"❌ Error: {e}")
-    print()
-
-    # Test 4: Download document
-    print("Test 4: Downloading document...")
-    try:
-        result = download_loan_document.invoke(
-            {
-                "loan_id": TEST_LOAN_WITH_DOCS,
-                "attachment_id": TEST_ATTACHMENT_ID,
-            }
-        )
-        print(f"✅ Success: Downloaded {result['file_size_bytes']} bytes ({result['file_size_kb']} KB)")
-        if "file_path" in result:
-            print(f"   Saved to: {result['file_path']}")
-    except Exception as e:
-        print(f"❌ Error: {e}")
-    print()
-
-    # Test 5: Extract data
-    print("Test 5: Extracting data with LandingAI...")
-    try:
-        # First download the document
-        doc_result = download_loan_document.invoke(
-            {
-                "loan_id": TEST_LOAN_WITH_DOCS,
-                "attachment_id": TEST_ATTACHMENT_ID,
-            }
-        )
-
-        # Use the pre-configured W-2 schema
-        extract_result = extract_document_data.invoke(
-            {
-                "file_path": doc_result["file_path"],
-                "extraction_schema": TEST_W2_SCHEMA,
-                "document_type": "W2",
-            }
-        )
-
-        print(f"✅ Success: Extracted data:")
-        import json
-
-        print(json.dumps(extract_result.get("extracted_schema", {}), indent=2))
-    except Exception as e:
-        print(f"❌ Error: {e}")
-        import traceback
-
-        traceback.print_exc()
-    print()
-
-    print("=" * 80)
-    print("Tests complete!")
     print("=" * 80)
 
 
 def demo_agent_workflow():
-    """Demonstrate the agent workflow with a complete 5-phase test using test data."""
+    """Demonstrate the agent workflow using DEFAULT_STARTING_MESSAGE."""
     from langchain_core.messages import HumanMessage
 
     print("=" * 80)
-    print("Demo: Agent Workflow - Complete 5-Phase Encompass Test")
+    print("Demo: Agent Workflow - Complete 7-Step W-2 Validation")
     print("=" * 80)
     print()
-    print("Using test data:")
-    print(f"  TEST_LOAN_ID: {TEST_LOAN_ID}")
-    print(f"  TEST_LOAN_WITH_DOCS: {TEST_LOAN_WITH_DOCS}")
-    print(f"  TEST_ATTACHMENT_ID: {TEST_ATTACHMENT_ID}")
-    print(f"  TEST_FIELD_IDS: {TEST_FIELD_IDS}")
+    print("This demo uses the DEFAULT_STARTING_MESSAGE which contains:")
+    print("  - Borrower Name: Sorensen, Alva Scott")
+    print("  - Loan Number: 2509946673")
+    print()
+    print("The agent will automatically:")
+    print("  - Find the loan GUID from the borrower name")
+    print("  - Use LLM to find the W-2 document attachment")
+    print("  - Complete the full validation workflow")
+    print()
+    print("Starting agent with default message...")
     print()
 
-    # Define the comprehensive task using test constants
-    task = f"""Test all Encompass READ operations. Execute the complete 5-phase test:
-
-Phase 1: Read loan fields from loan {TEST_LOAN_ID}
-- Get fields: {', '.join(TEST_FIELD_IDS)} (Loan Amount, First Name, Last Name, Loan Number)
-
-Phase 2: Get loan documents list from loan {TEST_LOAN_WITH_DOCS}
-- Show all documents and attachments available
-
-Phase 3: Get complete loan entity from loan {TEST_LOAN_ID}
-- Show field count and loan number
-
-Phase 4: Download the W-2 document
-- Loan: {TEST_LOAN_WITH_DOCS}
-- Attachment: {TEST_ATTACHMENT_ID}
-
-Phase 5: Extract data from the W-2 document
-- Extract: employer name, employee name, and tax year
-
-Create a plan with write_todos and execute all 5 phases, showing results for each."""
-
-    print(f"Task: {task}")
-    print()
-    print("Invoking agent...")
-    print()
-
-    # Invoke the agent
-    result = agent.invoke({"messages": [HumanMessage(content=task)]})
+    # Invoke the agent with the DEFAULT_STARTING_MESSAGE
+    result = agent.invoke({"messages": [HumanMessage(content=DEFAULT_STARTING_MESSAGE)]})
 
     # Print the results
     print("=" * 80)
@@ -1324,24 +1555,24 @@ if __name__ == "__main__":
         print("This agent provides Encompass document processing capabilities.")
         print()
         print("Available commands:")
-        print("  --test-tools  Test individual Encompass tools (5 comprehensive READ tests)")
-        print("  --demo        Run complete 5-phase agent workflow with planning")
+        print("  --test-tools  (Disabled - use --demo instead)")
+        print("  --demo        Run complete 7-step agent workflow with automatic lookup")
         print()
-        print("5-Phase Test Flow:")
-        print("  Phase 1: read_loan_fields       - Read specific field values")
-        print("  Phase 2: get_loan_documents     - List all documents and attachments")
-        print("  Phase 3: get_loan_entity        - Get complete loan data")
-        print("  Phase 4: download_loan_document - Download document attachments")
-        print("  Phase 5: extract_document_data  - AI extraction of structured data")
-        print()
-        print("Additional tools:")
-        print("  - write_loan_field - Write/update field values (not used in READ tests)")
+        print("7-Step Validation Flow:")
+        print("  Step 0: find_loan           - Find loan GUID by borrower name")
+        print("  Step 1: find_attachment     - Find W-2 attachment using LLM")
+        print("  Step 2: get_loan_entity     - Get borrower info and employment")
+        print("  Step 3: download_document   - Retrieve W-2 document")
+        print("  Step 4: extract_data        - AI extraction of W-2 fields")
+        print("  Step 5: compare_data        - Validate consistency")
+        print("  Step 6: save_report         - Save validation report")
         print()
         print("Configuration:")
-        print("  - API credentials are loaded from .env file")
-        print("  - Test data (loan IDs, attachment IDs) defined in TEST_* constants")
+        print("  - API credentials loaded from .env file")
+        print("  - Test borrower/loan configured in DEFAULT_STARTING_MESSAGE")
         print()
         print("Example usage:")
-        print("  python drawdoc_agent.py --test-tools  # Run 5 individual tool tests")
-        print("  python drawdoc_agent.py --demo        # Run full workflow with agent")
+        print("  python drawdoc_agent.py --demo        # Run full 7-step workflow")
+        print()
+        print("The agent will automatically find loan and attachment IDs at runtime.")
         print()
