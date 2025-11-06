@@ -1,0 +1,16 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "drawdoc-awm": "./drawdoc_agent.py:agent"
+  },
+  "env": ".env",
+    "default_input": {
+        "messages": [
+            {
+                "role": "user",
+                "content": "Validate W-2 document data against loan entity.\n\nLoan ID: 387596ee-7090-47ca-8385-206e22c9c9da\nW-2 Attachment ID: d78186cc-a8a2-454f-beaf-19f0e6c3aa8c\n\nYour task:\n1. Get loan entity with borrower name and employment history\n2. Download and extract W-2 data (employee name, employer name, tax year)\n3. Compare W-2 data with loan entity to validate consistency\n4. Report if employee matches borrower and if employer is in employment history (current or previous)\n\nCreate a plan and execute the validation."
+            }
+        ]
+    }
+}
+
