@@ -548,7 +548,7 @@ git push origin main
 DrawDoc-AWM/
 ├── drawdoc_agent.py       # Main agent with 6 tools (5 READ + 1 WRITE)
 ├── planner_prompt.md      # 5-phase testing workflow
-├── requirements.txt       # Dependencies (copilotagent>=0.1.9)
+├── requirements.txt       # Dependencies (copilotagent>=0.1.20)
 ├── langgraph.json         # LangGraph Cloud config
 ├── .env                   # Local credentials (gitignored)
 ├── .env.example           # Template for credentials
@@ -580,7 +580,7 @@ DrawDoc-AWM/
 ## 📊 Dependencies
 
 ```txt
-copilotagent>=0.1.9         # Core framework (from PyPI)
+copilotagent>=0.1.20        # Core framework (from PyPI)
 langchain>=1.0.0            # LangChain framework
 langchain-anthropic>=1.0.0  # Claude model
 langchain-core>=1.0.0       # LangChain core
