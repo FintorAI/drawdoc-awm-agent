@@ -2,7 +2,7 @@
 
 ## Overview
 
-The DrawDoc-AWM agent now supports optional Station and Server middleware from `copilotagent>=0.1.14` for coordinating tool execution with CuteAgent's StationAgent.
+The DrawDoc-AWM agent now supports optional Station and Server middleware from `copilotagent>=0.1.20` for coordinating tool execution with CuteAgent's StationAgent.
 
 ## Environment Variables Required
 
@@ -164,7 +164,7 @@ python3 -c "from copilotagent.middleware import StationMiddleware, ServerMiddlew
 
 ## Current Status
 
-- ✅ `copilotagent>=0.1.14` with middleware support
+- ✅ `copilotagent>=0.1.20` with middleware support
 - ✅ `cuteagent>=0.2.24` for StationAgent integration
 - ⚠️ Middleware are **optional** - tools work without them
 - ⚠️ Configure `.env` file with `STATION_TOKEN` to enable

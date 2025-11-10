@@ -1,4 +1,4 @@
-copilotagent>=0.1.14
+copilotagent>=0.1.20
 cuteagent>=0.2.24
 langchain>=1.0.0
 langchain-anthropic>=1.0.0
