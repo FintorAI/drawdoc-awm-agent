@@ -1,0 +1,12 @@
+{
+  "loan_id": null,
+  "prep_output_summary": {
+    "documents_processed": null,
+    "total_documents": null
+  },
+  "validation_results": [],
+  "corrections_made": [],
+  "missing_documents": [],
+  "status": "unknown",
+  "messages_count": 10
+}
