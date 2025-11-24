@@ -50,3 +50,9 @@ Thumbs.db
 local_*
 
 tmp/
+
+# Downloaded documents
+assets/
+assets-*/
+preparation_agent/assets/
+preparation_agent/assets-*/

@@ -1,0 +1,21 @@
+{
+  "description": "Input schema for Preparation Agent",
+  "type": "object",
+  "properties": {
+    "loan_id": {
+      "type": "string",
+      "description": "Encompass loan GUID",
+      "example": "387596ee-7090-47ca-8385-206e22c9c9da"
+    },
+    "document_types": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Optional: Filter by document types (e.g., ['W-2', 'Bank Statement']). If not provided, processes all documents with extraction schemas.",
+      "example": ["W-2", "W2"]
+    }
+  },
+  "required": ["loan_id"]
+}
+

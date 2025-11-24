@@ -1406,19 +1406,19 @@ CRITICAL RULES - FOLLOW THESE EXACTLY:
 - If you see ANY borrower names or loan numbers in a message → IMMEDIATELY create todos and run validation
 - DO NOT ask for clarification or more information
 - DO NOT create documentation, markdown files, or guides  
+- DO NOT write to Encompass - we are ONLY doing READ operations and VALIDATION
 - We are ONLY testing READ operations and VALIDATION
 
 IMMEDIATE ACTIONS when you see borrower/loan identifiers:
-1. write_todos - Create 7-step validation plan (see planner_prompt.md)
+1. write_todos - Create 6-step validation plan (see planner_prompt.md)
 2. Execute Step 0 immediately
-3. Execute ALL 7 steps in order:
+3. Execute ALL 6 steps in order:
    Step 0: find_loan(borrower_name) → Find loan GUID and save to state
    Step 1: find_attachment(loan_id, "W-2") → Use LLM to find W-2 attachment, save to state
    Step 2: get_loan_entity(loan_id) → Get borrower name and employment (use loan_id from state)
    Step 3: download_loan_document(loan_id, attachment_id) → Retrieve W-2 (use both from state)
    Step 4: extract_document_data(file_path, schema, "W2") → Extract employee/employer with AI
-   Step 5: compare_extracted_data(rules) → Validate consistency
-   Step 6: write_file(validation_report.md) → Save final validation report
+   Step 5: compare_extracted_data(rules) → Validate consistency and return results
 
 IMPORTANT NOTES:
 - Large responses are automatically saved to files to avoid token limits
@@ -1469,7 +1469,6 @@ agent = create_deep_agent(
         read_loan_fields,
         get_loan_documents,
         get_loan_entity,
-        write_loan_field,
         download_loan_document,
         extract_document_data,
         compare_extracted_data,
