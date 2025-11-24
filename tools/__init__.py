@@ -3,6 +3,7 @@ Tools package for the Verification Sub-Agent.
 """
 
 from .verification_tools import (
+    compare_prep_vs_encompass_value,
     verify_field_against_documents,
     cross_check_field_with_sop,
     attempt_field_inference,
@@ -15,6 +16,7 @@ from .field_lookup_tools import (
 )
 
 __all__ = [
+    "compare_prep_vs_encompass_value",
     "verify_field_against_documents",
     "cross_check_field_with_sop",
     "attempt_field_inference",

@@ -1,0 +1,83 @@
+{
+  "loan_id": "387596ee-7090-47ca-8385-206e22c9c9da",
+  "total_documents_found": 172,
+  "documents_processed": 17,
+  "results": {
+    "extracted_entities": {
+      "Escrow wire instruction": {
+        "overwire_amount": 0
+      },
+      "Title Report": {
+        "borrower_vesting_type": "Christopher Berger and Alva Scott Sorensen",
+        "escrow_company_name": "Truly Title, Inc.",
+        "loan_amount": 152625,
+        "title_insurance_company_name": "Old Republic National Title Insurance Company"
+      },
+      "LE": {
+        "fees_appraisal_fee_borr": 0,
+        "fees_credit_report_borr": 0,
+        "fees_loan_discount_fee_borr": 0,
+        "fees_loan_origination_fee_borr": 0,
+        "fees_process_fee_borr": 0,
+        "fees_tax_svc_fee_borr": 0,
+        "fees_underwriting_fee_apr": 0,
+        "fees_va_fund_fee_borr": 0,
+        "lo_compensation_borrower_paid_discount_point_amount_line_1": 0
+      },
+      "Loan Estimate": {
+        "impound_types": "YES"
+      },
+      "1003": {
+        "loan_amount": 132275.0
+      },
+      "Appraisal": {
+        "appraised_value": 290000
+      },
+      "Closing Disclosure": {
+        "cd3_total_closing_cost_j": 7524.0,
+        "closing_disclosure_j_total_closing_costs_borrower_paid": 7524.0,
+        "closing_disclosure_total_cash_to_close": "$168,259.37",
+        "closing_disclosure_lender_credits_at_closing": "$0",
+        "late_charge_%": "4%",
+        "loan_costs": 4944.0,
+        "negative_amortization": "do not have a negative amortization feature",
+        "other_costs": 2580.0,
+        "partial_payments_apply_partial_payment": "does not accept any partial payments"
+      },
+      "ID": {
+        "borrower_first_name": "Alva",
+        "borrower_first_middle_name": "Alva Scott",
+        "borrower_last_name": "Sorensen"
+      }
+    },
+    "field_mappings": {
+      "4008": "Christopher Berger and Alva Scott Sorensen",
+      "610": "Truly Title, Inc.",
+      "1109": 152625,
+      "411": "Old Republic National Title Insurance Company",
+      "2294": "YES",
+      "356": 290000,
+      "CD3.X82": 11517.98,
+      "CD2.XSTJ": 11517.98,
+      "CD1.X69": "$168,259.37",
+      "CD2.X1": "$0",
+      "674": "4%",
+      "CD2.XSTD": 8914.46,
+      "CD4.X2": "do not have a negative amortization feature",
+      "CD2.XSTI": 2603.52,
+      "CD4.X3": "does not accept any partial payments",
+      "4000": "Alva",
+      "36": "Alva Scott",
+      "4002": "Sorensen"
+    }
+  },
+  "timing": {
+    "total_time_seconds": 379.87,
+    "total_time_minutes": 6.33,
+    "average_time_per_document_seconds": 22.03,
+    "get_documents_time_seconds": 5.36,
+    "preload_schemas_time_seconds": 0.0,
+    "processing_time_seconds": 374.51,
+    "aggregation_time_seconds": 0.0
+  }
+}

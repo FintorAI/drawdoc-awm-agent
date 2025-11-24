@@ -1,12 +1,168 @@
 {
-  "loan_id": null,
+  "loan_id": "387596ee-7090-47ca-8385-206e22c9c9da",
   "prep_output_summary": {
-    "documents_processed": null,
-    "total_documents": null
+    "documents_processed": 17,
+    "total_documents": 172,
+    "fields_in_prep": 18
   },
-  "validation_results": [],
-  "corrections_made": [],
-  "missing_documents": [],
-  "status": "unknown",
-  "messages_count": 10
+  "corrections_made": [
+    {
+      "field_id": "4008",
+      "field_name": "4008",
+      "source_document": null,
+      "corrected_value": "Christopher Berger and Alva Scott Sorensen",
+      "reason": "Document mismatch - Title Report shows full borrower vesting names",
+      "finding": "Field 4008 mismatch: Prep='Christopher Berger and Alva Scott Sorensen' vs Encompass='Individual'",
+      "success": true,
+      "dry_run": true,
+      "timestamp": "2025-11-24 19:41:01.440320"
+    },
+    {
+      "field_id": "610",
+      "field_name": "610",
+      "source_document": null,
+      "corrected_value": "Truly Title, Inc.",
+      "reason": "Document mismatch - Missing comma and period in company name",
+      "finding": "Field 610 mismatch: Prep='Truly Title, Inc.' vs Encompass='Truly Title Inc'",
+      "success": true,
+      "dry_run": true,
+      "timestamp": "2025-11-24 19:41:01.448121"
+    },
+    {
+      "field_id": "1109",
+      "field_name": "1109",
+      "source_document": null,
+      "corrected_value": 152625,
+      "reason": "Document mismatch - Loan amount incorrect in Encompass",
+      "finding": "Field 1109 mismatch: Prep='152625' vs Encompass='150,000.00'",
+      "success": true,
+      "dry_run": true,
+      "timestamp": "2025-11-24 19:41:01.415708"
+    },
+    {
+      "field_id": "2294",
+      "field_name": "2294",
+      "source_document": null,
+      "corrected_value": "YES",
+      "reason": "Document mismatch - Impound types field was empty in Encompass",
+      "finding": "Field 2294 mismatch: Prep='YES' vs Encompass=''",
+      "success": true,
+      "dry_run": true,
+      "timestamp": "2025-11-24 19:41:01.378469"
+    },
+    {
+      "field_id": "356",
+      "field_name": "356",
+      "source_document": null,
+      "corrected_value": 290000,
+      "reason": "Document mismatch - Formatting difference (removed comma)",
+      "finding": "Field 356 mismatch: Prep='290000' vs Encompass='290,000'",
+      "success": true,
+      "dry_run": true,
+      "timestamp": "2025-11-24 19:41:01.391231"
+    },
+    {
+      "field_id": "CD3.X82",
+      "field_name": "CD3.X82",
+      "source_document": null,
+      "corrected_value": 11517.98,
+      "reason": "Document mismatch - Total closing cost J amount incorrect",
+      "finding": "Field CD3.X82 mismatch: Prep='11517.98' vs Encompass='7,524.00'",
+      "success": true,
+      "dry_run": true,
+      "timestamp": "2025-11-24 19:41:01.313938"
+    },
+    {
+      "field_id": "CD2.XSTJ",
+      "field_name": "CD2.XSTJ",
+      "source_document": null,
+      "corrected_value": 11517.98,
+      "reason": "Document mismatch - Total closing costs borrower paid amount incorrect",
+      "finding": "Field CD2.XSTJ mismatch: Prep='11517.98' vs Encompass='7,524.00'",
+      "success": true,
+      "dry_run": true,
+      "timestamp": "2025-11-24 19:41:01.406085"
+    },
+    {
+      "field_id": "CD1.X69",
+      "field_name": "CD1.X69",
+      "source_document": null,
+      "corrected_value": "$168,259.37",
+      "reason": "Document mismatch - Missing dollar sign in Encompass",
+      "finding": "Field CD1.X69 mismatch: Prep='$168,259.37' vs Encompass='168,259.37'",
+      "success": true,
+      "dry_run": true,
+      "timestamp": "2025-11-24 19:41:01.353410"
+    },
+    {
+      "field_id": "CD2.X1",
+      "field_name": "CD2.X1",
+      "source_document": null,
+      "corrected_value": "$0",
+      "reason": "Document mismatch - Lender credits field was empty in Encompass",
+      "finding": "Field CD2.X1 mismatch: Prep='$0' vs Encompass=''",
+      "success": true,
+      "dry_run": true,
+      "timestamp": "2025-11-24 19:41:01.422465"
+    },
+    {
+      "field_id": "674",
+      "field_name": "674",
+      "source_document": null,
+      "corrected_value": "4%",
+      "reason": "Document mismatch - Missing percentage symbol in Encompass",
+      "finding": "Field 674 mismatch: Prep='4%' vs Encompass='4.0'",
+      "success": true,
+      "dry_run": true,
+      "timestamp": "2025-11-24 19:41:01.401182"
+    },
+    {
+      "field_id": "CD2.XSTD",
+      "field_name": "CD2.XSTD",
+      "source_document": null,
+      "corrected_value": 8914.46,
+      "reason": "Document mismatch - Loan costs amount incorrect in Encompass",
+      "finding": "Field CD2.XSTD mismatch: Prep='8914.46' vs Encompass='4,944.00'",
+      "success": true,
+      "dry_run": true,
+      "timestamp": "2025-11-24 19:41:01.428612"
+    },
+    {
+      "field_id": "CD4.X2",
+      "field_name": "CD4.X2",
+      "source_document": null,
+      "corrected_value": "do not have a negative amortization feature",
+      "reason": "Document mismatch - Full disclosure text missing from Encompass",
+      "finding": "Field CD4.X2 mismatch: Prep='do not have a negative amortization feature' vs Encompass='none'",
+      "success": true,
+      "dry_run": true,
+      "timestamp": "2025-11-24 19:41:01.399732"
+    },
+    {
+      "field_id": "CD2.XSTI",
+      "field_name": "CD2.XSTI",
+      "source_document": null,
+      "corrected_value": 2603.52,
+      "reason": "Document mismatch - Other costs amount incorrect in Encompass",
+      "finding": "Field CD2.XSTI mismatch: Prep='2603.52' vs Encompass='2,580.00'",
+      "success": true,
+      "dry_run": true,
+      "timestamp": "2025-11-24 19:41:01.363026"
+    },
+    {
+      "field_id": "CD4.X3",
+      "field_name": "CD4.X3",
+      "source_document": null,
+      "corrected_value": "does not accept any partial payments",
+      "reason": "Document mismatch - Partial payments disclosure text missing from Encompass",
+      "finding": "Field CD4.X3 mismatch: Prep='does not accept any partial payments' vs Encompass=''",
+      "success": true,
+      "dry_run": true,
+      "timestamp": "2025-11-24 19:41:01.331542"
+    }
+  ],
+  "total_corrections": 14,
+  "messages_count": 73,
+  "agent_ran_successfully": true,
+  "log_file": "C:\\Users\\Naomi\\OneDrive\\Desktop\\FINTOR\\drawdoc-awm-agent\\logs\\verification_test_20251124_193804.log"
 }

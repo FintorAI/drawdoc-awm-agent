@@ -1,8 +1,8 @@
 """
 Verification tools for the Verification Sub-Agent.
 
-These tools perform fail-fast document cross-checking, SOP validation,
-field inference, and field correction writing.
+These tools perform value comparison between prep output and Encompass,
+SOP validation, and field correction writing.
 """
 
 import os
@@ -40,6 +40,72 @@ def _get_encompass_client() -> EncompassConnect:
         },
         landingai_api_key=os.getenv("LANDINGAI_API_KEY", ""),
     )
+
+
+@tool
+def compare_prep_vs_encompass_value(
+    field_id: str,
+    prep_value: Any,
+    encompass_value: Any,
+    field_mapping: dict
+) -> dict[str, Any]:
+    """
+    Compare prep output value (correct) against Encompass value (potentially wrong).
+    
+    This is the primary verification tool. Prep output values are considered CORRECT
+    (extracted from documents), and Encompass values may need correction.
+    
+    Args:
+        field_id: The Encompass field ID
+        prep_value: The correct value from prep output (extracted from documents)
+        encompass_value: The current value in Encompass
+        field_mapping: Field mapping configuration from CSV
+        
+    Returns:
+        Dictionary containing:
+        - field_id: The field ID
+        - field_name: The field name
+        - match: True if values match, False if they differ
+        - prep_value: The correct value from prep output
+        - encompass_value: The current Encompass value
+        - finding: Human-readable description of comparison result
+        - needs_correction: True if Encompass needs to be corrected
+        - reason: Detailed explanation if mismatch found
+    """
+    field_name = field_mapping.get(field_id, {}).get("field_name", field_id) if field_id in field_mapping else field_id
+    
+    # Handle None/empty values
+    prep_str = str(prep_value).strip() if prep_value is not None else ""
+    encompass_str = str(encompass_value).strip() if encompass_value is not None else ""
+    
+    # Normalize for comparison (case-insensitive, strip whitespace)
+    prep_normalized = prep_str.lower()
+    encompass_normalized = encompass_str.lower()
+    
+    match = prep_normalized == encompass_normalized
+    
+    if match:
+        return {
+            "field_id": field_id,
+            "field_name": field_name,
+            "match": True,
+            "prep_value": prep_value,
+            "encompass_value": encompass_value,
+            "finding": f"Field {field_name} matches: '{prep_value}'",
+            "needs_correction": False,
+            "reason": None
+        }
+    else:
+        return {
+            "field_id": field_id,
+            "field_name": field_name,
+            "match": False,
+            "prep_value": prep_value,
+            "encompass_value": encompass_value,
+            "finding": f"Field {field_name} mismatch: Prep='{prep_value}' vs Encompass='{encompass_value}'",
+            "needs_correction": True,
+            "reason": f"Prep output shows '{prep_value}' (extracted from documents) but Encompass has '{encompass_value}'. Encompass value needs correction."
+        }
 
 
 @tool
@@ -452,7 +518,8 @@ def write_corrected_field(
     field_id: str,
     corrected_value: Any,
     reason: str,
-    finding: str
+    finding: str,
+    field_mapping: dict = None
 ) -> Command:
     """
     Write corrected value back to Encompass field.
@@ -460,46 +527,76 @@ def write_corrected_field(
     Updates an Encompass field with a corrected value and records the correction
     in the agent state for tracking and reporting.
     
+    ⚠️ DRY RUN MODE: Set environment variable DRY_RUN=true to prevent actual writes.
+    In dry run mode, corrections are logged but NOT written to Encompass.
+    
     Args:
         loan_id: The Encompass loan GUID
         field_id: The field ID to update
         corrected_value: The corrected value to write
         reason: Why the correction was needed (e.g., "SOP violation", "Document mismatch")
         finding: Detailed explanation of what was wrong
+        field_mapping: Field mapping configuration (optional, used to get source document)
         
     Returns:
         Command that updates state with correction record
     """
-    # Write the field to Encompass
-    client = _get_encompass_client()
-    success = client.write_field(loan_id, field_id, corrected_value)
+    # Get source document info from field mapping
+    source_document = None
+    field_name = field_id
+    if field_mapping and field_id in field_mapping:
+        mapping = field_mapping[field_id]
+        field_name = mapping.get("field_name", field_id)
+        source_document = mapping.get("primary_document", "Unknown")
+    
+    # Check if DRY RUN mode is enabled
+    dry_run = os.getenv("DRY_RUN", "false").lower() in ("true", "1", "yes")
+    
+    if dry_run:
+        # DRY RUN MODE - Don't actually write to Encompass
+        print(f"\n{'='*80}")
+        print(f"🔍 DRY RUN - Field Correction (NOT written to Encompass)")
+        print(f"{'='*80}")
+        print(f"Loan ID:         {loan_id}")
+        print(f"Field ID:        {field_id}")
+        print(f"Field Name:      {field_name}")
+        print(f"Source Document: {source_document}")
+        print(f"Corrected Value: {corrected_value}")
+        print(f"Finding:         {finding}")
+        print(f"Reason:          {reason}")
+        print(f"{'='*80}\n")
+        
+        success = True  # Simulated success
+        message = f"🔍 [DRY RUN] Would correct field {field_id} to '{corrected_value}'. Reason: {reason}"
+    else:
+        # PRODUCTION MODE - Actually write to Encompass
+        print(f"\n⚠️  WRITING TO ENCOMPASS: Field {field_id} → '{corrected_value}'")
+        client = _get_encompass_client()
+        success = client.write_field(loan_id, field_id, corrected_value)
+        message = f"✓ Corrected field {field_id} to '{corrected_value}'. Reason: {reason}"
     
     # Create correction record
     correction_record = {
         "field_id": field_id,
+        "field_name": field_name,
+        "source_document": source_document,
         "corrected_value": corrected_value,
         "reason": reason,
         "finding": finding,
         "success": success,
+        "dry_run": dry_run,
         "timestamp": str(datetime.now())
     }
     
-    # Return Command to update state
-    return Command(
-        update={
-            "corrections_made": [correction_record]  # Will be appended to list in state
-        },
-        messages=[
-            ToolMessage(
-                content=f"✓ Corrected field {field_id} to '{corrected_value}'. Reason: {reason}",
-                tool_call_id=tool_call_id
-            )
-        ]
-    )
+    # Return the correction record directly
+    # Note: Command doesn't support messages parameter in this version
+    return correction_record
 
 
 if __name__ == "__main__":
     """Test the verification tools."""
     print("Verification tools loaded successfully")
-    print(f"Available tools: verify_field_against_documents, cross_check_field_with_sop, attempt_field_inference, write_corrected_field")
+    print(f"Primary tools: compare_prep_vs_encompass_value, write_corrected_field")
+    print(f"Optional tools: cross_check_field_with_sop")
+    print(f"Legacy tools: verify_field_against_documents, attempt_field_inference")
 
