@@ -1,0 +1,4 @@
+langchain-core
+copilotagent
+python-dotenv
+
