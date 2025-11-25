@@ -131,6 +131,69 @@ def _get_output_directory(loan_id: Optional[str] = None) -> Path:
         return Path("/tmp")
 
 
+def _save_attachment_mapping(output_dir: Path, attachment_id: str, filename: str, document_title: str) -> None:
+    """Save attachment ID to filename mapping in a text file in the assets folder.
+    
+    Creates/updates attachment_mapping.txt in the assets folder with:
+    attachment_id -> filename (document_title)
+    
+    Args:
+        output_dir: The assets folder path
+        attachment_id: The Encompass attachment ID
+        filename: The saved filename (e.g., "title_report.pdf")
+        document_title: The document title/type for reference
+    """
+    mapping_file = output_dir / "attachment_mapping.txt"
+    
+    # Read existing mappings if file exists
+    # Format: {attachment_id: (filename, document_title)}
+    existing_mappings = {}
+    if mapping_file.exists():
+        try:
+            with open(mapping_file, 'r', encoding='utf-8') as f:
+                for line in f:
+                    line = line.strip()
+                    # Skip header lines
+                    if not line or line.startswith('=') or line.startswith('Format:') or line.startswith('Attachment'):
+                        continue
+                    if ' -> ' in line:
+                        parts = line.split(' -> ', 1)
+                        if len(parts) == 2:
+                            att_id = parts[0].strip()
+                            rest = parts[1].strip()
+                            # Extract filename and document_title from format: filename (document_title)
+                            if ' (' in rest and rest.endswith(')'):
+                                file_part = rest.rsplit(' (', 1)[0].strip()
+                                title_part = rest.rsplit(' (', 1)[1].rstrip(')').strip()
+                            else:
+                                file_part = rest
+                                title_part = "Unknown"
+                            existing_mappings[att_id] = (file_part, title_part)
+        except Exception as e:
+            logger.warning(f"[DOWNLOAD] Could not read existing mapping file: {e}")
+    
+    # Add/update current mapping
+    existing_mappings[attachment_id] = (filename, document_title)
+    
+    # Write all mappings back to file
+    try:
+        with open(mapping_file, 'w', encoding='utf-8') as f:
+            f.write("Attachment ID Mapping\n")
+            f.write("=" * 80 + "\n")
+            f.write("Format: attachment_id -> filename (document_title)\n")
+            f.write("=" * 80 + "\n\n")
+            
+            # Sort by filename for easier reading
+            sorted_items = sorted(existing_mappings.items(), key=lambda x: x[1][0])
+            
+            for att_id, (file_name, doc_title) in sorted_items:
+                f.write(f"{att_id} -> {file_name} ({doc_title})\n")
+        
+        logger.debug(f"[DOWNLOAD] Updated attachment mapping: {attachment_id} -> {filename} ({document_title})")
+    except Exception as e:
+        logger.warning(f"[DOWNLOAD] Could not write attachment mapping file: {e}")
+
+
 # =============================================================================
 # TOOLS
 # =============================================================================
@@ -219,15 +282,14 @@ def download_document(
 ) -> Dict[str, Any]:
     """Download a document from Encompass and save to assets folder.
     
-    Files are saved with a filename based on document title/type (e.g., "w2.pdf", "title_report.pdf").
+    Files are saved with filename based on attachment_id (e.g., "{attachment_id}.pdf").
     If a file already exists, it will not be re-downloaded.
-    If multiple documents have the same name, attachment_id is appended for uniqueness.
     
     Args:
         loan_id: The Encompass loan GUID
-        attachment_id: The attachment entity ID
-        document_title: Optional document title (e.g., "W-2", "Title Report")
-        document_type: Optional document type (e.g., "W-2", "ID")
+        attachment_id: The attachment entity ID (used as filename)
+        document_title: Optional document title (e.g., "W-2", "Title Report") - for reference only
+        document_type: Optional document type (e.g., "W-2", "ID") - for reference only
         
     Returns:
         Dictionary with file_path and metadata
@@ -238,23 +300,18 @@ def download_document(
     
     output_dir = _get_output_directory(loan_id)
     
-    # Generate filename from document title/type
-    if document_title:
-        base_name = _sanitize_filename(document_title)
-    elif document_type and document_type != "Unknown":
-        base_name = _sanitize_filename(document_type)
-    else:
-        # Fallback to attachment_id if no title/type provided
-        base_name = f"document_{attachment_id[:8]}"
+    # Use attachment_id as filename
+    file_path = output_dir / f'{attachment_id}.pdf'
     
-    # Start with base filename
-    file_path = output_dir / f'{base_name}.pdf'
-    
-    # Check if file already exists - if so, skip download (same loan, same document name = same file)
+    # Check if file already exists - if so, skip download (same attachment_id = same file)
     if file_path.exists():
         file_size = file_path.stat().st_size
         size_kb = file_size / 1024
-        logger.info(f"[DOWNLOAD] File already exists ({base_name}.pdf), skipping download - {file_size:,} bytes ({size_kb:.2f} KB)")
+        logger.info(f"[DOWNLOAD] File already exists ({attachment_id}.pdf), skipping download - {file_size:,} bytes ({size_kb:.2f} KB)")
+        
+        # Still save attachment ID mapping even if file was cached
+        _save_attachment_mapping(output_dir, attachment_id, attachment_id + ".pdf", document_title or document_type or "Unknown")
+        
         return {
             "file_path": str(file_path),
             "file_size_bytes": file_size,
@@ -276,7 +333,10 @@ def download_document(
         f.write(document_bytes)
     
     size_kb = len(document_bytes) / 1024
-    logger.info(f"[DOWNLOAD] Success - {len(document_bytes):,} bytes ({size_kb:.2f} KB) saved to {file_path.name}")
+    logger.info(f"[DOWNLOAD] Success - {len(document_bytes):,} bytes ({size_kb:.2f} KB) saved to {attachment_id}.pdf")
+    
+    # Save attachment ID mapping to text file in assets folder
+    _save_attachment_mapping(output_dir, attachment_id, attachment_id + ".pdf", document_title or document_type or "Unknown")
     
     return {
         "file_path": str(file_path),
@@ -839,6 +899,9 @@ def process_loan_documents(
     if document_types:
         # Filter to only documents that match the requested types
         # Use strict matching to avoid false positives
+        # Track which documents match which requested types
+        documents_by_requested_type = {req_type: [] for req_type in document_types}
+        
         for doc in all_documents:
             doc_title = doc.get("title", "Unknown")
             doc_type = doc.get("documentType") or doc.get("type", "Unknown")
@@ -847,6 +910,7 @@ def process_loan_documents(
             
             # Check if this document matches any requested type
             matches = False
+            matched_requested_type = None
             for requested_type in document_types:
                 requested_lower = requested_type.lower().strip()
                 
@@ -866,6 +930,7 @@ def process_loan_documents(
                                    for pattern in id_patterns)
                     if matches_id:
                         matches = True
+                        matched_requested_type = requested_type
                         break
                 elif requested_lower == "title report":
                     # Match "Title Report", "Prelim Title Report", "Preliminary Title Report"
@@ -874,6 +939,7 @@ def process_loan_documents(
                         doc_title_lower.startswith("title report") or
                         "prelim" in doc_title_lower and "title" in doc_title_lower):
                         matches = True
+                        matched_requested_type = requested_type
                         break
                 elif requested_lower == "appraisal report":
                     # Match "Appraisal Report", "Appraisal"
@@ -882,6 +948,7 @@ def process_loan_documents(
                         (doc_title_lower.startswith("appraisal") and "report" in doc_title_lower) or
                         (doc_type_lower == "appraisal" and "report" in doc_title_lower)):
                         matches = True
+                        matched_requested_type = requested_type
                         break
                 elif requested_lower in ["w-2", "w2"]:
                     # Match "W-2", "W2", "W-2 all years", etc.
@@ -890,6 +957,7 @@ def process_loan_documents(
                         doc_title_lower.startswith(requested_lower) or
                         (doc_title_lower.startswith("w") and "2" in doc_title_lower)):
                         matches = True
+                        matched_requested_type = requested_type
                         break
                 else:
                     # For other types, use exact or startswith matching
@@ -898,11 +966,96 @@ def process_loan_documents(
                         doc_title_lower.startswith(requested_lower) or
                         doc_type_lower.startswith(requested_lower)):
                         matches = True
+                        matched_requested_type = requested_type
                         break
             
-            if matches:
+            if matches and matched_requested_type:
+                # Store which requested type this document matches
+                documents_by_requested_type[matched_requested_type].append(doc)
+                logger.debug(f"[PROCESS] Found matching document: {doc_title} (type: {doc_type}) for requested type: {matched_requested_type}")
+        
+        # Now select up to 5 BEST documents for each requested type (balance speed vs coverage)
+        # Increased to help find ID documents and other types that might be missed
+        matching_documents = []
+        MAX_DOCS_PER_TYPE = 5  # Process up to 5 documents per requested type
+        
+        def score_document(doc: Dict[str, Any], requested_type: str, preferred_doc_types: set) -> tuple:
+            """Score a document - higher score = better match. Returns (score, is_exact_title, is_preferred)."""
+            doc_title = doc.get("title", "Unknown")
+            doc_type = doc.get("documentType") or doc.get("type", "Unknown")
+            doc_title_lower = doc_title.lower()
+            doc_type_lower = doc_type.lower()
+            requested_lower = requested_type.lower().strip()
+            
+            score = 0
+            
+            # Exact title match = highest priority (score 1000)
+            if doc_title_lower == requested_lower:
+                score += 1000
+            
+            # Exact type match = high priority (score 800)
+            if doc_type_lower == requested_lower:
+                score += 800
+            
+            # Preferred document type = priority boost (score 400)
+            is_preferred = any(
+                pref.lower() in doc_type_lower or pref.lower() in doc_title_lower
+                for pref in preferred_doc_types
+            )
+            if is_preferred:
+                score += 400
+            
+            # Title starts with requested type = medium priority (score 200)
+            if doc_title_lower.startswith(requested_lower):
+                score += 200
+            
+            # Type starts with requested type = medium priority (score 100)
+            if doc_type_lower.startswith(requested_lower):
+                score += 100
+            
+            return (score, doc_title_lower == requested_lower, is_preferred)
+        
+        # Get preferred doc types for scoring (load once)
+        from tools.csv_loader import get_csv_loader
+        loader = get_csv_loader()
+        all_csv_fields = loader.get_all_fields()
+        preferred_doc_types = set()
+        for field in all_csv_fields:
+            primary_doc = field.get('primary_document', '').strip()
+            if primary_doc:
+                preferred_doc_types.add(primary_doc)
+        
+        # Select up to MAX_DOCS_PER_TYPE best documents for each requested type
+        for requested_type in document_types:  # Check all requested types, even if no matches
+            docs = documents_by_requested_type.get(requested_type, [])
+            if not docs:
+                logger.warning(f"[PROCESS] ⚠️  No documents found matching requested type: '{requested_type}'")
+                # Show available document titles that might match
+                all_titles = [d.get("title", "Unknown") for d in all_documents]
+                logger.warning(f"[PROCESS] Available document titles (first 15): {all_titles[:15]}")
+                continue
+            
+            # Score all documents
+            scored_docs = [(doc, score_document(doc, requested_type, preferred_doc_types)) for doc in docs]
+            # Sort by score (descending), then by exact title match, then by preferred status
+            scored_docs.sort(key=lambda x: (x[1][0], x[1][1], x[1][2]), reverse=True)
+            
+            # For ID, process ALL matching documents (no limit) to ensure we find it
+            # For other types, use MAX_DOCS_PER_TYPE limit
+            if requested_type.lower() == "id":
+                selected_docs = scored_docs  # Process all ID documents
+                logger.info(f"[PROCESS] Processing ALL {len(selected_docs)} ID documents (no limit for ID)")
+            else:
+                # Select up to MAX_DOCS_PER_TYPE best documents
+                selected_docs = scored_docs[:MAX_DOCS_PER_TYPE]
+            
+            for doc, (score, is_exact_title, is_preferred) in selected_docs:
+                doc_title = doc.get("title", "Unknown")
+                logger.info(f"[PROCESS] Selected match for '{requested_type}': {doc_title} (score: {score}, exact_title: {is_exact_title}, preferred: {is_preferred})")
                 matching_documents.append(doc)
-                logger.info(f"[PROCESS] Found matching document: {doc_title} (type: {doc_type})")
+            
+            if len(docs) > MAX_DOCS_PER_TYPE:
+                logger.info(f"[PROCESS] Selected {len(selected_docs)} best document(s) for '{requested_type}' (skipped {len(docs) - MAX_DOCS_PER_TYPE} lower-scoring documents)")
     else:
         # No filter - use all documents that have schemas
         supported_types = list_supported_document_types()
@@ -935,49 +1088,13 @@ def process_loan_documents(
             "error": f"No documents found matching requested types: {document_types or 'with extraction schemas'}"
         }
     
-    # Step 3: Process only the matching documents (in parallel for speed)
+    # Step 3: Process only the best matching documents (one per requested type)
     processing_results = []
     
-    # OPTIMIZATION: Prioritize documents - process preferred documents first
-    # NOTE: We process ALL documents because duplicates might have different data or the first might fail
-    from tools.csv_loader import get_csv_loader
+    # We've already selected up to MAX_DOCS_PER_TYPE best documents per requested type
+    prioritized_matching_documents = matching_documents
     
-    # Get preferred document types from CSV (documents marked as "Primary document")
-    loader = get_csv_loader()
-    all_csv_fields = loader.get_all_fields()
-    preferred_doc_types = set()
-    
-    for field in all_csv_fields:
-        primary_doc = field.get('primary_document', '').strip()
-        if primary_doc:
-            preferred_doc_types.add(primary_doc)
-    
-    # Separate documents into preferred and non-preferred for prioritization
-    prioritized_docs = []
-    other_docs = []
-    
-    for doc in matching_documents:
-        doc_type = doc.get("documentType") or doc.get("type", "Unknown")
-        doc_title = doc.get("title", "Unknown")
-        doc_type_lower = doc_type.lower()
-        doc_title_lower = doc_title.lower()
-        
-        # Check if this is a preferred document type
-        is_preferred = any(
-            pref.lower() in doc_type_lower or pref.lower() in doc_title_lower
-            for pref in preferred_doc_types
-        )
-        
-        if is_preferred:
-            prioritized_docs.append(doc)
-        else:
-            other_docs.append(doc)
-    
-    # Combine: preferred first, then others - process ALL documents
-    prioritized_matching_documents = prioritized_docs + other_docs
-    
-    logger.info(f"[OPTIMIZE] Priority order: {len(prioritized_docs)} preferred documents will be processed first, then {len(other_docs)} others")
-    logger.info(f"[OPTIMIZE] Processing all {len(prioritized_matching_documents)} documents to ensure complete field extraction")
+    logger.info(f"[OPTIMIZE] Processing {len(prioritized_matching_documents)} best-matched documents (up to {MAX_DOCS_PER_TYPE} per requested type)")
     
     # Preload extraction schemas for all document types we'll process (cache optimization)
     step2_start = time.time()
@@ -1016,8 +1133,7 @@ def process_loan_documents(
     documents_to_process = prioritized_matching_documents
     
     if len(documents_to_process) > 1:
-        logger.info(f"[PROCESS] Processing {len(documents_to_process)} documents in parallel (max {max_workers} concurrent)")
-        logger.info(f"[PROCESS] Priority order: {len(prioritized_docs)} preferred documents processed first")
+        logger.info(f"[PROCESS] Processing {len(documents_to_process)} best-matched documents in parallel (max {max_workers} concurrent)")
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             future_to_doc = {executor.submit(process_document, doc): doc for doc in documents_to_process}
             for future in as_completed(future_to_doc):
@@ -1054,7 +1170,7 @@ def process_loan_documents(
     }
     
     # Track which fields have been extracted from preferred documents
-    # Format: {field_id: (value, source_document_type, is_preferred)}
+    # Format: {field_id: (value, source_document_type, attachment_id, is_preferred, is_valid, is_non_zero)}
     field_extractions = {}
     
     from tools.field_mappings import get_preferred_documents_for_field, should_extract_from_document
@@ -1063,6 +1179,7 @@ def process_loan_documents(
     for result in processing_results:
         doc_type = result.get("document_type", "Unknown")
         doc_title = result.get("document_title", "")
+        attachment_id = result.get("attachment_id")
         mapped_result = result.get("mapped_fields", {})
         
         if doc_type in mapped_result:
@@ -1088,51 +1205,76 @@ def process_loan_documents(
                     ) if preferred_docs else False
                     
                     # Store extraction (prefer preferred documents, but prefer non-zero values)
-                    # Check if value is meaningful (not None, not empty string, not 0 for numeric)
-                    is_meaningful = value is not None and value != "" and value != 0
+                    # Check if value is valid (not None, not empty string) - 0 is a valid value
+                    is_valid = value is not None and value != ""
+                    is_non_zero = is_valid and value != 0
                     
                     if field_id not in field_extractions:
-                        field_extractions[field_id] = (value, doc_type, is_preferred, is_meaningful)
+                        field_extractions[field_id] = (value, doc_type, attachment_id, is_preferred, is_valid, is_non_zero)
                     else:
-                        existing_value, existing_doc, existing_preferred, existing_meaningful = field_extractions[field_id]
+                        existing_value, existing_doc, existing_att_id, existing_preferred, existing_valid, existing_non_zero = field_extractions[field_id]
                         
-                        # Prefer meaningful values over non-meaningful ones
-                        if is_meaningful and not existing_meaningful:
-                            field_extractions[field_id] = (value, doc_type, is_preferred, is_meaningful)
-                        elif not is_meaningful and existing_meaningful:
-                            # Keep existing meaningful value
+                        # Prefer non-zero values over zero values
+                        if is_non_zero and not existing_non_zero:
+                            field_extractions[field_id] = (value, doc_type, attachment_id, is_preferred, is_valid, is_non_zero)
+                        elif not is_non_zero and existing_non_zero:
+                            # Keep existing non-zero value
                             pass
                         elif is_preferred and not existing_preferred:
                             # Replace with preferred document extraction
-                            field_extractions[field_id] = (value, doc_type, is_preferred, is_meaningful)
+                            field_extractions[field_id] = (value, doc_type, attachment_id, is_preferred, is_valid, is_non_zero)
                         elif not existing_preferred and not is_preferred:
-                            # Both are non-preferred, prefer meaningful value
-                            if is_meaningful and not existing_meaningful:
-                                field_extractions[field_id] = (value, doc_type, is_preferred, is_meaningful)
+                            # Both are non-preferred, prefer non-zero value
+                            if is_non_zero and not existing_non_zero:
+                                field_extractions[field_id] = (value, doc_type, attachment_id, is_preferred, is_valid, is_non_zero)
                             # Otherwise keep first one
     
-    # Second pass: Build final field_mappings (prioritized) - only include fields with actual values
+    # Second pass: Build final field_mappings (prioritized) - include all valid values (including 0)
+    # Format: {field_id: {"value": value, "attachment_id": attachment_id}}
+    # Only exclude None and empty strings - 0 is a valid value
     for field_id, extraction_data in field_extractions.items():
-        # Handle both old format (3-tuple) and new format (4-tuple)
-        if len(extraction_data) == 4:
+        # Handle tuple formats: (value, doc_type, attachment_id, is_preferred, is_valid, is_non_zero) or older formats
+        if len(extraction_data) == 6:
+            value, source_doc_type, attachment_id, is_preferred, is_valid, is_non_zero = extraction_data
+        elif len(extraction_data) == 5:
+            value, source_doc_type, is_preferred, is_valid, is_non_zero = extraction_data
+            attachment_id = None  # Fallback for older format
+        elif len(extraction_data) == 4:
             value, source_doc_type, is_preferred, is_meaningful = extraction_data
+            attachment_id = None
+            is_valid = value is not None and value != ""
+            is_non_zero = is_valid and value != 0
         else:
             value, source_doc_type, is_preferred = extraction_data
-            is_meaningful = value is not None and value != "" and value != 0
+            attachment_id = None
+            is_valid = value is not None and value != ""
+            is_non_zero = is_valid and value != 0
         
-        # Only include mapped fields with meaningful values (non-empty, non-zero)
-        if is_meaningful:
-            aggregated_results["field_mappings"][field_id] = value
+        # Include all valid values (including 0) - only exclude None and empty strings
+        if is_valid:
+            aggregated_results["field_mappings"][field_id] = {
+                "value": value,
+                "attachment_id": attachment_id
+            }
             
             # Log preferred document usage
+            value_type = "non-zero" if is_non_zero else "zero"
+            att_id_str = f" (attachment: {attachment_id[:8]}...)" if attachment_id else ""
             if is_preferred:
-                logger.info(f"[AGGREGATE] Field {field_id} extracted from preferred document: {source_doc_type}")
+                logger.debug(f"[AGGREGATE] Field {field_id} = {value} ({value_type}) from preferred document: {source_doc_type}{att_id_str}")
             else:
                 preferred_docs = get_preferred_documents_for_field(field_id)
                 if preferred_docs:
-                    logger.info(f"[AGGREGATE] Field {field_id} extracted from {source_doc_type} (preferred: {', '.join(preferred_docs)})")
+                    logger.debug(f"[AGGREGATE] Field {field_id} = {value} ({value_type}) from {source_doc_type} (preferred: {', '.join(preferred_docs)}){att_id_str}")
                 else:
-                    logger.info(f"[AGGREGATE] Field {field_id} extracted from {source_doc_type} (no preference)")
+                    logger.debug(f"[AGGREGATE] Field {field_id} = {value} ({value_type}) from {source_doc_type}{att_id_str}")
+    
+    # Log summary
+    total_fields = len(aggregated_results["field_mappings"])
+    non_zero_fields = sum(1 for v in aggregated_results["field_mappings"].values() 
+                         if isinstance(v, dict) and v.get("value", 0) != 0)
+    zero_fields = total_fields - non_zero_fields
+    logger.info(f"[AGGREGATE] Field mappings summary: {total_fields} total ({non_zero_fields} non-zero, {zero_fields} zero values)")
     
     # Clean up extracted_entities - only include fields that were actually extracted (non-empty)
     cleaned_extracted_entities = {}
