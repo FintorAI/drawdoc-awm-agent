@@ -1,0 +1,21 @@
+{
+  "loan_id": "387596ee-7090-47ca-8385-206e22c9c9da",
+  "user_prompt": null,
+  "demo_mode": true,
+  "max_retries": 2,
+  "document_types": [
+    "ID",
+    "Title Report",
+    "Appraisal",
+    "LE",
+    "1003"
+  ],
+  "_comments": {
+    "loan_id": "Encompass loan GUID (required)",
+    "user_prompt": "Optional: 'only prep', 'skip verification', 'summary only', etc.",
+    "demo_mode": "true = no actual writes to Encompass (default), false = production mode",
+    "max_retries": "Number of retry attempts per agent (default: 2)",
+    "document_types": "Optional list of document types to process, e.g. ['ID', 'Title Report', 'LE', '1003']. null = process all documents"
+  }
+}
+

@@ -10,17 +10,17 @@ from pathlib import Path
 from datetime import datetime
 import logging
 
-# Add current directory to path
-sys.path.insert(0, str(Path(__file__).parent))
+# Add project root to path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
-from agents.verification_agent import run_verification
-from config.field_document_mapping import FIELD_MAPPING
-from config.sop_rules import SOP_RULES
+from agents.verification_agent.verification_agent import run_verification
+from agents.verification_agent.config.field_document_mapping import FIELD_MAPPING
+from agents.verification_agent.config.sop_rules import SOP_RULES
 
 # Setup logging
 def setup_logging():
     """Setup logging to file and console."""
-    log_dir = Path(__file__).parent / "logs"
+    log_dir = Path(__file__).parent.parent / "logs"
     log_dir.mkdir(exist_ok=True)
     
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -52,7 +52,7 @@ def setup_logging():
 def load_test_prep_output() -> dict:
     """Load test output from prep agent."""
     # Use the correct prep_output.json which has the right format
-    test_file = Path(__file__).parent / "data" / "prep_output.json"
+    test_file = Path(__file__).parent.parent / "data" / "prep_output.json"
     
     if not test_file.exists():
         # Fall back to old test_output.json if prep_output doesn't exist
@@ -312,8 +312,8 @@ def test_new_workflow():
     print("TESTING NEW WORKFLOW (Prep vs Encompass Comparison)")
     print("=" * 80)
     
-    from tools.verification_tools import compare_prep_vs_encompass_value
-    from tools.field_lookup_tools import get_missing_field_value
+    from agents.verification_agent.tools.verification_tools import compare_prep_vs_encompass_value
+    from agents.verification_agent.tools.field_lookup_tools import get_missing_field_value
     
     # Load test prep output
     prep_output = load_test_prep_output()
@@ -371,13 +371,13 @@ def test_individual_tools():
     print("TESTING INDIVIDUAL TOOLS")
     print("=" * 80)
     
-    from tools.verification_tools import (
+    from agents.verification_agent.tools.verification_tools import (
         compare_prep_vs_encompass_value,
         verify_field_against_documents,
         cross_check_field_with_sop,
         attempt_field_inference
     )
-    from tools.field_lookup_tools import get_field_id_from_name
+    from agents.verification_agent.tools.field_lookup_tools import get_field_id_from_name
     
     # Load test data
     prep_output = load_test_prep_output()

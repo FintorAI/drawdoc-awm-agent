@@ -1,0 +1,112 @@
+{
+  "loan_id": "387596ee-7090-47ca-8385-206e22c9c9da",
+  "total_documents_found": 172,
+  "documents_processed": 9,
+  "results": {
+    "extracted_entities": {
+      "Title Report": {
+        "escrow_company_name": "Truly Title, Inc.",
+        "loan_amount": 152625,
+        "title_insurance_company_name": "Old Republic National Title Insurance Company"
+      },
+      "Appraisal": {
+        "appraised_value": 290000
+      },
+      "LE": {
+        "fees_appraisal_fee_borr": 0,
+        "fees_credit_report_borr": 0,
+        "fees_loan_discount_fee_borr": 0,
+        "fees_loan_origination_fee_borr": 0,
+        "fees_process_fee_borr": 0,
+        "fees_tax_svc_fee_borr": 0,
+        "fees_underwriting_fee_apr": 0,
+        "fees_va_fund_fee_borr": 0,
+        "lo_compensation_borrower_paid_discount_point_amount_line_1": 0
+      },
+      "ID": {
+        "borrower_first_name": "Alva",
+        "borrower_first_middle_name": "Alva Scott",
+        "borrower_last_name": "Sorensen"
+      },
+      "1003": {
+        "loan_amount": 132275.0
+      }
+    },
+    "field_mappings": {
+      "610": {
+        "value": "Truly Title, Inc.",
+        "attachment_id": "318be174-03ec-4b99-85ea-1de0cc286702"
+      },
+      "1109": {
+        "value": 152625,
+        "attachment_id": "318be174-03ec-4b99-85ea-1de0cc286702"
+      },
+      "411": {
+        "value": "Old Republic National Title Insurance Company",
+        "attachment_id": "318be174-03ec-4b99-85ea-1de0cc286702"
+      },
+      "356": {
+        "value": 290000,
+        "attachment_id": "73ca6c70-2645-4445-bf1b-8fa6b9a9f32f"
+      },
+      "641": {
+        "value": 0,
+        "attachment_id": "bd4a623b-3784-4081-8be5-4951988ba7bf"
+      },
+      "640": {
+        "value": 0,
+        "attachment_id": "bd4a623b-3784-4081-8be5-4951988ba7bf"
+      },
+      "1093": {
+        "value": 0,
+        "attachment_id": "bd4a623b-3784-4081-8be5-4951988ba7bf"
+      },
+      "454": {
+        "value": 0,
+        "attachment_id": "bd4a623b-3784-4081-8be5-4951988ba7bf"
+      },
+      "1621": {
+        "value": 0,
+        "attachment_id": "bd4a623b-3784-4081-8be5-4951988ba7bf"
+      },
+      "336": {
+        "value": 0,
+        "attachment_id": "bd4a623b-3784-4081-8be5-4951988ba7bf"
+      },
+      "SYS.X23": {
+        "value": 0,
+        "attachment_id": "bd4a623b-3784-4081-8be5-4951988ba7bf"
+      },
+      "1050": {
+        "value": 0,
+        "attachment_id": "bd4a623b-3784-4081-8be5-4951988ba7bf"
+      },
+      "NEWHUD.X1151": {
+        "value": 0,
+        "attachment_id": "bd4a623b-3784-4081-8be5-4951988ba7bf"
+      },
+      "4000": {
+        "value": "Alva",
+        "attachment_id": "775f510d-a44e-4701-815c-13b8840a450e"
+      },
+      "36": {
+        "value": "Alva Scott",
+        "attachment_id": "775f510d-a44e-4701-815c-13b8840a450e"
+      },
+      "4002": {
+        "value": "Sorensen",
+        "attachment_id": "775f510d-a44e-4701-815c-13b8840a450e"
+      }
+    }
+  },
+  "timing": {
+    "total_time_seconds": 255.93,
+    "total_time_minutes": 4.27,
+    "average_time_per_document_seconds": 26.67,
+    "get_documents_time_seconds": 15.76,
+    "preload_schemas_time_seconds": 0.0,
+    "processing_time_seconds": 240.07,
+    "aggregation_time_seconds": 0.0
+  }
+}
+

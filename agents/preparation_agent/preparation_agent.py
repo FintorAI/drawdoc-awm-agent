@@ -20,7 +20,9 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dotenv import load_dotenv
 
 # Load environment variables
-load_dotenv(Path(__file__).parent / ".env")
+env_file_path = Path(__file__).parent / ".env"
+print(f"Loading environment from: {env_file_path}")
+load_dotenv(env_file_path)
 
 # Configure logging
 logging.basicConfig(
@@ -42,14 +44,28 @@ logger = logging.getLogger(__name__)
 
 from copilotagent import create_deep_agent, EncompassConnect
 from langchain_core.tools import tool
-from tools.extraction_schemas import get_extraction_schema, list_supported_document_types
-from tools.field_mappings import (
-    get_field_mapping,
-    get_all_mappings_for_document,
-    is_mapping_ready,
-    list_ready_mappings,
-    get_common_field_ids
-)
+
+# Handle imports from both standalone and orchestrator contexts
+try:
+    # Try relative imports first (when run as standalone)
+    from tools.extraction_schemas import get_extraction_schema, list_supported_document_types
+    from tools.field_mappings import (
+        get_field_mapping,
+        get_all_mappings_for_document,
+        is_mapping_ready,
+        list_ready_mappings,
+        get_common_field_ids
+    )
+except ImportError:
+    # Fall back to absolute imports (when called from orchestrator)
+    from agents.preparation_agent.tools.extraction_schemas import get_extraction_schema, list_supported_document_types
+    from agents.preparation_agent.tools.field_mappings import (
+        get_field_mapping,
+        get_all_mappings_for_document,
+        is_mapping_ready,
+        list_ready_mappings,
+        get_common_field_ids
+    )
 
 # =============================================================================
 # SAFETY CONFIGURATION
@@ -623,7 +639,10 @@ def _process_single_document(
         # Normalize document type
         normalized_doc_type = doc_type
         if doc_type == "Unknown" or doc_type == "":
-            from tools.extraction_schemas import list_supported_document_types
+            try:
+                from tools.extraction_schemas import list_supported_document_types
+            except ImportError:
+                from agents.preparation_agent.tools.extraction_schemas import list_supported_document_types
             supported_types = list_supported_document_types()
             doc_title_lower = doc_title.lower()
             
@@ -681,7 +700,10 @@ def _process_single_document(
                     logger.info(f"[PROCESS] Normalized document type from '{doc_type}' to '{normalized_doc_type}' based on title (word overlap: {best_score})")
         
         # Check if we have an extraction schema
-        from tools.extraction_schemas import get_extraction_schema
+        try:
+            from tools.extraction_schemas import get_extraction_schema
+        except ImportError:
+            from agents.preparation_agent.tools.extraction_schemas import get_extraction_schema
         try:
             schema = get_extraction_schema(normalized_doc_type)
         except ValueError:
@@ -703,6 +725,17 @@ def _process_single_document(
             "attachment_id": attachment_id,
         })
         
+        # Safety check: ensure extract_result is not None
+        if extract_result is None:
+            logger.error(f"[PROCESS] Extraction returned None for '{doc_title}'")
+            return {
+                "document_title": doc_title,
+                "document_type": normalized_doc_type,
+                "attachment_id": attachment_id,
+                "status": "extraction_failed",
+                "error": "Extraction returned None",
+            }
+        
         if "error" in extract_result:
             logger.error(f"[PROCESS] Extraction failed for '{doc_title}': {extract_result['error']}")
             return {
@@ -717,7 +750,10 @@ def _process_single_document(
         
         if not mapped_fields:
             logger.warning(f"[PROCESS] No mapped fields for document '{doc_title}' (type: {normalized_doc_type})")
-            from tools.field_mappings import get_all_mappings_for_document
+            try:
+                from tools.field_mappings import get_all_mappings_for_document
+            except ImportError:
+                from agents.preparation_agent.tools.field_mappings import get_all_mappings_for_document
             available_mappings = get_all_mappings_for_document(normalized_doc_type)
             if available_mappings:
                 logger.warning(f"[PROCESS] Field mappings exist for '{normalized_doc_type}' but no fields were mapped. Extracted data: {list(extract_result.get('extracted_data', {}).keys())}")
@@ -823,9 +859,13 @@ def process_loan_documents(
     logger.info(f"[PROCESS] Found {len(all_documents)} total documents in loan")
     
     # Step 2: Filter documents to only those matching requested types
-    from tools.extraction_schemas import list_supported_document_types
+    try:
+        from tools.extraction_schemas import list_supported_document_types
+    except ImportError:
+        from agents.preparation_agent.tools.extraction_schemas import list_supported_document_types
     
     matching_documents = []
+    MAX_DOCS_PER_TYPE = 5  # Process up to 5 documents per requested type
     
     if document_types:
         # Filter to only documents that match the requested types
@@ -908,7 +948,6 @@ def process_loan_documents(
         # Now select up to 5 BEST documents for each requested type (balance speed vs coverage)
         # Increased to help find ID documents and other types that might be missed
         matching_documents = []
-        MAX_DOCS_PER_TYPE = 5  # Process up to 5 documents per requested type
         
         def score_document(doc: Dict[str, Any], requested_type: str, preferred_doc_types: set) -> tuple:
             """Score a document - higher score = better match. Returns (score, is_exact_title, is_preferred)."""
@@ -947,7 +986,10 @@ def process_loan_documents(
             return (score, doc_title_lower == requested_lower, is_preferred)
         
         # Get preferred doc types for scoring (load once)
-        from tools.csv_loader import get_csv_loader
+        try:
+            from tools.csv_loader import get_csv_loader
+        except ImportError:
+            from agents.preparation_agent.tools.csv_loader import get_csv_loader
         loader = get_csv_loader()
         all_csv_fields = loader.get_all_fields()
         preferred_doc_types = set()
@@ -1037,7 +1079,10 @@ def process_loan_documents(
                 unique_doc_types.add(doc_type)
         
         # Preload schemas to populate cache
-        from tools.extraction_schemas import get_extraction_schema
+        try:
+            from tools.extraction_schemas import get_extraction_schema
+        except ImportError:
+            from agents.preparation_agent.tools.extraction_schemas import get_extraction_schema
         for doc_type in unique_doc_types:
             try:
                 schema = get_extraction_schema(doc_type)
@@ -1104,7 +1149,10 @@ def process_loan_documents(
     # Format: {field_id: (value, source_document_type, attachment_id, is_preferred, is_valid, is_non_zero)}
     field_extractions = {}
     
-    from tools.field_mappings import get_preferred_documents_for_field, should_extract_from_document
+    try:
+        from tools.field_mappings import get_preferred_documents_for_field, should_extract_from_document
+    except ImportError:
+        from agents.preparation_agent.tools.field_mappings import get_preferred_documents_for_field, should_extract_from_document
     
     # First pass: Collect all extractions, prioritizing preferred documents
     for result in processing_results:

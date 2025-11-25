@@ -15,14 +15,14 @@ from langgraph.types import Command
 from typing import Annotated
 from langchain_core.messages import ToolMessage
 
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Add project root to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
 from copilotagent import EncompassConnect
 from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv(Path(__file__).parent.parent / ".env")
+# Load environment variables from project root
+load_dotenv(Path(__file__).parent.parent.parent.parent / ".env")
 
 
 def _get_encompass_client() -> EncompassConnect:
@@ -519,7 +519,8 @@ def write_corrected_field(
     corrected_value: Any,
     reason: str,
     finding: str,
-    field_mapping: dict = None
+    field_mapping: dict = None,
+    source_document: str = None
 ) -> Command:
     """
     Write corrected value back to Encompass field.
@@ -536,18 +537,25 @@ def write_corrected_field(
         corrected_value: The corrected value to write
         reason: Why the correction was needed (e.g., "SOP violation", "Document mismatch")
         finding: Detailed explanation of what was wrong
-        field_mapping: Field mapping configuration (optional, used to get source document)
+        field_mapping: Field mapping configuration (optional, used to get source document if source_document not provided)
+        source_document: Source document reference (attachment ID or document type). 
+                        If provided, this takes precedence over field_mapping.
         
     Returns:
         Command that updates state with correction record
     """
-    # Get source document info from field mapping
-    source_document = None
+    # Get source document info
+    # Priority: 1) source_document parameter, 2) field_mapping primary_document
     field_name = field_id
-    if field_mapping and field_id in field_mapping:
+    
+    if source_document is None and field_mapping and field_id in field_mapping:
+        # Fall back to field_mapping if source_document not provided
         mapping = field_mapping[field_id]
         field_name = mapping.get("field_name", field_id)
         source_document = mapping.get("primary_document", "Unknown")
+    elif field_mapping and field_id in field_mapping:
+        # Use provided source_document but still get field_name from mapping
+        field_name = field_mapping[field_id].get("field_name", field_id)
     
     # Check if DRY RUN mode is enabled
     dry_run = os.getenv("DRY_RUN", "false").lower() in ("true", "1", "yes")

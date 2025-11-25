@@ -1,0 +1,13 @@
+# Orchestrator Agent Dependencies
+# All dependencies are inherited from sub-agents
+
+# Core dependencies (from parent project)
+# - copilotagent
+# - langchain
+# - langchain-anthropic
+# - python-dotenv
+
+# Additional dependencies for Gradio UI
+gradio>=3.0.0
+pandas>=1.5.0
+

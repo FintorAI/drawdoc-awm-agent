@@ -1,0 +1,135 @@
+{
+  "loan_id": "387596ee-7090-47ca-8385-206e22c9c9da",
+  "prep_output_summary": {
+    "documents_processed": 17,
+    "total_documents": 172,
+    "fields_in_prep": 18
+  },
+  "corrections_made": [
+    {
+      "field_id": "4008",
+      "field_name": "4008",
+      "source_document": null,
+      "corrected_value": "Christopher Berger and Alva Scott Sorensen",
+      "reason": "Borrower vesting type mismatch - Encompass shows 'Individual' but Title Report confirms joint vesting",
+      "finding": "Encompass field 4008 (Borrower Vesting Type) shows 'Individual' but the Title Report clearly indicates joint vesting as 'Christopher Berger and Alva Scott Sorensen'. This is a critical discrepancy affecting property ownership representation.",
+      "success": true,
+      "dry_run": true,
+      "timestamp": "2025-11-25 16:08:00.855016"
+    },
+    {
+      "field_id": "610",
+      "field_name": "610",
+      "source_document": null,
+      "corrected_value": "Truly Title, Inc.",
+      "reason": "Escrow company name formatting - missing comma and period in legal entity name",
+      "finding": "Encompass field 610 (Escrow Company Name) shows 'Truly Title Inc' but the Title Report shows the correct legal entity name as 'Truly Title, Inc.' with proper punctuation.",
+      "success": true,
+      "dry_run": true,
+      "timestamp": "2025-11-25 16:08:00.909560"
+    },
+    {
+      "field_id": "1109",
+      "field_name": "1109",
+      "source_document": null,
+      "corrected_value": 152625,
+      "reason": "Loan amount discrepancy - Encompass shows $150,000 but Title Report indicates $152,625",
+      "finding": "Encompass field 1109 (Loan Amount) shows $150,000.00 but the Title Report documents a loan amount of $152,625. This is a $2,625 discrepancy that must be corrected.",
+      "success": true,
+      "dry_run": true,
+      "timestamp": "2025-11-25 16:08:00.961362"
+    },
+    {
+      "field_id": "2294",
+      "field_name": "2294",
+      "source_document": null,
+      "corrected_value": "YES",
+      "reason": "Missing impound type indicator - field is empty in Encompass",
+      "finding": "Encompass field 2294 (Impound Types) is empty but the Loan Estimate confirms impounds are required ('YES'). This field must be populated to accurately reflect loan terms.",
+      "success": true,
+      "dry_run": true,
+      "timestamp": "2025-11-25 16:08:00.897131"
+    },
+    {
+      "field_id": "CD3.X82",
+      "field_name": "CD3.X82",
+      "source_document": null,
+      "corrected_value": 11517.98,
+      "reason": "Total closing costs J amount discrepancy - $4,000 understatement",
+      "finding": "Encompass field CD3.X82 (Total Closing Costs J) shows $7,524.00 but the Closing Disclosure indicates $11,517.98. This is a $3,993.98 discrepancy in borrower-paid closing costs.",
+      "success": true,
+      "dry_run": true,
+      "timestamp": "2025-11-25 16:08:00.942784"
+    },
+    {
+      "field_id": "CD2.XSTJ",
+      "field_name": "CD2.XSTJ",
+      "source_document": null,
+      "corrected_value": 11517.98,
+      "reason": "Total closing costs borrower paid discrepancy - $4,000 understatement",
+      "finding": "Encompass field CD2.XSTJ (Closing Disclosure J Total Closing Costs Borrower Paid) shows $7,524.00 but the Closing Disclosure indicates $11,517.98. This matches the CD3.X82 discrepancy.",
+      "success": true,
+      "dry_run": true,
+      "timestamp": "2025-11-25 16:08:00.880204"
+    },
+    {
+      "field_id": "CD2.X1",
+      "field_name": "CD2.X1",
+      "source_document": null,
+      "corrected_value": "$0",
+      "reason": "Missing lender credits value - field is empty in Encompass",
+      "finding": "Encompass field CD2.X1 (Lender Credits at Closing) is empty but the Closing Disclosure confirms $0 in lender credits. Field must be populated even when value is zero for disclosure accuracy.",
+      "success": true,
+      "dry_run": true,
+      "timestamp": "2025-11-25 16:08:00.950386"
+    },
+    {
+      "field_id": "CD2.XSTD",
+      "field_name": "CD2.XSTD",
+      "source_document": null,
+      "corrected_value": 8914.46,
+      "reason": "Loan costs amount discrepancy - $4,000 understatement",
+      "finding": "Encompass field CD2.XSTD (Loan Costs) shows $4,944.00 but the Closing Disclosure indicates $8,914.46. This is a $3,970.46 discrepancy in loan-related costs.",
+      "success": true,
+      "dry_run": true,
+      "timestamp": "2025-11-25 16:08:00.931983"
+    },
+    {
+      "field_id": "CD4.X2",
+      "field_name": "CD4.X2",
+      "source_document": null,
+      "corrected_value": "do not have a negative amortization feature",
+      "reason": "Negative amortization disclosure language - incomplete/incorrect phrasing",
+      "finding": "Encompass field CD4.X2 (Negative Amortization) shows 'none' but the Closing Disclosure requires the complete disclosure language: 'do not have a negative amortization feature'. The abbreviated version does not meet disclosure requirements.",
+      "success": true,
+      "dry_run": true,
+      "timestamp": "2025-11-25 16:08:00.895241"
+    },
+    {
+      "field_id": "CD2.XSTI",
+      "field_name": "CD2.XSTI",
+      "source_document": null,
+      "corrected_value": 2603.52,
+      "reason": "Other costs amount discrepancy - $23.52 understatement",
+      "finding": "Encompass field CD2.XSTI (Other Costs) shows $2,580.00 but the Closing Disclosure indicates $2,603.52. This is a $23.52 discrepancy in non-loan costs.",
+      "success": true,
+      "dry_run": true,
+      "timestamp": "2025-11-25 16:08:00.958455"
+    },
+    {
+      "field_id": "CD4.X3",
+      "field_name": "CD4.X3",
+      "source_document": null,
+      "corrected_value": "does not accept any partial payments",
+      "reason": "Missing partial payments disclosure - field is empty in Encompass",
+      "finding": "Encompass field CD4.X3 (Partial Payments) is empty but the Closing Disclosure requires disclosure language: 'does not accept any partial payments'. This mandatory disclosure must be populated.",
+      "success": true,
+      "dry_run": true,
+      "timestamp": "2025-11-25 16:08:00.929793"
+    }
+  ],
+  "total_corrections": 11,
+  "messages_count": 49,
+  "agent_ran_successfully": true,
+  "log_file": "C:\\Users\\Naomi\\OneDrive\\Desktop\\FINTOR\\drawdoc-awm-agent\\agents\\verification_agent\\logs\\verification_test_20251125_160459.log"
+}

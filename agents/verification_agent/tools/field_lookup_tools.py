@@ -11,13 +11,13 @@ from typing import Any, Dict
 from langchain_core.tools import tool
 from dotenv import load_dotenv
 
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Add project root to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
 from copilotagent import EncompassConnect
 
-# Load environment variables
-load_dotenv(Path(__file__).parent.parent / ".env")
+# Load environment variables from project root
+load_dotenv(Path(__file__).parent.parent.parent.parent / ".env")
 
 
 def _get_encompass_client() -> EncompassConnect:

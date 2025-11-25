@@ -12,26 +12,26 @@ from typing import Any, Dict, List
 from typing_extensions import TypedDict, NotRequired
 from dotenv import load_dotenv
 
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Add project root to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from copilotagent import create_deep_agent
-from tools.verification_tools import (
+from agents.verification_agent.tools.verification_tools import (
     compare_prep_vs_encompass_value,
     verify_field_against_documents,
     cross_check_field_with_sop,
     attempt_field_inference,
     write_corrected_field
 )
-from tools.field_lookup_tools import (
+from agents.verification_agent.tools.field_lookup_tools import (
     get_field_id_from_name,
     get_missing_field_value
 )
-from config.field_document_mapping import FIELD_MAPPING
-from config.sop_rules import SOP_RULES
+from agents.verification_agent.config.field_document_mapping import FIELD_MAPPING
+from agents.verification_agent.config.sop_rules import SOP_RULES
 
-# Load environment variables
-load_dotenv(Path(__file__).parent.parent / ".env")
+# Load environment variables from project root
+load_dotenv(Path(__file__).parent.parent.parent / ".env")
 
 
 # =============================================================================
@@ -194,7 +194,7 @@ Start verification immediately when you receive prep_output. Process each field 
 def load_sop_rules() -> Dict[str, Any]:
     """Load SOP rules from preprocessed JSON file."""
     import json
-    sop_path = Path(__file__).parent.parent / "config" / "sop_rules.json"
+    sop_path = Path(__file__).parent / "config" / "sop_rules.json"
     
     if not sop_path.exists():
         print(f"⚠️  SOP rules file not found at {sop_path}")
@@ -280,34 +280,79 @@ def run_verification(
     if sop_rules is None:
         sop_rules = SOP_RULES
     
+    # Detect prep output format and extract field data
+    field_mappings = prep_output.get("results", {}).get("field_mappings", {})
+    
+    # Check format: new format has {"value": ..., "attachment_id": ...}
+    # Old format has direct values
+    is_new_format = False
+    attachment_id_map = {}
+    
+    if field_mappings:
+        first_field_id = next(iter(field_mappings))
+        first_value = field_mappings[first_field_id]
+        if isinstance(first_value, dict) and "value" in first_value:
+            is_new_format = True
+            print(f"✓ Detected NEW prep output format (with attachment_ids)")
+            
+            # Build attachment_id mapping for new format
+            for fid, fdata in field_mappings.items():
+                if isinstance(fdata, dict):
+                    attachment_id_map[fid] = fdata.get("attachment_id")
+        else:
+            print(f"✓ Detected OLD prep output format (direct values)")
+    
     # Create a detailed starting message with all the context the agent needs
     # Include the prep_output data directly in the message since state isn't directly accessible
+    format_instructions = ""
+    if is_new_format:
+        format_instructions = """
+FORMAT NOTE: Prep output uses NEW format with nested structure:
+- prep_output["results"]["field_mappings"][field_id]["value"] = the correct value
+- prep_output["results"]["field_mappings"][field_id]["attachment_id"] = source document ID
+
+Attachment ID mapping (field_id -> attachment_id):
+""" + json.dumps(attachment_id_map, indent=2)
+    
     starting_message = f"""Begin verification of loan {loan_id}.
 
 PREP OUTPUT DATA:
 {json.dumps(prep_output, indent=2)}
+{format_instructions}
 
 INSTRUCTIONS:
 1. Extract all field IDs and values from prep_output["results"]["field_mappings"]
    - These values are CORRECT (extracted from documents)
+   - {"For NEW format: extract value using field_mappings[field_id]['value']" if is_new_format else "For OLD format: value is field_mappings[field_id] directly"}
+   - {"For NEW format: get attachment_id using field_mappings[field_id]['attachment_id']" if is_new_format else ""}
 
 2. For EACH field_id in field_mappings:
-   a) Get prep_value = prep_output["results"]["field_mappings"][field_id]
-   b) Call get_missing_field_value(loan_id="{loan_id}", field_id=field_id) to get encompass_value
-   c) Call compare_prep_vs_encompass_value(field_id, prep_value, encompass_value, field_mapping)
-   d) If needs_correction=True: Call write_corrected_field(loan_id, field_id, prep_value, reason, finding, field_mapping)
-      IMPORTANT: Pass field_mapping to capture source document info
-   e) If match=True: Record as valid
+   a) Get prep_value = {"field_mappings[field_id]['value']" if is_new_format else "field_mappings[field_id]"}
+   b) {"Get attachment_id = field_mappings[field_id]['attachment_id']" if is_new_format else ""}
+   c) Call get_missing_field_value(loan_id="{loan_id}", field_id=field_id) to get encompass_value
+   d) Call compare_prep_vs_encompass_value(field_id, prep_value, encompass_value, field_mapping)
+   e) If needs_correction=True: Call write_corrected_field with:
+      - loan_id="{loan_id}"
+      - field_id=field_id
+      - corrected_value=prep_value
+      - reason=<explain discrepancy>
+      - finding=<detailed finding>
+      - field_mapping=field_mapping
+      - {"source_document=attachment_id (use the attachment ID from prep output)" if is_new_format else ""}
+   f) If match=True: Record as valid
 
 Example: If field_id="4002", prep_value="Sorensen", encompass_value="Sorenson"
 → compare_prep_vs_encompass_value returns needs_correction=True
-→ write_corrected_field(loan_id, "4002", "Sorensen", reason, finding, field_mapping) updates Encompass
-→ Correction record includes source_document="ID" from field_mapping
+→ write_corrected_field(loan_id, "4002", "Sorensen", reason, finding, field_mapping{', source_document=attachment_id' if is_new_format else ''}) updates Encompass
+→ Correction record includes {"actual source document attachment ID" if is_new_format else "source_document from field_mapping"}
 
 3. Generate a comprehensive validation report with all corrections made
 
-Available field mappings: {len(field_mapping)} fields
-Available SOP pages: {len(sop_rules.get('page_indexed_rules', {}))} pages
+IMPORTANT: Do NOT search for field mapping or SOP configuration files.
+- All field mappings ({len(field_mapping)} fields) are ALREADY AVAILABLE through the tools
+- All SOP rules ({len(sop_rules.get('page_indexed_rules', {}))} pages) are ALREADY AVAILABLE through the tools
+- The tools (get_missing_field_value, write_corrected_field, compare_prep_vs_encompass_value) have direct access to this configuration data
+- Just call the tools with the required parameters - they will handle the rest
 
 Start verification now. Process each field systematically."""
     
