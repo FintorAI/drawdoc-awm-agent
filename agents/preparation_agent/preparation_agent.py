@@ -131,69 +131,6 @@ def _get_output_directory(loan_id: Optional[str] = None) -> Path:
         return Path("/tmp")
 
 
-def _save_attachment_mapping(output_dir: Path, attachment_id: str, filename: str, document_title: str) -> None:
-    """Save attachment ID to filename mapping in a text file in the assets folder.
-    
-    Creates/updates attachment_mapping.txt in the assets folder with:
-    attachment_id -> filename (document_title)
-    
-    Args:
-        output_dir: The assets folder path
-        attachment_id: The Encompass attachment ID
-        filename: The saved filename (e.g., "title_report.pdf")
-        document_title: The document title/type for reference
-    """
-    mapping_file = output_dir / "attachment_mapping.txt"
-    
-    # Read existing mappings if file exists
-    # Format: {attachment_id: (filename, document_title)}
-    existing_mappings = {}
-    if mapping_file.exists():
-        try:
-            with open(mapping_file, 'r', encoding='utf-8') as f:
-                for line in f:
-                    line = line.strip()
-                    # Skip header lines
-                    if not line or line.startswith('=') or line.startswith('Format:') or line.startswith('Attachment'):
-                        continue
-                    if ' -> ' in line:
-                        parts = line.split(' -> ', 1)
-                        if len(parts) == 2:
-                            att_id = parts[0].strip()
-                            rest = parts[1].strip()
-                            # Extract filename and document_title from format: filename (document_title)
-                            if ' (' in rest and rest.endswith(')'):
-                                file_part = rest.rsplit(' (', 1)[0].strip()
-                                title_part = rest.rsplit(' (', 1)[1].rstrip(')').strip()
-                            else:
-                                file_part = rest
-                                title_part = "Unknown"
-                            existing_mappings[att_id] = (file_part, title_part)
-        except Exception as e:
-            logger.warning(f"[DOWNLOAD] Could not read existing mapping file: {e}")
-    
-    # Add/update current mapping
-    existing_mappings[attachment_id] = (filename, document_title)
-    
-    # Write all mappings back to file
-    try:
-        with open(mapping_file, 'w', encoding='utf-8') as f:
-            f.write("Attachment ID Mapping\n")
-            f.write("=" * 80 + "\n")
-            f.write("Format: attachment_id -> filename (document_title)\n")
-            f.write("=" * 80 + "\n\n")
-            
-            # Sort by filename for easier reading
-            sorted_items = sorted(existing_mappings.items(), key=lambda x: x[1][0])
-            
-            for att_id, (file_name, doc_title) in sorted_items:
-                f.write(f"{att_id} -> {file_name} ({doc_title})\n")
-        
-        logger.debug(f"[DOWNLOAD] Updated attachment mapping: {attachment_id} -> {filename} ({document_title})")
-    except Exception as e:
-        logger.warning(f"[DOWNLOAD] Could not write attachment mapping file: {e}")
-
-
 # =============================================================================
 # TOOLS
 # =============================================================================
@@ -309,9 +246,6 @@ def download_document(
         size_kb = file_size / 1024
         logger.info(f"[DOWNLOAD] File already exists ({attachment_id}.pdf), skipping download - {file_size:,} bytes ({size_kb:.2f} KB)")
         
-        # Still save attachment ID mapping even if file was cached
-        _save_attachment_mapping(output_dir, attachment_id, attachment_id + ".pdf", document_title or document_type or "Unknown")
-        
         return {
             "file_path": str(file_path),
             "file_size_bytes": file_size,
@@ -334,9 +268,6 @@ def download_document(
     
     size_kb = len(document_bytes) / 1024
     logger.info(f"[DOWNLOAD] Success - {len(document_bytes):,} bytes ({size_kb:.2f} KB) saved to {attachment_id}.pdf")
-    
-    # Save attachment ID mapping to text file in assets folder
-    _save_attachment_mapping(output_dir, attachment_id, attachment_id + ".pdf", document_title or document_type or "Unknown")
     
     return {
         "file_path": str(file_path),
