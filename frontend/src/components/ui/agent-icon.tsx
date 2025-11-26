@@ -69,7 +69,7 @@ function AgentIcon({
   }
 
   return (
-    <Icon className={cn(sizeClasses[size], colorClass, className)} {...props} />
+    <Icon className={cn(sizeClasses[size], colorClass, className)} />
   );
 }
 

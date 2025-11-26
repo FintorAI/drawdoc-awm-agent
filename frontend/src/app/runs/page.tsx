@@ -1,10 +1,19 @@
 "use client";
 
+import * as React from "react";
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { AgentIcon } from "@/components/ui/agent-icon";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+import { RunTriggerForm } from "@/components/runs/run-trigger-form";
 import { Plus, Clock, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 
@@ -12,49 +21,74 @@ import Link from "next/link";
 const mockRuns = [
   {
     id: "run-001",
-    loanNumber: "LN-2024-001234",
+    loanNumber: "387596ee-7090-47ca-8385-206e22c9c9da",
     status: "success" as const,
     startedAt: "2024-01-15T10:30:00Z",
     completedAt: "2024-01-15T10:32:15Z",
     documentsProcessed: 8,
+    demoMode: true,
   },
   {
     id: "run-002",
-    loanNumber: "LN-2024-001235",
+    loanNumber: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
     status: "processing" as const,
     startedAt: "2024-01-15T10:45:00Z",
     completedAt: null,
     documentsProcessed: 3,
+    demoMode: true,
   },
   {
     id: "run-003",
-    loanNumber: "LN-2024-001236",
+    loanNumber: "12345678-1234-1234-1234-123456789012",
     status: "warning" as const,
     startedAt: "2024-01-15T09:15:00Z",
     completedAt: "2024-01-15T09:18:42Z",
     documentsProcessed: 12,
+    demoMode: false,
   },
   {
     id: "run-004",
-    loanNumber: "LN-2024-001237",
+    loanNumber: "fedcba98-7654-3210-fedc-ba9876543210",
     status: "error" as const,
     startedAt: "2024-01-15T08:00:00Z",
     completedAt: "2024-01-15T08:01:23Z",
     documentsProcessed: 2,
+    demoMode: true,
   },
 ];
 
 export default function RunsPage() {
+  const [isNewRunOpen, setIsNewRunOpen] = React.useState(false);
+
+  const handleRunSuccess = (_runId: string) => {
+    setIsNewRunOpen(false);
+    // Navigation is handled inside RunTriggerForm
+  };
+
   return (
     <div className="flex flex-col">
       <Header 
         title="Runs" 
         subtitle="View and manage document verification runs"
         actions={
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            New Run
-          </Button>
+          <Sheet open={isNewRunOpen} onOpenChange={setIsNewRunOpen}>
+            <Button onClick={() => setIsNewRunOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              New Run
+            </Button>
+            <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto">
+              <SheetHeader className="mb-6">
+                <SheetTitle>Start New Run</SheetTitle>
+                <SheetDescription>
+                  Configure and trigger a new document verification run
+                </SheetDescription>
+              </SheetHeader>
+              <RunTriggerForm 
+                onSuccess={handleRunSuccess}
+                className="border-0 shadow-none"
+              />
+            </SheetContent>
+          </Sheet>
         }
       />
       
@@ -131,7 +165,16 @@ export default function RunsPage() {
                   <div className="flex items-center gap-4">
                     <AgentIcon type="orderdocs" showBackground />
                     <div>
-                      <p className="font-medium text-foreground">{run.loanNumber}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-foreground font-mono text-sm">
+                          {run.loanNumber.substring(0, 8)}...
+                        </p>
+                        {run.demoMode && (
+                          <span className="text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 font-medium">
+                            DEMO
+                          </span>
+                        )}
+                      </div>
                       <p className="text-sm text-muted-foreground">
                         Started {new Date(run.startedAt).toLocaleString()}
                       </p>
@@ -158,4 +201,3 @@ export default function RunsPage() {
     </div>
   );
 }
-
