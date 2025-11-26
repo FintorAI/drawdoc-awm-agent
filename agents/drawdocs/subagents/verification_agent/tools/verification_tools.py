@@ -18,28 +18,16 @@ from langchain_core.messages import ToolMessage
 # Add project root to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent.parent))
 
-from copilotagent import EncompassConnect
 from dotenv import load_dotenv
+from packages.shared import get_encompass_client
 
 # Load environment variables from project root
 load_dotenv(Path(__file__).parent.parent.parent.parent.parent / ".env")
 
 
-def _get_encompass_client() -> EncompassConnect:
-    """Get an initialized Encompass client with credentials from environment variables."""
-    return EncompassConnect(
-        access_token=os.getenv("ENCOMPASS_ACCESS_TOKEN", ""),
-        api_base_url=os.getenv("ENCOMPASS_API_BASE_URL", "https://api.elliemae.com"),
-        credentials={
-            "username": os.getenv("ENCOMPASS_USERNAME", ""),
-            "password": os.getenv("ENCOMPASS_PASSWORD", ""),
-            "client_id": os.getenv("ENCOMPASS_CLIENT_ID", ""),
-            "client_secret": os.getenv("ENCOMPASS_CLIENT_SECRET", ""),
-            "instance_id": os.getenv("ENCOMPASS_INSTANCE_ID", ""),
-            "subject_user_id": os.getenv("ENCOMPASS_SUBJECT_USER_ID", ""),
-        },
-        landingai_api_key=os.getenv("LANDINGAI_API_KEY", ""),
-    )
+def _get_encompass_client():
+    """Get an initialized Encompass client. Wrapper for shared utility."""
+    return get_encompass_client()
 
 
 @tool

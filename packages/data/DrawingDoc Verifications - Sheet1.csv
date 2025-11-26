@@ -1,915 +1,915 @@
-﻿Name,ID,Primary document,Secondary documents,Notes,SOP Pages,,,,,,,,,,,
-Agency Case #,1040,FHA Case Assignment number document,FHA Case assignment document ; Final 1003,"Only for FHA transactions, verify with attached documents; Match against attached FHA Case assignment document; Verify/Update as per attached VA Case assignment, Final Approval & Final 1003/92900A","46,47,48",,,,,,,,,,,
-Also Known As (AKA),,Credit report,,,,,,,,,,,,,,
-Amort Type ARM Descr,995,Last LE,,"Only verify this section when transaction is Adjustable Rate Mortgage, data should be updated by Secondary when loan is locked with Investor",56,,,,,,,,,,,
-Amortization Type,608,Final 1003,COC CD ; Final CD ; Initial CD ; Loan file,"Check that Amortization Type matches across all source documents; Verify changes from Fixed to ARM, Interest Only to Fixed Rate; Verify if loan has Fixed Amortization or Adjustable (ARM) amortization; Monitor changes from Fixed to ARM or vice versa","56,79,93,96",,,,,,,,,,,
-Application Date,745,Initial 1003,,"For Texas Cash out Refinance with Primary Occupancy, confirm loan may not close before 12th calendar day after later of loan application date or Notice Concerning Extensions of Credit signature date; Confirm application date matches initial loan application","24,53",,,,,,,,,,,
-Appraised Value,356,Appraisal Report,Appraisal ; Last CD,Check if coverage is greater than estimated cost when dwelling coverage is inadequate; Match appraised value with official appraisal report; Used in CO mill levy calculation: appraisal value * 7.96% tax rate; Must match attached Appraisal report and Last CD,"35,53,62,81",,,,,,,,,,,
-APR,799,Initial CD,COC CD ; Final CD,"Check if APR increased by more than 0.125% or decreased from Initial CD; If APR increases more than 0.125%, additional 3 day waiting period required before closing","79,96",,,,,,,,,,,
-APR Button Status,,Fee classification rules,,,,,,,,,,,,,,
-APR Impact Flag,,,,,,,,,,,,,,,,
-AWM Loan Number,,Final 1003,,,,,,,,,,,,,,
-Bank ABA,,Escrow wire instruction,,,,,,,,,,,,,,
-Borrower Business Phone,FE0117,Final 1003,,Check phone numbers match attached documents,20,,,,,,,,,,,
-Borrower DOB,1402,,,Verify DOB matches attached documents,20,,,,,,,,,,,
-Borrower Email,1240,,,Check email address matches attached documents,20,,,,,,,,,,,
-Borrower First Name,4000,ID,Loan file,"Must be exact match - if no middle initial in Final 1003, then Encompass should not have middle initial; Required for email subject line format; Must be updated in both Hold Harmless Disclosure and Closing Letter to Borrower forms - NO NBS, only Borrower(s)","20,46,101",,,,,,,,,,,
-Borrower First/Middle Name,36,ID,Final 1003,Check if missing from master policy and add PTF condition if needed; Must match Final 1003/Approval,"35,81",,,,,,,,,,,
-Borrower Home Phone,66,ID,,Check phone numbers match attached documents,20,,,,,,,,,,,
-Borrower Last Name,4002,ID,Final 1003,"Manual entry - verify as needed; Must be exact match - if no middle initial in Final 1003, then Encompass should not have middle initial",20,,,,,,,,,,,
-Borrower Marital Status,52,,,Verify marital status matches attached documents; Required for vesting except in Colorado State,"20,23",,,,,,,,,,,
-Borrower Middle Name,4001,,,"Must be exact match - if no middle initial in Final 1003, then Encompass should not have middle initial",20,,,,,,,,,,,
-Borrower Present Addr,FR0104,,,Must match Final 1003/Approval,81,,,,,,,,,,,
-Borrower Sex Male/Female,471,,,Required for vesting completion,23,,,,,,,,,,,
-Borrower SSN,65,Documents tab - Application Section,Final 1003,"Check driver's license and SSN card documents; Verify SSN through SSN Verification document; Check for discrepancies across credit reports, pay stubs, W2s, and tax forms; Search borrower SSN on MERS website to verify uniqueness","16,20,21",,,,,,,,,,,
-Borrower Vesting Borr 1 Corp/Trust Name,1859,,Title Company ; Trust Document,"Only when file is approved for Trust Docs; Check trust name matches attached trust document, update Trust 2 if multiple trusts exist; If Settlor information not identified, PTF Condition will be added for Title Company to update; For NV/CA/AZ/WA/UT/OR: same as Title Company; For CO: County name & address from Business contacts No Category; For TX: Thomas E Black Jr. from Business contacts Attorney Category; For FL/MI: no trustee information","23,25,40",,,,,,,,,,,
-Borrower Vesting Borr 1 Org State,1860,Trust Document,,Verify Org. State matches location shown on trust document,25,,,,,,,,,,,
-Borrower Vesting Borr 1 Org Type,1861,Trust Document,,Usually selected as 'An Inter Vivos Trust',25,,,,,,,,,,,
-Borrower Vesting Borr Beneficiaries,2970,Trust Document,,Check trust document for beneficiary information and update if present,25,,,,,,,,,,,
-Borrower Vesting Borr Final Vesting to Read,1867,Trust Document,,"Verify borrower name matches format 'Borrower name, Trustee / Trustees of the TRUST NAME dated TRUST DATE'",25,,,,,,,,,,,
-Borrower Vesting Type,4008,1003 form,Title Report,Ensure vesting is updated correctly in Encompass and matches source documents; For Purchase: verify from 1003 form. For Refinance: verify from Title Report and 1003 form; Individual = borrower on NOTE & DOT; Co-Signor = NOTE only; Title Only = DOT only,22,,,,,,,,,,,
-Borrower Work Email,1178,,,Check completeness and accuracy against Mavent report,27,,,,,,,,,,,
-Broker Name,VEND.X293,,,Should always be blank as company does not deal in Broker transactions,97,,,,,,,,,,,
-Buyers Attorney Contact Name,VEND.X117,Power of attorney document,,Only when borrower constitutes/appoints a person as attorney,23,,,,,,,,,,,
-Cash To Close,CD3.X23,Final CD,,Verify borrower has enough cash at closing and meets minimum/maximum investment requirement,90,,,,,,,,,,,
-CD Changed Circumstance Chkbx,CD1.X61,Loan file,,Check if any changes occurred after Initial CD that require COC CD,79,,,,,,,,,,,
-CD3 Total Closing Cost J,CD3.X82,Closing Disclosure,Encompass Forms - Closing Disclosure page 3 ; Last LE,Verify total closing cost before sending docs to all parties; Auto populated - do not make changes on CD side for Purchase Transaction,"83,92",,,,,,,,,,,
-CD3 Total Payoffs And Payments K,CD3.X84,,,Verify any additional payoffs or debts required by underwriter conditions; Amount must match underwriter's condition requirements,"88,91",,,,,,,,,,,
-Closing Cost Program,1785,2015 Itemization form,,Check closing cost program details in 2015 Itemization form,64,,,,,,,,,,,
-Closing Costs Financed,LE2.X1,Last LE,,No changes on CD side to be done,92,,,,,,,,,,,
-Closing Costs Paid At Closing,CD3.X1,Closing Disclosure Section C,,Ensure amounts match expected values for PAC (Paid at Closing) or POC (Paid Outside of Closing),85,,,,,,,,,,,
-Closing Date,748,NOTE Date,CD acknowledgement date ; Loan file ; COC CD,Document date must match closing/note date; Closing must be at least 3 business days after CD acknowledgement; Verify closing date to properly calculate subsequent dates; Reference point for calculating first payment date; Calculate business days between COC CD receipt and actual closing date,"53,54,60,79",,,,,,,,,,,
-Closing Disclosure - In Escrow Property Taxes,CD1.X4,Initial Closing Disclosure,,Hard stop if not YES for both - request CofC CD correction,63,,,,,,,,,,,
-Closing disclosure - J. Total Closing Costs (BORROWER Paid),CD2.XSTJ,CD Section J,Closing Disclosure,Verify fee is going in correct section as indicated at bottom of screen; Check that total correctly summarizes Section D + I and includes Total Lender credits (includes cost to cure) if any,"66,87",,,,,,,,,,,
-Closing Disclosure - LE Date Issued,LE1.X1,,,Update/verify only highlighted details related to loan with attached documents,78,,,,,,,,,,,
-Closing Disclosure - MIC Reference,CD1.X71,,,FHA/VA Case number or Mortgage Certificate number for Conventional >80% as applicable,81,,,,,,,,,,,
-Closing Disclosure - Prepayment Penalty Added,CD1.X54,SOP requirement,Initial CD ; COC CD,Verify if prepayment penalty addition requires 3-day waiting period; Must always be selected as 'NO',"79,82",,,,,,,,,,,
-Closing Disclosure - Projected Calculation - Column 1 - Estimated Escrow Amount,CD1.X12,Aggregate Escrow Account Form,,Ensure estimated escrow is populated correctly per Aggregate Escrow account form,83,,,,,,,,,,,
-Closing Disclosure - Seller Names,CD1.X2,Encompass Tools > File Contacts > Seller,File Contacts under Tools tab,Check that Seller address is updated by Processing team under Tools tab with File Contacts sub folder; Comes from File Contacts under Tools tab,"26,81",,,,,,,,,,,
-Closing Disclosure - Total Cash To Close,CD1.X69,Closing Disclosure,,Verify total cash to close before sending docs to all parties,83,,,,,,,,,,,
-Closing disclosure Lender Credits At closing,CD2.X1,Closing Disclosure,,Verify lender credit before sending docs to all parties,83,,,,,,,,,,,
-Closing Disclosure Page 3 - Due from Borrower at Closing (line 4) - Fee Amount - Line 1,CD3.X140,UCD line 4,,Verify all required payoffs from UW conditions are added to UCD line 4,89,,,,,,,,,,,
-Closing Disclosure Page 3 - Due from Seller at Closing - Payoffs (line 6) - Fee Account Type - Line 01,CD3.X1048,ENC form 1003,,Ensure full account number from 1003 is displayed on CD until payoffs are received,89,,,,,,,,,,,
-Closing Disclosure Page 3 - Due from Seller at Closing - Payoffs (line 6) - Fee Description - Line 01,CD3.X1049,ENC form 1003,,Ensure creditor name from 1003 is displayed on CD until payoffs are received,89,,,,,,,,,,,
-Closing Disclosure Page 3 - Section L - - Paid By (line 8) - Line 1,CD3.X1522,Closing Disclosure - 2,,Check that fees are updated under correct paid by Parties Column; Check that each fee is assigned to the correct party responsible for payment,"84,85",,,,,,,,,,,
-Closing Disclosure Page 3 - Section L - Paid Already by or on Behalf of Borrower at Closing (Line 4),CD3.X283,Last CD,,Verify Deposit/Excess Deposit/EMD/Options match UW's Condition and Last CD,90,,,,,,,,,,,
-Closing Disclosure Page 3 - Section L - Paid By (line 8) - Line 1,CD3.X1522,Closing Disclosure Section C,,Check that fees are updated under correct paid by Parties Column; Check that each fee is assigned to the correct party responsible for payment,"84,85",,,,,,,,,,,
-Closing Disclosure Page 4 Non-Escrowed Property Costs Within 1 Year of Consummation,CD4.X41,Aggregate Escrow Account form,,Related to 1003 page-2 form and Aggregate Escrow account form - not editable,95,,,,,,,,,,,
-Closing Docs 1003 Signature Date,3261,,,"Check that signing date is at least 3 business days after initial disclosure, excluding Sundays and Federal holidays; Compare signing date to Initial Docs date plus 7 days","54,79",,,,,,,,,,,
-Closing Docs Borr 1 Org Trust Date or Year,2554,Trust Document,Trust Agreement,Verify trust date matches the date shown on trust document; Trust vesting must reflect Amended/restated dates along with Original Trust date,25,,,,,,,,,,,
-Closing Docs REGZ Loan Info Disbursement Date,2553,,,"Required for email subject line format; For dry states: next day after closing. For wet states: same as closing. For Refinance Primary: next day after rescission date. Only Monday-Friday, excluding weekends and Federal holidays. Do not change if already set unless date has passed","46,54",,,,,,,,,,,
-Closing Documents - Investor,PlanCode.ProgSpnsrNm,Encompass File Contacts - Investor,,"Check if investor is selected/locked in Reg-Z CD form, then verify investor information matches Business Contact. No update needed if no investor.",32,,,,,,,,,,,
-Co-Borrower DOB,1403,,,"Check for discrepancies across credit reports, pay stubs, W2s, and tax forms",20,,,,,,,,,,,
-Co-Borrower Email,1268,,,Check email address matches attached documents,20,,,,,,,,,,,
-Co-Borrower Home Phone,98,,,Check phone numbers match attached documents,20,,,,,,,,,,,
-Co-Borrower Marital Status,84,,,Verify marital status matches attached documents,20,,,,,,,,,,,
-Co-Borrower SSN,97,,,"Check for discrepancies across credit reports, pay stubs, W2s, and tax forms; Search co-borrower SSN on MERS website to verify uniqueness","20,21",,,,,,,,,,,
-Co-Borrower First Name,4004,,,"Must be exact match - if no middle initial in Final 1003, then Encompass should not have middle initial",20,,,,,,,,,,,
-Co-Borrower Last Name,4006,,,"Must be exact match - if no middle initial in Final 1003, then Encompass should not have middle initial",20,,,,,,,,,,,
-Co-Borrower Middle Name,4005,,,"Must be exact match - if no middle initial in Final 1003, then Encompass should not have middle initial",20,,,,,,,,,,,
-Co-Borrower Vesting Type,4009,Trust Document,,"If Co-Borrower has different trust name, must go in Second trust with 'TRUSTEE OF' selected as 'Trust 2'",25,,,,,,,,,,,
-Disclosed APR,3121,Last disclosed CD,,Match APR in docs with last disclosed Closing Disclosure APR,53,,,,,,,,,,,
-Display Daily Interest to 2 Decimals,,,,,,,,,,,,,,,,
-Escrow Co Contact,611,Prelim Title report,,Check Escrow Officer Name matches Prelim Title report,33,,,,,,,,,,,
-Escrow Co Email,87,Prelim Title report,,Check Escrow Company email matches Prelim Title report,33,,,,,,,,,,,
-Escrow Co Escrow #,186,Prelim Title report,Title report,Check Escrow Case number matches Prelim Title report; Match File# with Escrow order number from Title report,"33,80",,,,,,,,,,,
-Escrow Co Phone,615,Prelim Title report,,Check Escrow Company phone number matches Prelim Title report,33,,,,,,,,,,,
-Escrow Company License ID,,,,,,,,,,,,,,,,
-Escrow Company Name,610,Title Report,File Contacts ; Prelim Title report,Compare Title Company details from title report with Escrow Company information to ensure correct identification; Check Escrow Company Name matches Prelim Title report; Check Escrow Company address matches Prelim Title report; Check that Escrow Company field is auto-populated correctly from File Contacts,"32,33,40",,,,,,,,,,,
-Escrow Officer License Number,,,,,,,,,,,,,,,,
-Expenses Calc MIP/PMI Amt Paid In Cash,1760,Section B (CD),,Ensure premium amount matches between Section B and paid in cash field,58,,,,,,,,,,,
-Expenses Proposed Haz Ins,230,HOI Policy,Aggregate Escrow Statement ; Last LE,Verify monthly amounts match between HOI Policy and Final Approval/1003; Update yearly insurance amount as per HOI Policy; Check boxes are marked per what is impounded/not impounded on Aggregate Escrow statement and verify against Last LE,"61,83",,,,,,,,,,,
-Expenses Proposed Mtg Ins,232,Mortgage Insurance details,,Update monthly MI and select OK to calculate,61,,,,,,,,,,,
-Expenses Proposed Mtg Pymt,228,Last LE,,"Compare monthly P&I on CD with attached last LE, Initial CD/COC CD, and Approval Final/1003",82,,,,,,,,,,,
-Expenses Proposed Taxes,1405,Documents in Encompass loan file,,Must be confirmed by assigned underwriter if discrepancy found,63,,,,,,,,,,,
-Fee Amounts,,2015 Itemization form,,,,,,,,,,,,,,
-Fee Line 802 LO Compensation Tool -Discount Point APR 1,NEWHUD.X1177,,,Letter A stands for APR - discount points are APR fees so must be checked; Must always be checked for loan discount points,67,,,,,,,,,,,
-Fee Section Assignment,,2015 Itemization Form,,,,,,,,,,,,,,
-Fees Appraisal Fee Borr,641,LE,,803-835 series - verify against multiple source documents,67,,,,,,,,,,,
-Fees Bona Fide Indicator,NEWHUD.X1067,,,Required when discount or origination points exist on any loan,67,,,,,,,,,,,
-Fees City Prop Tax # Mos,L267,,,Non-APR fees - match to tax summary when applicable,68,,,,,,,,,,,
-Fees City Prop Tax Per Mo,L268,,,"From tax cert, divide by 1000 for calculation if used by UW",62,,,,,,,,,,,
-Fees City Property Tax Paid To,SYS.X322,,,Update pay to name as per Tax Summary,61,,,,,,,,,,,
-Fees Credit Report Borr,640,LE,,803-835 series - verify against multiple source documents,67,,,,,,,,,,,
-Fees Escrow Fee 1,NEWHUD.X810,Aggregate Escrow Account form,,Related to 1003 page-2 form and Aggregate Escrow account form - not editable,95,,,,,,,,,,,
-Fees Flood Cert Fee Borr,NEWHUD.X400,,,Flood insurance is compulsory to impound regardless of impound status,63,,,,,,,,,,,
-Fees Flood Ins Per Mo,235,Insurance documentation,,Required to be impounded whether general impound is Yes or No; Auto-fills from Aggregate Escrow Account form completion,"63,69",,,,,,,,,,,
-Fees Flood Ins Premium Borr,643,,Aggregate Escrow Account Form,Non-APR fee - match to flood insurance invoice when applicable; Auto-fills from Aggregate Escrow Account form when applicable,"68,69",,,,,,,,,,,
-Fees Hazard Ins # of Mos Reserve Required,1387,,,Re-check insurance due dates and cushion months in Aggregate Set Up,70,,,,,,,,,,,
-Fees Hazard Ins Per Mo,235,Aggregate Escrow Account Form,,,,,,,,,,,,,,
-Fees Hazard Ins Premium Borr,642,HOI policy,Evidence of Insurance,Total of Dwelling amount plus replacement cost equals total Dwelling coverage. Insufficient coverage is a HARDSTOP - must reach out to processor for updated HOI; Multiply dwelling amount by 125% (or applicable ERC percentage) to get total coverage; Match amount from invoice and verify correct column placement,"34,35,69",,,,,,,,,,,
-Fees Homeowner's Ins Premium Seller,578,,,Non-APR fee - match to HOI invoice amount,68,,,,,,,,,,,
-Fees Homeowners Ins Premium Paid To,SYS.X308,HOI Policy,,Update pay to name as per HOI Policy; Match service provider name from invoice,"61,69",,,,,,,,,,,
-Fees Interest Borr,334,,,APR fee - verify calculation and amount,68,,,,,,,,,,,
-Fees Interest From,L244,,,Always verify this button is checked in the system,54,,,,,,,,,,,
-Fees Loan Discount Fee Borr,1093,LE,,"Must match attached LE's, Initial/COC CD; Check amount matches LE, verify correct column placement","66,67",,,,,,,,,,,
-Fees Loan Origination Fee Borr,454,LE,CD ; Seller Column,"Verify against attached LE's, Initial/COC CD; Amount must match LE and CD documents","64,65",,,,,,,,,,,
-Fees MI Applic Fee APR,SYS.X116,,,Always verify 1st block is 1.75%,58,,,,,,,,,,,
-Fees Mortgage Ins # of Mos,1296,,2015 Itemization form,"Start with first payment date, enter 1 for 12 months, stop at month prior to initial first payment date for following year; Ensure Monthly Mortgage Insurance is checked as APR Fee (exception to other fees being Non-APR); Re-check mortgage insurance due dates and cushion months in Aggregate Set Up","62,70",,,,,,,,,,,
-Fees Mortgage Ins Premium Borr,337,Aggregate Escrow Account Form,,Auto-fills from Aggregate Escrow Account form when applicable,69,,,,,,,,,,,
-Fees Process Fee Borr,1621,LE,,"Verify against attached LE's, Initial/COC CD",64,,,,,,,,,,,
-Fees Section 1000 Borrower Paid Total Amount,NEWHUD.X1719,2015 Itemization form,,Check PAC (Paid at Closing) vs POC (Paid Outside Closing) designation,68,,,,,,,,,,,
-Fees State Tax/Stamps Borr,648,LE (Loan Estimate),,Compare fees from LE against what is taken on Initial CD,73,,,,,,,,,,,
-Fees Tax # of Mos Reserve Required,1386,,Encompass Escrow Setup ; Tax Impound Schedule,"Update cushion months for escrow calculation; Set to 2 months for taxes and insurance, 0 for MI if applicable; Verify due dates match Tax Impound Schedule for accuracy; Re-check tax due dates and cushion months in Aggregate Set Up","61,62,70",,,,,,,,,,,
-Fees Tax Borr,655,,Aggregate Escrow Account Form ; Preliminary Title report,Update yearly tax amount as per Tax Summary; For CA: use whichever is higher between 1.25% calculation vs Tax Summary amount; Compare tax amounts from both sources and use the higher value; Auto-fills from Aggregate Escrow Account form completion,"61,62,63,69",,,,,,,,,,,
-Fees Tax Per Mo,231,,,Verify monthly amounts match between Tax Summary and Final Approval/1003,61,,,,,,,,,,,
-Fees Tax Svc Fee Borr,336,LE,,803-835 series - verify against multiple source documents,67,,,,,,,,,,,
-Fees Total Closing Costs,TOTPCC,CFPB APR Defined Fees.xlsx,,Check PAC (Paid at Closing) and POC (Paid Outside Closing) designations; Check highlighted details in fee summary box to ensure accuracy,"72,73",,,,,,,,,,,
-Fees Underwriting Fee APR,SYS.X23,LE,,"Verify against attached LE's, Initial/COC CD",64,,,,,,,,,,,
-Fees VA Fund Fee APR,SYS.X29,Last LE,Revised VA Funding table,"Confirm correct funding fee percentage matches LE and CD documents; Check that same % applies for Regular Military, Reserves and National Guard officers - no separate % for Military & Reservist","58,59",,,,,,,,,,,
-Fees VA Fund Fee Borr,1050,,LE ; Initial CD ; COC CD ; Mortgage Insurance details,"Verify/Update with attached Final Approval/1003 and according to fee structure. Use revised VA Funding table for loans closing on or after Jan 1, 2020. Same percentage applies for Regular Military, Reserves and National Guard; Update funding fee when applicable; Check for investor related funding fees","48,61,64",,,,,,,,,,,
-FHA Case assignment document,,FHA Case assignment document,,,,,,,,,,,,,,
-First Pymt Date,682,NOTE Date,,"Ensure first payment date is exactly one month after closing/note date; Must be one month after Closing Date (e.g., if Closing Date is 01/24/2019, first payment date should be 03/01/2019)","53,60",,,,,,,,,,,
-First Rate Adjustment Cap,697,Last LE,,"Auto-populated for ARM loans, verify against Last LE and Initial CD",96,,,,,,,,,,,
-Hazard Ins Co Contact,VEND.X163,HOI policy,,Can be blank if no information is provided on HOI,34,,,,,,,,,,,
-Hazard Insurance Agent Email,,HOI policy,,,,,,,,,,,,,,
-Hazard Insurance Company Name,L252,Hazard Insurance policy,,Cross-reference with attached Hazard Insurance policy document,34,,,,,,,,,,,
-Home Inspection Fee,,1300 Series Additional Settlement Charges,,,,,,,,,,,,,,
-Impound Types,2294,Loan Estimate,Aggregate Escrow Account form ; LE (Loan Estimate) ; TOOLS > SECONDARY REGISTRATION > CURRENT LOAN INFO > TRANSACTION DETAILS,Hard stop if not YES for both - request CofC CD correction; Hard stop if not reflected - request UW correction; Verify LE reflects Impounds as Yes or No and cross verify with lock details in Secondary Registration; Presence determines which escrow account option is auto-selected,"63,70,95",,,,,,,,,,,
-impound_amounts,,Escrow Analysis,,,,,,,,,,,,,,
-Impounds Waived,2293,,Aggregate Escrow Account form ; 1003 page-2 form ; Closing Disclosure,"Use loan type and Direct system locked information only; Ensure CD matches lock details for Impounds - if different, Lock desk needs to correct in Encompass; Auto-checked when impounds are updated in Aggregate Escrow Account form; Must be checked when no impounds are present","63,70,95",,,,,,,,,,,
-Insurance Due Date,,,,,,,,,,,,,,,,
-Insurance Mtg Declining Renewals,3248,Mortgage Insurance Certificate,,"Verify months from MI certificate, should always be 120; Verify Declining Renewals checkbox is unchecked for Conventional BPMI loans",57,,,,,,,,,,,
-Insurance Mtg Ins Cancel at %,1205,,,Ensure Cancel At field is set to exactly '78.000',57,,,,,,,,,,,
-Insurance Mtg Ins Upfront Factor,1107,Mortgage Insurance Certificate,LE ; Initial CD ; COC CD ; Mortgage Insurance details,Ensure 'Charges for the Insurance are collected upfront at loan closing' button is checked for Conventional Single Premium MI loans; Update upfront mortgage premium when applicable; 803-835 series - verify against multiple source documents when applicable,"57,61,67",,,,,,,,,,,
-Interest Only Indicator,HMDA.X120,,,Only update or verify when the loan program is Interest Only,56,,,,,,,,,,,
-Investor Name,VEND.X263,File Contacts,Loan file,"Check that Investor field is auto-populated correctly from File Contacts; Check if investor is specified and verify accuracy; Check if investor is Chase, SGCP, Wellsfargo, Caliber Non-Agency ARM, Rushmore, TIAA (assumption allowed) or IMPAC, Galton (assumption not allowed)","40,53,93",,,,,,,,,,,
-Late Charge %,674,Encompass Forms RegZ-CD,Closing Disclosure,"Always ensure it reads 15 days for 'If a payment is more than ___ days late'; Conventional = 5%, FHA/VA/USDA = 4%; Should be N/A or 0.00; If a payment is more than ___ days late, always ensure it reads 15 days","59,94",,,,,,,,,,,
-Lender Address,CD5.X8,Encompass Tools > File Contacts > Lender,File Contacts under Tools tab,"Verify address is '8345 WEST SUNSET ROAD, SUITE 380, LAS VEGAS, NV 89113'; Comes from File Contacts under Tools tab or Business contacts","31,81",,,,,,,,,,,
-Lender Case #,305,Loan file,,Must be updated in Hold Harmless Disclosure form for files drawing without CTC,101,,,,,,,,,,,
-Lender City,CD5.X9,Lender location,,Verify correct lender city is entered,28,,,,,,,,,,,
-Lender Contact ST License ID,CD5.X16,Mavent report under Tools >> Compliance Review,Encompass Tools > File Contacts > Lender,Check completeness and accuracy against Mavent report; Verify AWM LIC ID is '204',"27,31",,,,,,,,,,,
-Lender Credits,CD2.XSTLC,LE,Initial CD ; Purchase Contract ; COC CD,"Must match credit amounts on LE and CD documents; Amount will be updated in positive (+) side. System will consider it as Negative (Credit); Must be updated in highlighted section only, cross-reference with attached documents","65,66,75",,,,,,,,,,,
-Lender Email,95,Encompass Tools > File Contacts > Lender,,Verify email is LO's email id,31,,,,,,,,,,,
-Lender Fax,1263,Encompass Tools > File Contacts > Lender,,Verify fax number is '702-920-8421',31,,,,,,,,,,,
-Lender Name,CD5.X7,1003 Page-3 Lender Section,Encompass Tools > File Contacts > Lender ; File Contacts ; File Contacts under Tools tab ; Form 1003,"Must match exactly 'ALL WESTERN MORTGAGE, INC.'; Ensure lender name is 'ALL WESTERN MORTGAGE, INC.' - select from Business contacts if not updated; Confirm lender name is exactly 'ALL WESTERN MORTGAGE, INC.' in ALTA/ATIMA clause; Check that Lender field is auto-populated correctly from File Contacts; Comes from File Contacts under Tools tab or Business contacts; Click 'Copy Form 1003' button if Lender information is blank","27,31,33,40,81,97",,,,,,,,,,,
-Lender Phone,324 | CD5.X18,Mavent report under Tools >> Compliance Review,Encompass Tools > File Contacts > Lender,"If phone not updated for LO, use AWM Corporate office phone number ; Verify phone number is '702-369-0905'",27 ; 31,,,,,,,,,,,
-Lender State,CD5.X10,Lender location,Encompass Tools > File Contacts > Lender,Verify correct lender state is entered; Confirm Org. State is 'Nevada (always)',"28,31",,,,,,,,,,,
-Lender's Title Insurance Paid To,NEWHUD.X805,Closing Disclosure Section C,,Title fees should be in Section C when Title Company on service list provider and Title Company for closing are different,85,,,,,,,,,,,
-Letter A (APR) Checkbox,,2015 Itemization Form,,,,,,,,,,,,,,
-Letter A Box Status,,,,,,,,,,,,,,,,
-Liability after Foreclosure for Closing Disclosure,CD5.X6,Closing Disclosure page 5,,Always needs to be checked irrespective of loan types,97,,,,,,,,,,,
-Lien Position,420,Final 1003,,Ensure Lien Position Type matches between Final Approval and Final 1003,56,,,,,,,,,,,
-LO Compensation - Borrower Paid Discount Point Amount Line 1,NEWHUD.X1151,LE,,"B=Broker, L=Lender, O=Other based on who pays",67,,,,,,,,,,,
-Loan Amount,1109,Title Report,Last LE ; Initial CD ; COC CD ; 1003,"Compare loan amount between Title Report and Direct system; Compare loan amount on CD with attached last LE, Initial CD/COC CD, and Approval Final/1003","33,82",,,,,,,,,,,
-Loan Costs,CD2.XSTD,Closing Disclosure,,Verify loan costs before sending docs to all parties,83,,,,,,,,,,,
-Loan Estimate - Adjustments and Other Credits,LE2.X4,Agreement addendum,,"Add if any other credits to borrower per UW's Condition or Agreement addendum (e.g., Gift Funds, Buyer's agent credit); No changes on CD side and ensure 'Did this Change' is updated correctly","90,92",,,,,,,,,,,
-Loan Estimate - Construction Loan,LE3.X15,Appraisal,,Check appraisal to determine if current year new construction or under construction (builder loan),62,,,,,,,,,,,
-Loan Estimate - D.Total Loan Costs,LE2.XSTD,Closing Disclosure Section D,,"Verify that Section D shows correct total summary of all loan costs from Sections A, B, and C",85,,,,,,,,,,,
-Loan Estimate - Down Payment/Funds from Borrower,LE2.X2,Last LE,,No changes on CD side and ensure 'Did this Change' is updated correctly,92,,,,,,,,,,,
-"Loan Estimate - Estimated Taxes, Insurance and Assessments",LE1.X29,Aggregate Escrow Statement,,Check boxes are marked per what is impounded/not impounded on Aggregate Escrow statement and verify against Last LE,83,,,,,,,,,,,
-Loan Estimate - Seller Credit Amount,LE2.X100,,Last LE ; LE side,Especially important on VA loans when itemizing buyer charged costs from seller credit; No changes on CD side and ensure 'Did this Change' is updated correctly,"75,92",,,,,,,,,,,
-Loan Estimate Adjustments and Other Credits,LE2.X4,Last LE,,"Add if any other credits to borrower per UW's Condition or Agreement addendum (e.g., Gift Funds, Buyer's agent credit); No changes on CD side and ensure 'Did this Change' is updated correctly","90,92",,,,,,,,,,,
-Loan Estimate Funds for Borrower,LE2.X3,Last LE,,No changes on CD side and ensure 'Did this Change' is updated correctly,92,,,,,,,,,,,
-Loan Info Loan ID,GUID,,,Should be AWM Loan number,81,,,,,,,,,,,
-Loan Info Refi Purpose,299,Final 1003,,"Only verify when loan purpose is refinance, check selection matches across all documents",56,,,,,,,,,,,
-Loan Number,364,Master Policy,Final 1003 ; Loan file,Check loan number matches attached documents; Required on updated master policy per PTF condition; Required for email subject line format,"20,35,46",,,,,,,,,,,
-Loan Officer,317,Mavent report under Tools >> Compliance Review,,Check completeness and accuracy against Mavent report,27,,,,,,,,,,,
-Loan Program,1401,,2015 Itemization form,"For Texas Cash out Refinance with Primary occupancy, select 'TX HOME EQUITY'; Check loan program details in 2015 Itemization form","53,64",,,,,,,,,,,
-Loan Purpose,384,Loan file,Final 1003 ; LE ; COC CD,"Verify loan purpose to determine appropriate closing conditions; Verify if transaction is Refinance with Primary Occupancy (rescission applies) vs Purchase or Refinance Secondary/Investment (no rescission); Check that Purpose of Loan matches across all source documents; Should be 'Purchase' or 'Refinance' or 'Construction' or 'Home Equity' as per transaction; Check if refinance transaction - if so, page will only show Liabilities/Payoff section","28,54,56,81,88",,,,,,,,,,,
-Loan Team Member Name - Doc Drawer,Loan TeamMember Name Doc Drawer,File Contacts,,Check that Docs Prepared By field is auto-populated correctly from File Contacts,40,,,,,,,,,,,
-Loan Term,1347,Final 1003,,Check that Loan Terms are updated and match across all attached documents; Do not check 'Construction Period included in Loan terms' box except for Construction loans - consult team lead,"56,81",,,,,,,,,,,
-Loan Type,1172,Loan file,COC CD ; Initial CD ; Final 1003 ; LE,"Verify loan type to determine appropriate closing conditions; Check that Loan Type matches across all source documents; Check if loan is Conventional with >80% LTV, FHA, or VA to determine MI requirements; FHA/VA require impounds; Conventional optional unless LTV >80%; Compare loan product between Initial CD and COC CD; Must match transaction and Initial CD","28,56,57,63,79,81",,,,,,,,,,,
-Lock Date,761,Last LE,,Check rate lock date for accuracy,53,,,,,,,,,,,
-Lock Expiration Date,762,Last LE,,"If Encompass and LE don't match and lock is extended, confirm with processor about extension fees",53,,,,,,,,,,,
-LTV,353,Loan file,,"Verify LTV is greater than 80% for Conventional loans requiring MI section updates; Check LTV percentage in Underwriter Summary; If LTV >80%, impounds become mandatory except CA up to 90% LTV","57,60,63",,,,,,,,,,,
-Mers Min #,1051,,,"Click MERS MIN box to generate, then verify on MERS website that it's not duplicate",21,,,,,,,,,,,
-MI Renewal %,,Last LE,,,,,,,,,,,,,,
-MIP Refund,,,,,,,,,,,,,,,,
-MIP Refund Amount,,,,,,,,,,,,,,,,
-Mortgage Insurance Due Date,,,,,,,,,,,,,,,,
-Negative Amortization,CD4.X2,Closing Disclosure,,Always needs to be checked as 'do not have a negative amortization feature' irrespective of loan type,94,,,,,,,,,,,
-NMLS Loan Originator ID,3238,Mavent report under Tools >> Compliance Review,Encompass Tools > File Contacts > Lender,Check completeness and accuracy against Mavent report; Verify AWM NMLS is '14210',"27,31",,,,,,,,,,,
-Note Date,,,,,,,,,,,,,,,,
-Occupancy Type,3335,,Loan file,Check occupancy type affects rider requirements and pricing accuracy; Verify occupancy is Primary for rescission to apply on refinance transactions,"42,54",,,,,,,,,,,
-Order Type,,Reg-Z CD form,,,,,,,,,,,,,,
-Orig Credit,1847,,,Verify if principal reduction adjustment is from excess credit rate to determine Credit box selection,88,,,,,,,,,,,
-Other Costs,CD2.XSTI,Closing Disclosure,,Verify other costs before sending docs to all parties,83,,,,,,,,,,,
-Overage adjustment,,,,,,,,,,,,,,,,
-Overwire Amount,2005,Escrow wire instruction,,Update Bank Account number from wire instructions,33,,,,,,,,,,,
-Owner's Title Insurance Paid To,NEWHUD.X804,LE (Loan Estimate),Service list provider ; Title Company,Check APR designation and service provider matching between LE and Title report; Title fees fall under Sec-B when Title Company on service list provider and Title Company closing with are the same,"71,84",,,,,,,,,,,
-Parcel Number,,Preliminary Title Report,,,,,,,,,,,,,,
-Partial Payments - Apply Partial Payment,CD4.X3,Closing Disclosure,,Always needs to be checked as 'does not accept any partial payments' irrespective of loan type,94,,,,,,,,,,,
-Pest Inspection Fee,,,,,,,,,,,,,,,,
-Planned Unit Development Project Type Indicator,URLA.X207,Appraisal report,,PUD name on UW Final Approval docs must match either Prelim or Appraisal report,42,,,,,,,,,,,
-Premium Type,,Mortgage Insurance Certificate,,,,,,,,,,,,,,
-Prior Endorsement Date,,,,,,,,,,,,,,,,
-Product Description,LE1.X5,,COC CD ; Final CD,"Should be Fixed Rate or Adjustable Rate as per transaction; Monitor changes: Jumbo to Conforming, Conforming to Government, FHA to VA, or vice versa","81,96",,,,,,,,,,,
-RealEstateBrokerB Name,CD5.X31,File Contacts,,Updated by Processing team or selected from Business contacts,97,,,,,,,,,,,
-REGZ Prepay Penalty Mths Hard Prepayment Period,3536,,,"Calculate 3 business days from closing date (Monday-Saturday, excluding Sunday and Federal holidays). Only applies to Refinance Primary Occupancy",54,,,,,,,,,,,
-Section 1000 Line 1002 POC and PTC FinancedIndicator,POPT.X195,,,"PAC stands for Paid at Closing, POC stands for Paid Outside Closing",66,,,,,,,,,,,
-Select Data from the Audit Trail,AuditTrail,,,Clear only audits related to Final CD/DOCS before ordering,100,,,,,,,,,,,
-seller city,,Purchase Agreement,,,,,,,,,,,,,,
-Seller Entity Type,,Purchase Agreement,,,,,,,,,,,,,,
-seller state,,Purchase Agreement,,,,,,,,,,,,,,
-seller zip,,Purchase Agreement,,,,,,,,,,,,,,
-seller_credit_amount,,Purchase Agreement,,,,,,,,,,,,,,
-Sellers Agent Addr,VEND.X145,Purchase Agreement,File Contacts under Tools tab,"Check that seller address is updated by Processing team under Tools tab File Contacts. If discrepancy between Purchase Agreement and Preliminary Title report, reach out to Processor to confirm correct seller info and add PTF Condition accordingly; Comes from File Contacts under Tools tab","26,81",,,,,,,,,,,
-Servicer Address,,,,,,,,,,,,,,,,
-Servicing Co Name,VEND.X178,,,Always should be Lender (All Western Mortgage Inc.) - verify name from business book,60,,,,,,,,,,,
-Servicing Payment Due Date,SERVICE.X14,Tax Impound Schedule,,Verify due dates match Tax Impound Schedule for accuracy,62,,,,,,,,,,,
-SettlementAgent Name,CD5.X55,Title Insurance Company,File Contacts ; Settlement Agent records,Check 'Copy to Settlement Agent' box only when Settlement & Title Company are the same; Check that settlement agent name is accurate; Information from File Contacts updated by Processing team,"32,80,97",,,,,,,,,,,
-State Disc - Balloon Payment,DISCLOSURE.X350,SOP requirement,,Must always be selected as 'NO',82,,,,,,,,,,,
-STD Adjustments Did Change Col,CD3.X117,LE comparison,,"Must be updated correctly for Total Closing Costs, Down Payments, Deposit, Funds for Borrower, Seller Credits, and Adjustments",92,,,,,,,,,,,
-STD Final Deposit,CD3.X106,Last LE,,No changes on CD side and ensure 'Did this Change' is updated correctly,92,,,,,,,,,,,
-STD Final Seller Credits,CD3.X108,Agreement addendum,,Add if any other credits to seller per UW's Condition or Agreement addendum,90,,,,,,,,,,,
-Sub Fin Additional Mtgs,1732,,,Verify if DPA lock confirmation is available in Documents,60,,,,,,,,,,,
-Subject Property Address,11,Evidence of Insurance,Closing Disclosure Security Interest section ; Initial 1003 ; Title report ; Purchase Contract ; Appraisal report,"Check if missing from master policy and add PTF condition if needed; Final address should be valid as per Tax certificate, USPS and County records. Docs Team makes final call on discrepancies; Ensure Property address is updated correctly in Security Interest section","35,81,94",,,,,,,,,,,
-Subject Property County,13,,,Verify county matches subject property location,28,,,,,,,,,,,
-Subject Property Legal Desc1,17,1003 Page 1,,"Use legal description updated by UW from 1003, or if not updated, use details from Title Report Exhibit-A",45,,,,,,,,,,,
-Subject Property Purchase Price,136,Purchase agreement,Purchase Contract ; Last CD,"Confirm purchase price matches contract documents; Used in tax calculations: NV/AZ=1%/12, CA=1.25%/12, CO=1%/12 or mill levy rate; Must match Purchase Contract/addendum and last CD. For AM West Builder loans, update Final/Contract Sales price on CD pages 1 & 3","53,62,81",,,,,,,,,,,
-Subject Property State,14,,Loan file,"Different vesting rules apply by state - CA/NV require married status verbiage, Colorado excludes marital status, Texas has specific Deed of Trust requirements; Verify state matches subject property location; Check property state to apply correct Trustee rules; Identify if property is in dry state (disbursement next day after closing) or wet state (disbursement same day as closing); Different calculation methods for Nevada, Arizona, California, and Colorado; CA allows no impounds option up to 90% LTV for Conventional loans only; If Nevada, uncheck NV Repayment Ability Verification Worksheet from closing package","23,28,40,54,62,63,101",,,,,,,,,,,
-Subject Property Type,1041 | 1553 | HMDA.X11,Appraisal report,Final 1003,"Ensure correct selection for system to read correct RIDER (PUD, CONDO, 1-4 FAMILY & SECOND HOME) and accurate pricing ; Check if property type is Manufactured home in both systems before entering housing details ; Ensure Property will be field matches between Final Approval and Final 1003",42 ; 45 ; 56,,,,,,,,,,,
-Title Co Contact,416,Title report,,Check Title Officer name matches title report,33,,,,,,,,,,,
-Title Co Email,88,Title report,,Check Title Officer email matches title report,33,,,,,,,,,,,
-Title Company Address,,Title Report,,,,,,,,,,,,,,
-Title Company on Service Provider List,,LE (Loan Estimate),,,,,,,,,,,,,,
-Title Insurance Company Name,411,Encompass File Contacts - Title Insurance Company,File Contacts ; Title Report,Verify Title Company details match preliminary title report. Can copy to Settlement Agent if same entity.; Check that Title Insurance Company field is auto-populated correctly from File Contacts; Determine if same as service provider list company for tolerance calculation,"32,40,71",,,,,,,,,,,
-Title Owner's Coverage Premium,,CD Section H,,,,,,,,,,,,,,
-Title Report Date,,Title Report,,,,,,,,,,,,,,
-Tolerance Cure,CD3.X129,,,Verify tolerance cure details match Fee Variance Worksheet updates,80,,,,,,,,,,,
-Tolerance Cure Applied Cure Amount,FV.X366,,,Check for zero tolerance and 10% tolerance variance cures that need to be updated or verified; Auto calculates once cure is updated under line-3; Do not change the date if CD team has applied cures on transaction,"76,77,78",,,,,,,,,,,
-Tolerance Cure Required Cure Amount,FV.X348,LE fees,,"Auto calculates based on fees disclosed on LE & CD, can be manually entered",77,,,,,,,,,,,
-Total Credit for Rate Chosen,NEWHUD.X1149,LE,,Must match rate-related credits on LE and CD documents,65,,,,,,,,,,,
-Total Estimated Payoffs and Payments,LE2.X31,,,Amount must match underwriter's condition requirements,91,,,,,,,,,,,
-Total Loan Amount,2,Loan file,,Total coverage should equal or exceed loan amount,35,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
-,,,,,,,,,,,,,,,,
+﻿Name,ID,Primary document,Secondary documents,Notes,SOP Pages,,,,,,,,,,,,required_disclosure
+Agency Case #,1040,FHA Case Assignment number document,FHA Case assignment document ; Final 1003,"Only for FHA transactions, verify with attached documents; Match against attached FHA Case assignment document; Verify/Update as per attached VA Case assignment, Final Approval & Final 1003/92900A","46,47,48",,,,,,,,,,,,no
+Also Known As (AKA),,Credit report,,,,,,,,,,,,,,,no
+Amort Type ARM Descr,995,Last LE,,"Only verify this section when transaction is Adjustable Rate Mortgage, data should be updated by Secondary when loan is locked with Investor",56,,,,,,,,,,,,no
+Amortization Type,608,Final 1003,COC CD ; Final CD ; Initial CD ; Loan file,"Check that Amortization Type matches across all source documents; Verify changes from Fixed to ARM, Interest Only to Fixed Rate; Verify if loan has Fixed Amortization or Adjustable (ARM) amortization; Monitor changes from Fixed to ARM or vice versa","56,79,93,96",,,,,,,,,,,,no
+Application Date,745,Initial 1003,,"For Texas Cash out Refinance with Primary Occupancy, confirm loan may not close before 12th calendar day after later of loan application date or Notice Concerning Extensions of Credit signature date; Confirm application date matches initial loan application","24,53",,,,,,,,,,,,no
+Appraised Value,356,Appraisal Report,Appraisal ; Last CD,Check if coverage is greater than estimated cost when dwelling coverage is inadequate; Match appraised value with official appraisal report; Used in CO mill levy calculation: appraisal value * 7.96% tax rate; Must match attached Appraisal report and Last CD,"35,53,62,81",,,,,,,,,,,,no
+APR,799,Initial CD,COC CD ; Final CD,"Check if APR increased by more than 0.125% or decreased from Initial CD; If APR increases more than 0.125%, additional 3 day waiting period required before closing","79,96",,,,,,,,,,,,no
+APR Button Status,,Fee classification rules,,,,,,,,,,,,,,,no
+APR Impact Flag,,,,,,,,,,,,,,,,,no
+AWM Loan Number,,Final 1003,,,,,,,,,,,,,,,no
+Bank ABA,,Escrow wire instruction,,,,,,,,,,,,,,,no
+Borrower Business Phone,FE0117,Final 1003,,Check phone numbers match attached documents,20,,,,,,,,,,,,no
+Borrower DOB,1402,,,Verify DOB matches attached documents,20,,,,,,,,,,,,no
+Borrower Email,1240,,,Check email address matches attached documents,20,,,,,,,,,,,,no
+Borrower First Name,4000,ID,Loan file,"Must be exact match - if no middle initial in Final 1003, then Encompass should not have middle initial; Required for email subject line format; Must be updated in both Hold Harmless Disclosure and Closing Letter to Borrower forms - NO NBS, only Borrower(s)","20,46,101",,,,,,,,,,,,no
+Borrower First/Middle Name,36,ID,Final 1003,Check if missing from master policy and add PTF condition if needed; Must match Final 1003/Approval,"35,81",,,,,,,,,,,,no
+Borrower Home Phone,66,ID,,Check phone numbers match attached documents,20,,,,,,,,,,,,no
+Borrower Last Name,4002,ID,Final 1003,"Manual entry - verify as needed; Must be exact match - if no middle initial in Final 1003, then Encompass should not have middle initial",20,,,,,,,,,,,,no
+Borrower Marital Status,52,,,Verify marital status matches attached documents; Required for vesting except in Colorado State,"20,23",,,,,,,,,,,,no
+Borrower Middle Name,4001,,,"Must be exact match - if no middle initial in Final 1003, then Encompass should not have middle initial",20,,,,,,,,,,,,no
+Borrower Present Addr,FR0104,,,Must match Final 1003/Approval,81,,,,,,,,,,,,no
+Borrower Sex Male/Female,471,,,Required for vesting completion,23,,,,,,,,,,,,no
+Borrower SSN,65,Documents tab - Application Section,Final 1003,"Check driver's license and SSN card documents; Verify SSN through SSN Verification document; Check for discrepancies across credit reports, pay stubs, W2s, and tax forms; Search borrower SSN on MERS website to verify uniqueness","16,20,21",,,,,,,,,,,,no
+Borrower Vesting Borr 1 Corp/Trust Name,1859,,Title Company ; Trust Document,"Only when file is approved for Trust Docs; Check trust name matches attached trust document, update Trust 2 if multiple trusts exist; If Settlor information not identified, PTF Condition will be added for Title Company to update; For NV/CA/AZ/WA/UT/OR: same as Title Company; For CO: County name & address from Business contacts No Category; For TX: Thomas E Black Jr. from Business contacts Attorney Category; For FL/MI: no trustee information","23,25,40",,,,,,,,,,,,no
+Borrower Vesting Borr 1 Org State,1860,Trust Document,,Verify Org. State matches location shown on trust document,25,,,,,,,,,,,,no
+Borrower Vesting Borr 1 Org Type,1861,Trust Document,,Usually selected as 'An Inter Vivos Trust',25,,,,,,,,,,,,no
+Borrower Vesting Borr Beneficiaries,2970,Trust Document,,Check trust document for beneficiary information and update if present,25,,,,,,,,,,,,no
+Borrower Vesting Borr Final Vesting to Read,1867,Trust Document,,"Verify borrower name matches format 'Borrower name, Trustee / Trustees of the TRUST NAME dated TRUST DATE'",25,,,,,,,,,,,,no
+Borrower Vesting Type,4008,1003 form,Title Report,Ensure vesting is updated correctly in Encompass and matches source documents; For Purchase: verify from 1003 form. For Refinance: verify from Title Report and 1003 form; Individual = borrower on NOTE & DOT; Co-Signor = NOTE only; Title Only = DOT only,22,,,,,,,,,,,,no
+Borrower Work Email,1178,,,Check completeness and accuracy against Mavent report,27,,,,,,,,,,,,no
+Broker Name,VEND.X293,,,Should always be blank as company does not deal in Broker transactions,97,,,,,,,,,,,,no
+Buyers Attorney Contact Name,VEND.X117,Power of attorney document,,Only when borrower constitutes/appoints a person as attorney,23,,,,,,,,,,,,no
+Cash To Close,CD3.X23,Final CD,,Verify borrower has enough cash at closing and meets minimum/maximum investment requirement,90,,,,,,,,,,,,no
+CD Changed Circumstance Chkbx,CD1.X61,Loan file,,Check if any changes occurred after Initial CD that require COC CD,79,,,,,,,,,,,,no
+CD3 Total Closing Cost J,CD3.X82,Closing Disclosure,Encompass Forms - Closing Disclosure page 3 ; Last LE,Verify total closing cost before sending docs to all parties; Auto populated - do not make changes on CD side for Purchase Transaction,"83,92",,,,,,,,,,,,yes
+CD3 Total Payoffs And Payments K,CD3.X84,,,Verify any additional payoffs or debts required by underwriter conditions; Amount must match underwriter's condition requirements,"88,91",,,,,,,,,,,,no
+Closing Cost Program,1785,2015 Itemization form,,Check closing cost program details in 2015 Itemization form,64,,,,,,,,,,,,no
+Closing Costs Financed,LE2.X1,Last LE,,No changes on CD side to be done,92,,,,,,,,,,,,no
+Closing Costs Paid At Closing,CD3.X1,Closing Disclosure Section C,,Ensure amounts match expected values for PAC (Paid at Closing) or POC (Paid Outside of Closing),85,,,,,,,,,,,,yes
+Closing Date,748,NOTE Date,CD acknowledgement date ; Loan file ; COC CD,Document date must match closing/note date; Closing must be at least 3 business days after CD acknowledgement; Verify closing date to properly calculate subsequent dates; Reference point for calculating first payment date; Calculate business days between COC CD receipt and actual closing date,"53,54,60,79",,,,,,,,,,,,no
+Closing Disclosure - In Escrow Property Taxes,CD1.X4,Initial Closing Disclosure,,Hard stop if not YES for both - request CofC CD correction,63,,,,,,,,,,,,yes
+Closing disclosure - J. Total Closing Costs (BORROWER Paid),CD2.XSTJ,CD Section J,Closing Disclosure,Verify fee is going in correct section as indicated at bottom of screen; Check that total correctly summarizes Section D + I and includes Total Lender credits (includes cost to cure) if any,"66,87",,,,,,,,,,,,yes
+Closing Disclosure - LE Date Issued,LE1.X1,,,Update/verify only highlighted details related to loan with attached documents,78,,,,,,,,,,,,no
+Closing Disclosure - MIC Reference,CD1.X71,,,FHA/VA Case number or Mortgage Certificate number for Conventional >80% as applicable,81,,,,,,,,,,,,no
+Closing Disclosure - Prepayment Penalty Added,CD1.X54,SOP requirement,Initial CD ; COC CD,Verify if prepayment penalty addition requires 3-day waiting period; Must always be selected as 'NO',"79,82",,,,,,,,,,,,no
+Closing Disclosure - Projected Calculation - Column 1 - Estimated Escrow Amount,CD1.X12,Aggregate Escrow Account Form,,Ensure estimated escrow is populated correctly per Aggregate Escrow account form,83,,,,,,,,,,,,no
+Closing Disclosure - Seller Names,CD1.X2,Encompass Tools > File Contacts > Seller,File Contacts under Tools tab,Check that Seller address is updated by Processing team under Tools tab with File Contacts sub folder; Comes from File Contacts under Tools tab,"26,81",,,,,,,,,,,,no
+Closing Disclosure - Total Cash To Close,CD1.X69,Closing Disclosure,,Verify total cash to close before sending docs to all parties,83,,,,,,,,,,,,yes
+Closing disclosure Lender Credits At closing,CD2.X1,Closing Disclosure,,Verify lender credit before sending docs to all parties,83,,,,,,,,,,,,yes
+Closing Disclosure Page 3 - Due from Borrower at Closing (line 4) - Fee Amount - Line 1,CD3.X140,UCD line 4,,Verify all required payoffs from UW conditions are added to UCD line 4,89,,,,,,,,,,,,no
+Closing Disclosure Page 3 - Due from Seller at Closing - Payoffs (line 6) - Fee Account Type - Line 01,CD3.X1048,ENC form 1003,,Ensure full account number from 1003 is displayed on CD until payoffs are received,89,,,,,,,,,,,,no
+Closing Disclosure Page 3 - Due from Seller at Closing - Payoffs (line 6) - Fee Description - Line 01,CD3.X1049,ENC form 1003,,Ensure creditor name from 1003 is displayed on CD until payoffs are received,89,,,,,,,,,,,,no
+Closing Disclosure Page 3 - Section L - - Paid By (line 8) - Line 1,CD3.X1522,Closing Disclosure - 2,,Check that fees are updated under correct paid by Parties Column; Check that each fee is assigned to the correct party responsible for payment,"84,85",,,,,,,,,,,,yes
+Closing Disclosure Page 3 - Section L - Paid Already by or on Behalf of Borrower at Closing (Line 4),CD3.X283,Last CD,,Verify Deposit/Excess Deposit/EMD/Options match UW's Condition and Last CD,90,,,,,,,,,,,,no
+Closing Disclosure Page 3 - Section L - Paid By (line 8) - Line 1,CD3.X1522,Closing Disclosure Section C,,Check that fees are updated under correct paid by Parties Column; Check that each fee is assigned to the correct party responsible for payment,"84,85",,,,,,,,,,,,yes
+Closing Disclosure Page 4 Non-Escrowed Property Costs Within 1 Year of Consummation,CD4.X41,Aggregate Escrow Account form,,Related to 1003 page-2 form and Aggregate Escrow account form - not editable,95,,,,,,,,,,,,no
+Closing Docs 1003 Signature Date,3261,,,"Check that signing date is at least 3 business days after initial disclosure, excluding Sundays and Federal holidays; Compare signing date to Initial Docs date plus 7 days","54,79",,,,,,,,,,,,no
+Closing Docs Borr 1 Org Trust Date or Year,2554,Trust Document,Trust Agreement,Verify trust date matches the date shown on trust document; Trust vesting must reflect Amended/restated dates along with Original Trust date,25,,,,,,,,,,,,no
+Closing Docs REGZ Loan Info Disbursement Date,2553,,,"Required for email subject line format; For dry states: next day after closing. For wet states: same as closing. For Refinance Primary: next day after rescission date. Only Monday-Friday, excluding weekends and Federal holidays. Do not change if already set unless date has passed","46,54",,,,,,,,,,,,no
+Closing Documents - Investor,PlanCode.ProgSpnsrNm,Encompass File Contacts - Investor,,"Check if investor is selected/locked in Reg-Z CD form, then verify investor information matches Business Contact. No update needed if no investor.",32,,,,,,,,,,,,no
+Co-Borrower DOB,1403,,,"Check for discrepancies across credit reports, pay stubs, W2s, and tax forms",20,,,,,,,,,,,,no
+Co-Borrower Email,1268,,,Check email address matches attached documents,20,,,,,,,,,,,,no
+Co-Borrower Home Phone,98,,,Check phone numbers match attached documents,20,,,,,,,,,,,,no
+Co-Borrower Marital Status,84,,,Verify marital status matches attached documents,20,,,,,,,,,,,,no
+Co-Borrower SSN,97,,,"Check for discrepancies across credit reports, pay stubs, W2s, and tax forms; Search co-borrower SSN on MERS website to verify uniqueness","20,21",,,,,,,,,,,,no
+Co-Borrower First Name,4004,,,"Must be exact match - if no middle initial in Final 1003, then Encompass should not have middle initial",20,,,,,,,,,,,,no
+Co-Borrower Last Name,4006,,,"Must be exact match - if no middle initial in Final 1003, then Encompass should not have middle initial",20,,,,,,,,,,,,no
+Co-Borrower Middle Name,4005,,,"Must be exact match - if no middle initial in Final 1003, then Encompass should not have middle initial",20,,,,,,,,,,,,no
+Co-Borrower Vesting Type,4009,Trust Document,,"If Co-Borrower has different trust name, must go in Second trust with 'TRUSTEE OF' selected as 'Trust 2'",25,,,,,,,,,,,,no
+Disclosed APR,3121,Last disclosed CD,,Match APR in docs with last disclosed Closing Disclosure APR,53,,,,,,,,,,,,no
+Display Daily Interest to 2 Decimals,,,,,,,,,,,,,,,,,no
+Escrow Co Contact,611,Prelim Title report,,Check Escrow Officer Name matches Prelim Title report,33,,,,,,,,,,,,no
+Escrow Co Email,87,Prelim Title report,,Check Escrow Company email matches Prelim Title report,33,,,,,,,,,,,,no
+Escrow Co Escrow #,186,Prelim Title report,Title report,Check Escrow Case number matches Prelim Title report; Match File# with Escrow order number from Title report,"33,80",,,,,,,,,,,,no
+Escrow Co Phone,615,Prelim Title report,,Check Escrow Company phone number matches Prelim Title report,33,,,,,,,,,,,,no
+Escrow Company License ID,,,,,,,,,,,,,,,,,no
+Escrow Company Name,610,Title Report,File Contacts ; Prelim Title report,Compare Title Company details from title report with Escrow Company information to ensure correct identification; Check Escrow Company Name matches Prelim Title report; Check Escrow Company address matches Prelim Title report; Check that Escrow Company field is auto-populated correctly from File Contacts,"32,33,40",,,,,,,,,,,,no
+Escrow Officer License Number,,,,,,,,,,,,,,,,,no
+Expenses Calc MIP/PMI Amt Paid In Cash,1760,Section B (CD),,Ensure premium amount matches between Section B and paid in cash field,58,,,,,,,,,,,,no
+Expenses Proposed Haz Ins,230,HOI Policy,Aggregate Escrow Statement ; Last LE,Verify monthly amounts match between HOI Policy and Final Approval/1003; Update yearly insurance amount as per HOI Policy; Check boxes are marked per what is impounded/not impounded on Aggregate Escrow statement and verify against Last LE,"61,83",,,,,,,,,,,,no
+Expenses Proposed Mtg Ins,232,Mortgage Insurance details,,Update monthly MI and select OK to calculate,61,,,,,,,,,,,,no
+Expenses Proposed Mtg Pymt,228,Last LE,,"Compare monthly P&I on CD with attached last LE, Initial CD/COC CD, and Approval Final/1003",82,,,,,,,,,,,,no
+Expenses Proposed Taxes,1405,Documents in Encompass loan file,,Must be confirmed by assigned underwriter if discrepancy found,63,,,,,,,,,,,,no
+Fee Amounts,,2015 Itemization form,,,,,,,,,,,,,,,no
+Fee Line 802 LO Compensation Tool -Discount Point APR 1,NEWHUD.X1177,,,Letter A stands for APR - discount points are APR fees so must be checked; Must always be checked for loan discount points,67,,,,,,,,,,,,no
+Fee Section Assignment,,2015 Itemization Form,,,,,,,,,,,,,,,no
+Fees Appraisal Fee Borr,641,LE,,803-835 series - verify against multiple source documents,67,,,,,,,,,,,,no
+Fees Bona Fide Indicator,NEWHUD.X1067,,,Required when discount or origination points exist on any loan,67,,,,,,,,,,,,no
+Fees City Prop Tax # Mos,L267,,,Non-APR fees - match to tax summary when applicable,68,,,,,,,,,,,,no
+Fees City Prop Tax Per Mo,L268,,,"From tax cert, divide by 1000 for calculation if used by UW",62,,,,,,,,,,,,no
+Fees City Property Tax Paid To,SYS.X322,,,Update pay to name as per Tax Summary,61,,,,,,,,,,,,no
+Fees Credit Report Borr,640,LE,,803-835 series - verify against multiple source documents,67,,,,,,,,,,,,no
+Fees Escrow Fee 1,NEWHUD.X810,Aggregate Escrow Account form,,Related to 1003 page-2 form and Aggregate Escrow account form - not editable,95,,,,,,,,,,,,no
+Fees Flood Cert Fee Borr,NEWHUD.X400,,,Flood insurance is compulsory to impound regardless of impound status,63,,,,,,,,,,,,no
+Fees Flood Ins Per Mo,235,Insurance documentation,,Required to be impounded whether general impound is Yes or No; Auto-fills from Aggregate Escrow Account form completion,"63,69",,,,,,,,,,,,no
+Fees Flood Ins Premium Borr,643,,Aggregate Escrow Account Form,Non-APR fee - match to flood insurance invoice when applicable; Auto-fills from Aggregate Escrow Account form when applicable,"68,69",,,,,,,,,,,,no
+Fees Hazard Ins # of Mos Reserve Required,1387,,,Re-check insurance due dates and cushion months in Aggregate Set Up,70,,,,,,,,,,,,no
+Fees Hazard Ins Per Mo,235,Aggregate Escrow Account Form,,,,,,,,,,,,,,,no
+Fees Hazard Ins Premium Borr,642,HOI policy,Evidence of Insurance,Total of Dwelling amount plus replacement cost equals total Dwelling coverage. Insufficient coverage is a HARDSTOP - must reach out to processor for updated HOI; Multiply dwelling amount by 125% (or applicable ERC percentage) to get total coverage; Match amount from invoice and verify correct column placement,"34,35,69",,,,,,,,,,,,no
+Fees Homeowner's Ins Premium Seller,578,,,Non-APR fee - match to HOI invoice amount,68,,,,,,,,,,,,no
+Fees Homeowners Ins Premium Paid To,SYS.X308,HOI Policy,,Update pay to name as per HOI Policy; Match service provider name from invoice,"61,69",,,,,,,,,,,,no
+Fees Interest Borr,334,,,APR fee - verify calculation and amount,68,,,,,,,,,,,,no
+Fees Interest From,L244,,,Always verify this button is checked in the system,54,,,,,,,,,,,,no
+Fees Loan Discount Fee Borr,1093,LE,,"Must match attached LE's, Initial/COC CD; Check amount matches LE, verify correct column placement","66,67",,,,,,,,,,,,no
+Fees Loan Origination Fee Borr,454,LE,CD ; Seller Column,"Verify against attached LE's, Initial/COC CD; Amount must match LE and CD documents","64,65",,,,,,,,,,,,no
+Fees MI Applic Fee APR,SYS.X116,,,Always verify 1st block is 1.75%,58,,,,,,,,,,,,no
+Fees Mortgage Ins # of Mos,1296,,2015 Itemization form,"Start with first payment date, enter 1 for 12 months, stop at month prior to initial first payment date for following year; Ensure Monthly Mortgage Insurance is checked as APR Fee (exception to other fees being Non-APR); Re-check mortgage insurance due dates and cushion months in Aggregate Set Up","62,70",,,,,,,,,,,,no
+Fees Mortgage Ins Premium Borr,337,Aggregate Escrow Account Form,,Auto-fills from Aggregate Escrow Account form when applicable,69,,,,,,,,,,,,no
+Fees Process Fee Borr,1621,LE,,"Verify against attached LE's, Initial/COC CD",64,,,,,,,,,,,,no
+Fees Section 1000 Borrower Paid Total Amount,NEWHUD.X1719,2015 Itemization form,,Check PAC (Paid at Closing) vs POC (Paid Outside Closing) designation,68,,,,,,,,,,,,no
+Fees State Tax/Stamps Borr,648,LE (Loan Estimate),,Compare fees from LE against what is taken on Initial CD,73,,,,,,,,,,,,no
+Fees Tax # of Mos Reserve Required,1386,,Encompass Escrow Setup ; Tax Impound Schedule,"Update cushion months for escrow calculation; Set to 2 months for taxes and insurance, 0 for MI if applicable; Verify due dates match Tax Impound Schedule for accuracy; Re-check tax due dates and cushion months in Aggregate Set Up","61,62,70",,,,,,,,,,,,no
+Fees Tax Borr,655,,Aggregate Escrow Account Form ; Preliminary Title report,Update yearly tax amount as per Tax Summary; For CA: use whichever is higher between 1.25% calculation vs Tax Summary amount; Compare tax amounts from both sources and use the higher value; Auto-fills from Aggregate Escrow Account form completion,"61,62,63,69",,,,,,,,,,,,no
+Fees Tax Per Mo,231,,,Verify monthly amounts match between Tax Summary and Final Approval/1003,61,,,,,,,,,,,,no
+Fees Tax Svc Fee Borr,336,LE,,803-835 series - verify against multiple source documents,67,,,,,,,,,,,,no
+Fees Total Closing Costs,TOTPCC,CFPB APR Defined Fees.xlsx,,Check PAC (Paid at Closing) and POC (Paid Outside Closing) designations; Check highlighted details in fee summary box to ensure accuracy,"72,73",,,,,,,,,,,,no
+Fees Underwriting Fee APR,SYS.X23,LE,,"Verify against attached LE's, Initial/COC CD",64,,,,,,,,,,,,no
+Fees VA Fund Fee APR,SYS.X29,Last LE,Revised VA Funding table,"Confirm correct funding fee percentage matches LE and CD documents; Check that same % applies for Regular Military, Reserves and National Guard officers - no separate % for Military & Reservist","58,59",,,,,,,,,,,,no
+Fees VA Fund Fee Borr,1050,,LE ; Initial CD ; COC CD ; Mortgage Insurance details,"Verify/Update with attached Final Approval/1003 and according to fee structure. Use revised VA Funding table for loans closing on or after Jan 1, 2020. Same percentage applies for Regular Military, Reserves and National Guard; Update funding fee when applicable; Check for investor related funding fees","48,61,64",,,,,,,,,,,,no
+FHA Case assignment document,,FHA Case assignment document,,,,,,,,,,,,,,,no
+First Pymt Date,682,NOTE Date,,"Ensure first payment date is exactly one month after closing/note date; Must be one month after Closing Date (e.g., if Closing Date is 01/24/2019, first payment date should be 03/01/2019)","53,60",,,,,,,,,,,,no
+First Rate Adjustment Cap,697,Last LE,,"Auto-populated for ARM loans, verify against Last LE and Initial CD",96,,,,,,,,,,,,no
+Hazard Ins Co Contact,VEND.X163,HOI policy,,Can be blank if no information is provided on HOI,34,,,,,,,,,,,,no
+Hazard Insurance Agent Email,,HOI policy,,,,,,,,,,,,,,,no
+Hazard Insurance Company Name,L252,Hazard Insurance policy,,Cross-reference with attached Hazard Insurance policy document,34,,,,,,,,,,,,no
+Home Inspection Fee,,1300 Series Additional Settlement Charges,,,,,,,,,,,,,,,no
+Impound Types,2294,Loan Estimate,Aggregate Escrow Account form ; LE (Loan Estimate) ; TOOLS > SECONDARY REGISTRATION > CURRENT LOAN INFO > TRANSACTION DETAILS,Hard stop if not YES for both - request CofC CD correction; Hard stop if not reflected - request UW correction; Verify LE reflects Impounds as Yes or No and cross verify with lock details in Secondary Registration; Presence determines which escrow account option is auto-selected,"63,70,95",,,,,,,,,,,,no
+impound_amounts,,Escrow Analysis,,,,,,,,,,,,,,,no
+Impounds Waived,2293,,Aggregate Escrow Account form ; 1003 page-2 form ; Closing Disclosure,"Use loan type and Direct system locked information only; Ensure CD matches lock details for Impounds - if different, Lock desk needs to correct in Encompass; Auto-checked when impounds are updated in Aggregate Escrow Account form; Must be checked when no impounds are present","63,70,95",,,,,,,,,,,,yes
+Insurance Due Date,,,,,,,,,,,,,,,,,no
+Insurance Mtg Declining Renewals,3248,Mortgage Insurance Certificate,,"Verify months from MI certificate, should always be 120; Verify Declining Renewals checkbox is unchecked for Conventional BPMI loans",57,,,,,,,,,,,,no
+Insurance Mtg Ins Cancel at %,1205,,,Ensure Cancel At field is set to exactly '78.000',57,,,,,,,,,,,,no
+Insurance Mtg Ins Upfront Factor,1107,Mortgage Insurance Certificate,LE ; Initial CD ; COC CD ; Mortgage Insurance details,Ensure 'Charges for the Insurance are collected upfront at loan closing' button is checked for Conventional Single Premium MI loans; Update upfront mortgage premium when applicable; 803-835 series - verify against multiple source documents when applicable,"57,61,67",,,,,,,,,,,,no
+Interest Only Indicator,HMDA.X120,,,Only update or verify when the loan program is Interest Only,56,,,,,,,,,,,,no
+Investor Name,VEND.X263,File Contacts,Loan file,"Check that Investor field is auto-populated correctly from File Contacts; Check if investor is specified and verify accuracy; Check if investor is Chase, SGCP, Wellsfargo, Caliber Non-Agency ARM, Rushmore, TIAA (assumption allowed) or IMPAC, Galton (assumption not allowed)","40,53,93",,,,,,,,,,,,no
+Late Charge %,674,Encompass Forms RegZ-CD,Closing Disclosure,"Always ensure it reads 15 days for 'If a payment is more than ___ days late'; Conventional = 5%, FHA/VA/USDA = 4%; Should be N/A or 0.00; If a payment is more than ___ days late, always ensure it reads 15 days","59,94",,,,,,,,,,,,yes
+Lender Address,CD5.X8,Encompass Tools > File Contacts > Lender,File Contacts under Tools tab,"Verify address is '8345 WEST SUNSET ROAD, SUITE 380, LAS VEGAS, NV 89113'; Comes from File Contacts under Tools tab or Business contacts","31,81",,,,,,,,,,,,no
+Lender Case #,305,Loan file,,Must be updated in Hold Harmless Disclosure form for files drawing without CTC,101,,,,,,,,,,,,no
+Lender City,CD5.X9,Lender location,,Verify correct lender city is entered,28,,,,,,,,,,,,no
+Lender Contact ST License ID,CD5.X16,Mavent report under Tools >> Compliance Review,Encompass Tools > File Contacts > Lender,Check completeness and accuracy against Mavent report; Verify AWM LIC ID is '204',"27,31",,,,,,,,,,,,no
+Lender Credits,CD2.XSTLC,LE,Initial CD ; Purchase Contract ; COC CD,"Must match credit amounts on LE and CD documents; Amount will be updated in positive (+) side. System will consider it as Negative (Credit); Must be updated in highlighted section only, cross-reference with attached documents","65,66,75",,,,,,,,,,,,no
+Lender Email,95,Encompass Tools > File Contacts > Lender,,Verify email is LO's email id,31,,,,,,,,,,,,no
+Lender Fax,1263,Encompass Tools > File Contacts > Lender,,Verify fax number is '702-920-8421',31,,,,,,,,,,,,no
+Lender Name,CD5.X7,1003 Page-3 Lender Section,Encompass Tools > File Contacts > Lender ; File Contacts ; File Contacts under Tools tab ; Form 1003,"Must match exactly 'ALL WESTERN MORTGAGE, INC.'; Ensure lender name is 'ALL WESTERN MORTGAGE, INC.' - select from Business contacts if not updated; Confirm lender name is exactly 'ALL WESTERN MORTGAGE, INC.' in ALTA/ATIMA clause; Check that Lender field is auto-populated correctly from File Contacts; Comes from File Contacts under Tools tab or Business contacts; Click 'Copy Form 1003' button if Lender information is blank","27,31,33,40,81,97",,,,,,,,,,,,no
+Lender Phone,324 | CD5.X18,Mavent report under Tools >> Compliance Review,Encompass Tools > File Contacts > Lender,"If phone not updated for LO, use AWM Corporate office phone number ; Verify phone number is '702-369-0905'",27 ; 31,,,,,,,,,,,,no
+Lender State,CD5.X10,Lender location,Encompass Tools > File Contacts > Lender,Verify correct lender state is entered; Confirm Org. State is 'Nevada (always)',"28,31",,,,,,,,,,,,no
+Lender's Title Insurance Paid To,NEWHUD.X805,Closing Disclosure Section C,,Title fees should be in Section C when Title Company on service list provider and Title Company for closing are different,85,,,,,,,,,,,,yes
+Letter A (APR) Checkbox,,2015 Itemization Form,,,,,,,,,,,,,,,no
+Letter A Box Status,,,,,,,,,,,,,,,,,no
+Liability after Foreclosure for Closing Disclosure,CD5.X6,Closing Disclosure page 5,,Always needs to be checked irrespective of loan types,97,,,,,,,,,,,,yes
+Lien Position,420,Final 1003,,Ensure Lien Position Type matches between Final Approval and Final 1003,56,,,,,,,,,,,,no
+LO Compensation - Borrower Paid Discount Point Amount Line 1,NEWHUD.X1151,LE,,"B=Broker, L=Lender, O=Other based on who pays",67,,,,,,,,,,,,no
+Loan Amount,1109,Title Report,Last LE ; Initial CD ; COC CD ; 1003,"Compare loan amount between Title Report and Direct system; Compare loan amount on CD with attached last LE, Initial CD/COC CD, and Approval Final/1003","33,82",,,,,,,,,,,,no
+Loan Costs,CD2.XSTD,Closing Disclosure,,Verify loan costs before sending docs to all parties,83,,,,,,,,,,,,yes
+Loan Estimate - Adjustments and Other Credits,LE2.X4,Agreement addendum,,"Add if any other credits to borrower per UW's Condition or Agreement addendum (e.g., Gift Funds, Buyer's agent credit); No changes on CD side and ensure 'Did this Change' is updated correctly","90,92",,,,,,,,,,,,no
+Loan Estimate - Construction Loan,LE3.X15,Appraisal,,Check appraisal to determine if current year new construction or under construction (builder loan),62,,,,,,,,,,,,no
+Loan Estimate - D.Total Loan Costs,LE2.XSTD,Closing Disclosure Section D,,"Verify that Section D shows correct total summary of all loan costs from Sections A, B, and C",85,,,,,,,,,,,,yes
+Loan Estimate - Down Payment/Funds from Borrower,LE2.X2,Last LE,,No changes on CD side and ensure 'Did this Change' is updated correctly,92,,,,,,,,,,,,no
+"Loan Estimate - Estimated Taxes, Insurance and Assessments",LE1.X29,Aggregate Escrow Statement,,Check boxes are marked per what is impounded/not impounded on Aggregate Escrow statement and verify against Last LE,83,,,,,,,,,,,,no
+Loan Estimate - Seller Credit Amount,LE2.X100,,Last LE ; LE side,Especially important on VA loans when itemizing buyer charged costs from seller credit; No changes on CD side and ensure 'Did this Change' is updated correctly,"75,92",,,,,,,,,,,,no
+Loan Estimate Adjustments and Other Credits,LE2.X4,Last LE,,"Add if any other credits to borrower per UW's Condition or Agreement addendum (e.g., Gift Funds, Buyer's agent credit); No changes on CD side and ensure 'Did this Change' is updated correctly","90,92",,,,,,,,,,,,no
+Loan Estimate Funds for Borrower,LE2.X3,Last LE,,No changes on CD side and ensure 'Did this Change' is updated correctly,92,,,,,,,,,,,,no
+Loan Info Loan ID,GUID,,,Should be AWM Loan number,81,,,,,,,,,,,,no
+Loan Info Refi Purpose,299,Final 1003,,"Only verify when loan purpose is refinance, check selection matches across all documents",56,,,,,,,,,,,,no
+Loan Number,364,Master Policy,Final 1003 ; Loan file,Check loan number matches attached documents; Required on updated master policy per PTF condition; Required for email subject line format,"20,35,46",,,,,,,,,,,,no
+Loan Officer,317,Mavent report under Tools >> Compliance Review,,Check completeness and accuracy against Mavent report,27,,,,,,,,,,,,no
+Loan Program,1401,,2015 Itemization form,"For Texas Cash out Refinance with Primary occupancy, select 'TX HOME EQUITY'; Check loan program details in 2015 Itemization form","53,64",,,,,,,,,,,,no
+Loan Purpose,384,Loan file,Final 1003 ; LE ; COC CD,"Verify loan purpose to determine appropriate closing conditions; Verify if transaction is Refinance with Primary Occupancy (rescission applies) vs Purchase or Refinance Secondary/Investment (no rescission); Check that Purpose of Loan matches across all source documents; Should be 'Purchase' or 'Refinance' or 'Construction' or 'Home Equity' as per transaction; Check if refinance transaction - if so, page will only show Liabilities/Payoff section","28,54,56,81,88",,,,,,,,,,,,no
+Loan Team Member Name - Doc Drawer,Loan TeamMember Name Doc Drawer,File Contacts,,Check that Docs Prepared By field is auto-populated correctly from File Contacts,40,,,,,,,,,,,,no
+Loan Term,1347,Final 1003,,Check that Loan Terms are updated and match across all attached documents; Do not check 'Construction Period included in Loan terms' box except for Construction loans - consult team lead,"56,81",,,,,,,,,,,,no
+Loan Type,1172,Loan file,COC CD ; Initial CD ; Final 1003 ; LE,"Verify loan type to determine appropriate closing conditions; Check that Loan Type matches across all source documents; Check if loan is Conventional with >80% LTV, FHA, or VA to determine MI requirements; FHA/VA require impounds; Conventional optional unless LTV >80%; Compare loan product between Initial CD and COC CD; Must match transaction and Initial CD","28,56,57,63,79,81",,,,,,,,,,,,no
+Lock Date,761,Last LE,,Check rate lock date for accuracy,53,,,,,,,,,,,,no
+Lock Expiration Date,762,Last LE,,"If Encompass and LE don't match and lock is extended, confirm with processor about extension fees",53,,,,,,,,,,,,no
+LTV,353,Loan file,,"Verify LTV is greater than 80% for Conventional loans requiring MI section updates; Check LTV percentage in Underwriter Summary; If LTV >80%, impounds become mandatory except CA up to 90% LTV","57,60,63",,,,,,,,,,,,no
+Mers Min #,1051,,,"Click MERS MIN box to generate, then verify on MERS website that it's not duplicate",21,,,,,,,,,,,,no
+MI Renewal %,,Last LE,,,,,,,,,,,,,,,no
+MIP Refund,,,,,,,,,,,,,,,,,no
+MIP Refund Amount,,,,,,,,,,,,,,,,,no
+Mortgage Insurance Due Date,,,,,,,,,,,,,,,,,no
+Negative Amortization,CD4.X2,Closing Disclosure,,Always needs to be checked as 'do not have a negative amortization feature' irrespective of loan type,94,,,,,,,,,,,,yes
+NMLS Loan Originator ID,3238,Mavent report under Tools >> Compliance Review,Encompass Tools > File Contacts > Lender,Check completeness and accuracy against Mavent report; Verify AWM NMLS is '14210',"27,31",,,,,,,,,,,,no
+Note Date,,,,,,,,,,,,,,,,,no
+Occupancy Type,3335,,Loan file,Check occupancy type affects rider requirements and pricing accuracy; Verify occupancy is Primary for rescission to apply on refinance transactions,"42,54",,,,,,,,,,,,no
+Order Type,,Reg-Z CD form,,,,,,,,,,,,,,,no
+Orig Credit,1847,,,Verify if principal reduction adjustment is from excess credit rate to determine Credit box selection,88,,,,,,,,,,,,no
+Other Costs,CD2.XSTI,Closing Disclosure,,Verify other costs before sending docs to all parties,83,,,,,,,,,,,,yes
+Overage adjustment,,,,,,,,,,,,,,,,,no
+Overwire Amount,2005,Escrow wire instruction,,Update Bank Account number from wire instructions,33,,,,,,,,,,,,no
+Owner's Title Insurance Paid To,NEWHUD.X804,LE (Loan Estimate),Service list provider ; Title Company,Check APR designation and service provider matching between LE and Title report; Title fees fall under Sec-B when Title Company on service list provider and Title Company closing with are the same,"71,84",,,,,,,,,,,,no
+Parcel Number,,Preliminary Title Report,,,,,,,,,,,,,,,no
+Partial Payments - Apply Partial Payment,CD4.X3,Closing Disclosure,,Always needs to be checked as 'does not accept any partial payments' irrespective of loan type,94,,,,,,,,,,,,yes
+Pest Inspection Fee,,,,,,,,,,,,,,,,,no
+Planned Unit Development Project Type Indicator,URLA.X207,Appraisal report,,PUD name on UW Final Approval docs must match either Prelim or Appraisal report,42,,,,,,,,,,,,no
+Premium Type,,Mortgage Insurance Certificate,,,,,,,,,,,,,,,no
+Prior Endorsement Date,,,,,,,,,,,,,,,,,no
+Product Description,LE1.X5,,COC CD ; Final CD,"Should be Fixed Rate or Adjustable Rate as per transaction; Monitor changes: Jumbo to Conforming, Conforming to Government, FHA to VA, or vice versa","81,96",,,,,,,,,,,,no
+RealEstateBrokerB Name,CD5.X31,File Contacts,,Updated by Processing team or selected from Business contacts,97,,,,,,,,,,,,no
+REGZ Prepay Penalty Mths Hard Prepayment Period,3536,,,"Calculate 3 business days from closing date (Monday-Saturday, excluding Sunday and Federal holidays). Only applies to Refinance Primary Occupancy",54,,,,,,,,,,,,no
+Section 1000 Line 1002 POC and PTC FinancedIndicator,POPT.X195,,,"PAC stands for Paid at Closing, POC stands for Paid Outside Closing",66,,,,,,,,,,,,no
+Select Data from the Audit Trail,AuditTrail,,,Clear only audits related to Final CD/DOCS before ordering,100,,,,,,,,,,,,no
+seller city,,Purchase Agreement,,,,,,,,,,,,,,,no
+Seller Entity Type,,Purchase Agreement,,,,,,,,,,,,,,,no
+seller state,,Purchase Agreement,,,,,,,,,,,,,,,no
+seller zip,,Purchase Agreement,,,,,,,,,,,,,,,no
+seller_credit_amount,,Purchase Agreement,,,,,,,,,,,,,,,no
+Sellers Agent Addr,VEND.X145,Purchase Agreement,File Contacts under Tools tab,"Check that seller address is updated by Processing team under Tools tab File Contacts. If discrepancy between Purchase Agreement and Preliminary Title report, reach out to Processor to confirm correct seller info and add PTF Condition accordingly; Comes from File Contacts under Tools tab","26,81",,,,,,,,,,,,no
+Servicer Address,,,,,,,,,,,,,,,,,no
+Servicing Co Name,VEND.X178,,,Always should be Lender (All Western Mortgage Inc.) - verify name from business book,60,,,,,,,,,,,,no
+Servicing Payment Due Date,SERVICE.X14,Tax Impound Schedule,,Verify due dates match Tax Impound Schedule for accuracy,62,,,,,,,,,,,,no
+SettlementAgent Name,CD5.X55,Title Insurance Company,File Contacts ; Settlement Agent records,Check 'Copy to Settlement Agent' box only when Settlement & Title Company are the same; Check that settlement agent name is accurate; Information from File Contacts updated by Processing team,"32,80,97",,,,,,,,,,,,no
+State Disc - Balloon Payment,DISCLOSURE.X350,SOP requirement,,Must always be selected as 'NO',82,,,,,,,,,,,,no
+STD Adjustments Did Change Col,CD3.X117,LE comparison,,"Must be updated correctly for Total Closing Costs, Down Payments, Deposit, Funds for Borrower, Seller Credits, and Adjustments",92,,,,,,,,,,,,no
+STD Final Deposit,CD3.X106,Last LE,,No changes on CD side and ensure 'Did this Change' is updated correctly,92,,,,,,,,,,,,no
+STD Final Seller Credits,CD3.X108,Agreement addendum,,Add if any other credits to seller per UW's Condition or Agreement addendum,90,,,,,,,,,,,,no
+Sub Fin Additional Mtgs,1732,,,Verify if DPA lock confirmation is available in Documents,60,,,,,,,,,,,,no
+Subject Property Address,11,Evidence of Insurance,Closing Disclosure Security Interest section ; Initial 1003 ; Title report ; Purchase Contract ; Appraisal report,"Check if missing from master policy and add PTF condition if needed; Final address should be valid as per Tax certificate, USPS and County records. Docs Team makes final call on discrepancies; Ensure Property address is updated correctly in Security Interest section","35,81,94",,,,,,,,,,,,yes
+Subject Property County,13,,,Verify county matches subject property location,28,,,,,,,,,,,,no
+Subject Property Legal Desc1,17,1003 Page 1,,"Use legal description updated by UW from 1003, or if not updated, use details from Title Report Exhibit-A",45,,,,,,,,,,,,no
+Subject Property Purchase Price,136,Purchase agreement,Purchase Contract ; Last CD,"Confirm purchase price matches contract documents; Used in tax calculations: NV/AZ=1%/12, CA=1.25%/12, CO=1%/12 or mill levy rate; Must match Purchase Contract/addendum and last CD. For AM West Builder loans, update Final/Contract Sales price on CD pages 1 & 3","53,62,81",,,,,,,,,,,,no
+Subject Property State,14,,Loan file,"Different vesting rules apply by state - CA/NV require married status verbiage, Colorado excludes marital status, Texas has specific Deed of Trust requirements; Verify state matches subject property location; Check property state to apply correct Trustee rules; Identify if property is in dry state (disbursement next day after closing) or wet state (disbursement same day as closing); Different calculation methods for Nevada, Arizona, California, and Colorado; CA allows no impounds option up to 90% LTV for Conventional loans only; If Nevada, uncheck NV Repayment Ability Verification Worksheet from closing package","23,28,40,54,62,63,101",,,,,,,,,,,,no
+Subject Property Type,1041 | 1553 | HMDA.X11,Appraisal report,Final 1003,"Ensure correct selection for system to read correct RIDER (PUD, CONDO, 1-4 FAMILY & SECOND HOME) and accurate pricing ; Check if property type is Manufactured home in both systems before entering housing details ; Ensure Property will be field matches between Final Approval and Final 1003",42 ; 45 ; 56,,,,,,,,,,,,no
+Title Co Contact,416,Title report,,Check Title Officer name matches title report,33,,,,,,,,,,,,no
+Title Co Email,88,Title report,,Check Title Officer email matches title report,33,,,,,,,,,,,,no
+Title Company Address,,Title Report,,,,,,,,,,,,,,,no
+Title Company on Service Provider List,,LE (Loan Estimate),,,,,,,,,,,,,,,no
+Title Insurance Company Name,411,Encompass File Contacts - Title Insurance Company,File Contacts ; Title Report,Verify Title Company details match preliminary title report. Can copy to Settlement Agent if same entity.; Check that Title Insurance Company field is auto-populated correctly from File Contacts; Determine if same as service provider list company for tolerance calculation,"32,40,71",,,,,,,,,,,,no
+Title Owner's Coverage Premium,,CD Section H,,,,,,,,,,,,,,,no
+Title Report Date,,Title Report,,,,,,,,,,,,,,,no
+Tolerance Cure,CD3.X129,,,Verify tolerance cure details match Fee Variance Worksheet updates,80,,,,,,,,,,,,no
+Tolerance Cure Applied Cure Amount,FV.X366,,,Check for zero tolerance and 10% tolerance variance cures that need to be updated or verified; Auto calculates once cure is updated under line-3; Do not change the date if CD team has applied cures on transaction,"76,77,78",,,,,,,,,,,,no
+Tolerance Cure Required Cure Amount,FV.X348,LE fees,,"Auto calculates based on fees disclosed on LE & CD, can be manually entered",77,,,,,,,,,,,,no
+Total Credit for Rate Chosen,NEWHUD.X1149,LE,,Must match rate-related credits on LE and CD documents,65,,,,,,,,,,,,no
+Total Estimated Payoffs and Payments,LE2.X31,,,Amount must match underwriter's condition requirements,91,,,,,,,,,,,,no
+Total Loan Amount,2,Loan file,,Total coverage should equal or exceed loan amount,35,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
+,,,,,,,,,,,,,,,,,no
