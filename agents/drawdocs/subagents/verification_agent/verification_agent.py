@@ -13,25 +13,25 @@ from typing_extensions import TypedDict, NotRequired
 from dotenv import load_dotenv
 
 # Add project root to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
 from copilotagent import create_deep_agent
-from agents.verification_agent.tools.verification_tools import (
+from agents.drawdocs.subagents.verification_agent.tools.verification_tools import (
     compare_prep_vs_encompass_value,
     verify_field_against_documents,
     cross_check_field_with_sop,
     attempt_field_inference,
     write_corrected_field
 )
-from agents.verification_agent.tools.field_lookup_tools import (
+from agents.drawdocs.subagents.verification_agent.tools.field_lookup_tools import (
     get_field_id_from_name,
     get_missing_field_value
 )
-from agents.verification_agent.config.field_document_mapping import FIELD_MAPPING
-from agents.verification_agent.config.sop_rules import SOP_RULES
+from agents.drawdocs.subagents.verification_agent.config.field_document_mapping import FIELD_MAPPING
+from agents.drawdocs.subagents.verification_agent.config.sop_rules import SOP_RULES
 
 # Load environment variables from project root
-load_dotenv(Path(__file__).parent.parent.parent / ".env")
+load_dotenv(Path(__file__).parent.parent.parent.parent / ".env")
 
 
 # =============================================================================

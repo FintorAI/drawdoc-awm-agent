@@ -9,9 +9,9 @@ import json
 from pathlib import Path
 
 # Add project root to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from orchestrator import run_orchestrator
+from agents.drawdocs import run_orchestrator
 
 
 def test_basic_execution():
@@ -75,7 +75,7 @@ def test_user_prompt_parsing():
     print("TEST: User Prompt Parsing")
     print("=" * 80)
     
-    from orchestrator.orchestrator_agent import OrchestratorConfig, OrchestratorAgent
+    from agents.drawdocs.orchestrator_agent import OrchestratorConfig, OrchestratorAgent
     
     # Test "only prep" prompt
     config = OrchestratorConfig(
@@ -109,7 +109,7 @@ def test_output_formats():
     print("TEST: Output Formats")
     print("=" * 80)
     
-    from orchestrator.orchestrator_agent import OrchestratorConfig, OrchestratorAgent
+    from agents.drawdocs.orchestrator_agent import OrchestratorConfig, OrchestratorAgent
     
     config = OrchestratorConfig(loan_id="test")
     agent = OrchestratorAgent(config)
@@ -166,7 +166,7 @@ def test_correction_extraction():
     print("TEST: Correction Extraction")
     print("=" * 80)
     
-    from orchestrator.orchestrator_agent import OrchestratorAgent, OrchestratorConfig
+    from agents.drawdocs.orchestrator_agent import OrchestratorAgent, OrchestratorConfig
     from langchain_core.messages import ToolMessage
     
     config = OrchestratorConfig(loan_id="test")
@@ -213,7 +213,7 @@ def test_demo_correction_overlay():
     print("TEST: Demo Correction Overlay")
     print("=" * 80)
     
-    from orchestrator.orchestrator_agent import OrchestratorAgent, OrchestratorConfig
+    from agents.drawdocs.orchestrator_agent import OrchestratorAgent, OrchestratorConfig
     
     config = OrchestratorConfig(loan_id="test")
     agent = OrchestratorAgent(config)

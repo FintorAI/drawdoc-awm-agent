@@ -24,8 +24,8 @@ try:
     from dotenv import load_dotenv
     # Try to load .env from parent directories
     env_paths = [
-        Path(__file__).parent.parent.parent / ".env",
         Path(__file__).parent.parent.parent.parent / ".env",
+        Path(__file__).parent.parent.parent.parent.parent / ".env",
         Path(__file__).parent / ".env",
     ]
     for env_path in env_paths:
@@ -38,7 +38,7 @@ except ImportError:
     pass  # dotenv not installed, rely on system environment variables
 
 # Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
 # Import Encompass client - use same pattern as preparation_agent
 from copilotagent import EncompassConnect
@@ -80,7 +80,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # CSV file path - use the Sheet1 version in data folder
-CSV_PATH = Path(__file__).parent.parent.parent / "data" / "DrawingDoc Verifications - Sheet1.csv"
+CSV_PATH = Path(__file__).parent.parent.parent.parent.parent / "packages" / "data" / "DrawingDoc Verifications - Sheet1.csv"
 
 
 def _load_csv_fields() -> List[Dict[str, str]]:

@@ -132,7 +132,7 @@ def main():
     # Paths
     base_dir = Path(__file__).parent.parent
     docx_path = base_dir / "data" / "Docs Draw SOP (1).docx"
-    csv_path = base_dir / "data" / "DrawingDoc Verifications - Sheet1.csv"
+    csv_path = base_dir.parent.parent.parent.parent / "packages" / "data" / "DrawingDoc Verifications - Sheet1.csv"
     output_path = base_dir / "config" / "sop_rules.json"
     
     print(f"Extracting SOP from: {docx_path}")

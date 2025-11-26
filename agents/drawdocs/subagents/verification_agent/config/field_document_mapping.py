@@ -72,7 +72,7 @@ def load_field_mapping() -> Dict[str, Dict[str, Any]]:
         Dictionary mapping field IDs to field information
     """
     base_dir = Path(__file__).parent.parent
-    csv_path = base_dir / "data" / "DrawingDoc Verifications - Sheet1.csv"
+    csv_path = base_dir.parent.parent.parent.parent / "packages" / "data" / "DrawingDoc Verifications - Sheet1.csv"
     
     return parse_csv_field_mapping(csv_path)
 

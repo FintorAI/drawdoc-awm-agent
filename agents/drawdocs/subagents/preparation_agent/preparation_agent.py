@@ -58,8 +58,8 @@ try:
     )
 except ImportError:
     # Fall back to absolute imports (when called from orchestrator)
-    from agents.preparation_agent.tools.extraction_schemas import get_extraction_schema, list_supported_document_types
-    from agents.preparation_agent.tools.field_mappings import (
+    from agents.drawdocs.subagents.preparation_agent.tools.extraction_schemas import get_extraction_schema, list_supported_document_types
+    from agents.drawdocs.subagents.preparation_agent.tools.field_mappings import (
         get_field_mapping,
         get_all_mappings_for_document,
         is_mapping_ready,
@@ -642,7 +642,7 @@ def _process_single_document(
             try:
                 from tools.extraction_schemas import list_supported_document_types
             except ImportError:
-                from agents.preparation_agent.tools.extraction_schemas import list_supported_document_types
+                from agents.drawdocs.subagents.preparation_agent.tools.extraction_schemas import list_supported_document_types
             supported_types = list_supported_document_types()
             doc_title_lower = doc_title.lower()
             
@@ -703,7 +703,7 @@ def _process_single_document(
         try:
             from tools.extraction_schemas import get_extraction_schema
         except ImportError:
-            from agents.preparation_agent.tools.extraction_schemas import get_extraction_schema
+                from agents.drawdocs.subagents.preparation_agent.tools.extraction_schemas import get_extraction_schema
         try:
             schema = get_extraction_schema(normalized_doc_type)
         except ValueError:
@@ -753,7 +753,7 @@ def _process_single_document(
             try:
                 from tools.field_mappings import get_all_mappings_for_document
             except ImportError:
-                from agents.preparation_agent.tools.field_mappings import get_all_mappings_for_document
+                from agents.drawdocs.subagents.preparation_agent.tools.field_mappings import get_all_mappings_for_document
             available_mappings = get_all_mappings_for_document(normalized_doc_type)
             if available_mappings:
                 logger.warning(f"[PROCESS] Field mappings exist for '{normalized_doc_type}' but no fields were mapped. Extracted data: {list(extract_result.get('extracted_data', {}).keys())}")
@@ -862,7 +862,7 @@ def process_loan_documents(
     try:
         from tools.extraction_schemas import list_supported_document_types
     except ImportError:
-        from agents.preparation_agent.tools.extraction_schemas import list_supported_document_types
+        from agents.drawdocs.subagents.preparation_agent.tools.extraction_schemas import list_supported_document_types
     
     matching_documents = []
     MAX_DOCS_PER_TYPE = 5  # Process up to 5 documents per requested type
@@ -989,7 +989,7 @@ def process_loan_documents(
         try:
             from tools.csv_loader import get_csv_loader
         except ImportError:
-            from agents.preparation_agent.tools.csv_loader import get_csv_loader
+                from agents.drawdocs.subagents.preparation_agent.tools.csv_loader import get_csv_loader
         loader = get_csv_loader()
         all_csv_fields = loader.get_all_fields()
         preferred_doc_types = set()
@@ -1082,7 +1082,7 @@ def process_loan_documents(
         try:
             from tools.extraction_schemas import get_extraction_schema
         except ImportError:
-            from agents.preparation_agent.tools.extraction_schemas import get_extraction_schema
+                from agents.drawdocs.subagents.preparation_agent.tools.extraction_schemas import get_extraction_schema
         for doc_type in unique_doc_types:
             try:
                 schema = get_extraction_schema(doc_type)
@@ -1152,7 +1152,7 @@ def process_loan_documents(
     try:
         from tools.field_mappings import get_preferred_documents_for_field, should_extract_from_document
     except ImportError:
-        from agents.preparation_agent.tools.field_mappings import get_preferred_documents_for_field, should_extract_from_document
+            from agents.drawdocs.subagents.preparation_agent.tools.field_mappings import get_preferred_documents_for_field, should_extract_from_document
     
     # First pass: Collect all extractions, prioritizing preferred documents
     for result in processing_results:

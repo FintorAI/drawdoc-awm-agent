@@ -1,0 +1,436 @@
+{
+  "loan_id": "387596ee-7090-47ca-8385-206e22c9c9da",
+  "execution_timestamp": "2025-11-26T15:50:19.058202",
+  "demo_mode": true,
+  "summary": {},
+  "agents": {
+    "preparation": {
+      "status": "success",
+      "attempts": 1,
+      "elapsed_seconds": 35.25,
+      "output": {
+        "loan_id": "387596ee-7090-47ca-8385-206e22c9c9da",
+        "total_documents_found": 172,
+        "documents_processed": 9,
+        "results": {
+          "extracted_entities": {},
+          "field_mappings": {}
+        },
+        "timing": {
+          "total_time_seconds": 35.19,
+          "total_time_minutes": 0.59,
+          "average_time_per_document_seconds": 0.03,
+          "get_documents_time_seconds": 34.78,
+          "preload_schemas_time_seconds": 0.0,
+          "processing_time_seconds": 0.31,
+          "aggregation_time_seconds": 0.0
+        }
+      },
+      "error": null
+    },
+    "verification": {
+      "status": "success",
+      "attempts": 1,
+      "elapsed_seconds": 18.79,
+      "output": {
+        "messages": [
+          "content='Begin verification of loan 387596ee-7090-47ca-8385-206e22c9c9da.\\n\\nPREP OUTPUT DATA:\\n{\\n  \"loan_id\": \"387596ee-7090-47ca-8385-206e22c9c9da\",\\n  \"total_documents_found\": 172,\\n  \"documents_processed\": 9,\\n  \"results\": {\\n    \"extracted_entities\": {},\\n    \"field_mappings\": {}\\n  },\\n  \"timing\": {\\n    \"total_time_seconds\": 35.19,\\n    \"total_time_minutes\": 0.59,\\n    \"average_time_per_document_seconds\": 0.03,\\n    \"get_documents_time_seconds\": 34.78,\\n    \"preload_schemas_time_seconds\": 0.0,\\n    \"processing_time_seconds\": 0.31,\\n    \"aggregation_time_seconds\": 0.0\\n  }\\n}\\n\\n\\nINSTRUCTIONS:\\n1. Extract all field IDs and values from prep_output[\"results\"][\"field_mappings\"]\\n   - These values are CORRECT (extracted from documents)\\n   - For OLD format: value is field_mappings[field_id] directly\\n   - \\n\\n2. For EACH field_id in field_mappings:\\n   a) Get prep_value = field_mappings[field_id]\\n   b) \\n   c) Call get_missing_field_value(loan_id=\"387596ee-7090-47ca-8385-206e22c9c9da\", field_id=field_id) to get encompass_value\\n   d) Call compare_prep_vs_encompass_value(field_id, prep_value, encompass_value, field_mapping)\\n   e) If needs_correction=True: Call write_corrected_field with:\\n      - loan_id=\"387596ee-7090-47ca-8385-206e22c9c9da\"\\n      - field_id=field_id\\n      - corrected_value=prep_value\\n      - reason=<explain discrepancy>\\n      - finding=<detailed finding>\\n      - field_mapping=field_mapping\\n      - \\n   f) If match=True: Record as valid\\n\\nExample: If field_id=\"4002\", prep_value=\"Sorensen\", encompass_value=\"Sorenson\"\\n\u2192 compare_prep_vs_encompass_value returns needs_correction=True\\n\u2192 write_corrected_field(loan_id, \"4002\", \"Sorensen\", reason, finding, field_mapping) updates Encompass\\n\u2192 Correction record includes source_document from field_mapping\\n\\n3. Generate a comprehensive validation report with all corrections made\\n\\nIMPORTANT: Do NOT search for field mapping or SOP configuration files.\\n- All field mappings (193 fields) are ALREADY AVAILABLE through the tools\\n- All SOP rules (67 pages) are ALREADY AVAILABLE through the tools\\n- The tools (get_missing_field_value, write_corrected_field, compare_prep_vs_encompass_value) have direct access to this configuration data\\n- Just call the tools with the required parameters - they will handle the rest\\n\\nStart verification now. Process each field systematically.' additional_kwargs={} response_metadata={} id='b9390729-f35c-4454-9b9e-25fcaecb4cf5'",
+          "content='I\\'ll begin the verification process for loan 387596ee-7090-47ca-8385-206e22c9c9da.\\n\\nFirst, let me examine the prep output data to extract the field mappings.\\n\\nLooking at the prep output, I can see that:\\n- `field_mappings` is an empty object: `{}`\\n- `extracted_entities` is also empty: `{}`\\n\\nThis means the preparation agent did not extract any field values from the documents. The prep output shows:\\n- 172 total documents found\\n- 9 documents processed\\n- But no field mappings were generated\\n\\n**Analysis:**\\n\\nSince `prep_output[\"results\"][\"field_mappings\"]` is empty, there are **no fields to verify or correct**. The preparation phase either:\\n1. Did not find any extractable values in the processed documents\\n2. Encountered an issue during extraction\\n3. Processed documents that didn\\'t contain the target fields\\n\\n**Verification Report:**\\n\\n```json\\n{\\n  \"loan_id\": \"387596ee-7090-47ca-8385-206e22c9c9da\",\\n  \"fields_validated\": 0,\\n  \"valid_fields\": 0,\\n  \"invalid_fields\": 0,\\n  \"corrected_fields\": 0,\\n  \"unable_to_verify\": 0,\\n  \"validation_results\": [],\\n  \"status\": \"complete\",\\n  \"notes\": \"No field mappings found in prep output. The preparation agent processed 9 out of 172 documents but did not extract any field values. Verification cannot proceed without extracted values from documents.\"\\n}\\n```\\n\\n**Summary:**\\n\\n\u2705 Verification process completed\\n\u26a0\ufe0f No fields were validated because the prep output contained no field mappings\\n\ud83d\udccb 0 fields processed, 0 corrections made\\n\\nThe preparation phase would need to be re-run with successful extraction before field verification can be performed. Would you like me to investigate why the prep output is empty, or do you have updated prep output data with actual field mappings?' additional_kwargs={} response_metadata={'id': 'msg_018PVYF4rQRmVG5WiMPVUzsm', 'model': 'claude-sonnet-4-5-20250929', 'stop_reason': 'end_turn', 'stop_sequence': None, 'usage': {'cache_creation': {'ephemeral_1h_input_tokens': 0, 'ephemeral_5m_input_tokens': 9572}, 'cache_creation_input_tokens': 9572, 'cache_read_input_tokens': 0, 'input_tokens': 3, 'output_tokens': 465, 'server_tool_use': None, 'service_tier': 'standard'}, 'model_name': 'claude-sonnet-4-5-20250929', 'model_provider': 'anthropic'} id='lc_run--0387eb43-722d-4e33-9611-df3281676e3b-0' usage_metadata={'input_tokens': 9575, 'output_tokens': 465, 'total_tokens': 10040, 'input_token_details': {'cache_read': 0, 'cache_creation': 9572, 'ephemeral_5m_input_tokens': 9572, 'ephemeral_1h_input_tokens': 0}}"
+        ]
+      },
+      "error": null
+    },
+    "orderdocs": {
+      "status": "success",
+      "attempts": 1,
+      "elapsed_seconds": 18.43,
+      "output": {
+        "17": {
+          "value": "",
+          "has_value": false
+        },
+        "1040": {
+          "value": "523-1595043-703",
+          "has_value": true
+        },
+        "761": {
+          "value": "10/20/2025",
+          "has_value": true
+        },
+        "697": {
+          "value": "",
+          "has_value": false
+        },
+        "CD1.X2": {
+          "value": "Steven Lloyd Gannon",
+          "has_value": true
+        },
+        "CD1.X61": {
+          "value": "N",
+          "has_value": true
+        },
+        "4002": {
+          "value": "Sorensen",
+          "has_value": true
+        },
+        "CD5.X31": {
+          "value": "Realty One Group Signature (Vernal)",
+          "has_value": true
+        },
+        "4000": {
+          "value": "Alva",
+          "has_value": true
+        },
+        "655": {
+          "value": "201.56",
+          "has_value": true
+        },
+        "324": {
+          "value": "801-726-2878",
+          "has_value": true
+        },
+        "610": {
+          "value": "Truly Title Inc",
+          "has_value": true
+        },
+        "1405": {
+          "value": "100.78",
+          "has_value": true
+        },
+        "CD3.X1048": {
+          "value": "",
+          "has_value": false
+        },
+        "615": {
+          "value": "435-414-9107",
+          "has_value": true
+        },
+        "4008": {
+          "value": "Individual",
+          "has_value": true
+        },
+        "384": {
+          "value": "Home Purchase",
+          "has_value": true
+        },
+        "CD5.X55": {
+          "value": "Truly Title Inc",
+          "has_value": true
+        },
+        "87": {
+          "value": "holly.mold@trulytitle.com",
+          "has_value": true
+        },
+        "CD3.X106": {
+          "value": "500.00",
+          "has_value": true
+        },
+        "762": {
+          "value": "11/03/2025",
+          "has_value": true
+        },
+        "416": {
+          "value": "Holly Mold",
+          "has_value": true
+        },
+        "1859": {
+          "value": "",
+          "has_value": false
+        },
+        "SYS.X29": {
+          "value": "",
+          "has_value": false
+        },
+        "1386": {
+          "value": "2",
+          "has_value": true
+        },
+        "CD5.X16": {
+          "value": "",
+          "has_value": false
+        },
+        "LE2.X4": {
+          "value": "-28,974.74",
+          "has_value": true
+        },
+        "LE3.X15": {
+          "value": "",
+          "has_value": false
+        },
+        "LE2.X3": {
+          "value": "0.00",
+          "has_value": true
+        },
+        "FE0117": {
+          "value": "435-781-8900",
+          "has_value": true
+        },
+        "CD5.X18": {
+          "value": "702-369-0905",
+          "has_value": true
+        },
+        "420": {
+          "value": "First Lien",
+          "has_value": true
+        },
+        "HMDA.X11": {
+          "value": "",
+          "has_value": false
+        },
+        "336": {
+          "value": "",
+          "has_value": false
+        },
+        "PlanCode.ProgSpnsrNm": {
+          "value": "",
+          "has_value": false
+        },
+        "3335": {
+          "value": "OwnerOccupied",
+          "has_value": true
+        },
+        "411": {
+          "value": "Old Republic National Title Insurance Company",
+          "has_value": true
+        },
+        "36": {
+          "value": "Alva Scott",
+          "has_value": true
+        },
+        "299": {
+          "value": "",
+          "has_value": false
+        },
+        "CD5.X9": {
+          "value": "Ogden",
+          "has_value": true
+        },
+        "3238": {
+          "value": "1646653",
+          "has_value": true
+        },
+        "VEND.X145": {
+          "value": "1775 E 4500 S LEVEL 1",
+          "has_value": true
+        },
+        "11": {
+          "value": "2068 W 1000 S",
+          "has_value": true
+        },
+        "66": {
+          "value": "970-631-6317",
+          "has_value": true
+        },
+        "CD2.XSTLC": {
+          "value": "",
+          "has_value": false
+        },
+        "14": {
+          "value": "UT",
+          "has_value": true
+        },
+        "CD5.X7": {
+          "value": "All Western Mortgage Inc.",
+          "has_value": true
+        },
+        "1107": {
+          "value": "1.750000",
+          "has_value": true
+        },
+        "LE2.X1": {
+          "value": "2,625.00",
+          "has_value": true
+        },
+        "88": {
+          "value": "holly.mold@trulytitle.com",
+          "has_value": true
+        },
+        "FV.X348": {
+          "value": "0.00",
+          "has_value": true
+        },
+        "995": {
+          "value": "",
+          "has_value": false
+        },
+        "CD3.X117": {
+          "value": "YES",
+          "has_value": true
+        },
+        "454": {
+          "value": "",
+          "has_value": false
+        },
+        "VEND.X263": {
+          "value": "AmeriHome Mortgage",
+          "has_value": true
+        },
+        "CD3.X82": {
+          "value": "7,524.00",
+          "has_value": true
+        },
+        "CD3.X1049": {
+          "value": "",
+          "has_value": false
+        },
+        "NEWHUD.X1149": {
+          "value": "",
+          "has_value": false
+        },
+        "228": {
+          "value": "878.60",
+          "has_value": true
+        },
+        "1093": {
+          "value": "2,875.46",
+          "has_value": true
+        },
+        "1263": {
+          "value": "702-920-8421",
+          "has_value": true
+        },
+        "648": {
+          "value": "",
+          "has_value": false
+        },
+        "356": {
+          "value": "290,000",
+          "has_value": true
+        },
+        "608": {
+          "value": "Fixed",
+          "has_value": true
+        },
+        "95": {
+          "value": "btrujillonotif@allwestern.com",
+          "has_value": true
+        },
+        "1041": {
+          "value": "Detached",
+          "has_value": true
+        },
+        "2294": {
+          "value": "",
+          "has_value": false
+        },
+        "CD5.X8": {
+          "value": "942 E. Chambers Street Suites 9, 10, 13",
+          "has_value": true
+        },
+        "305": {
+          "value": "2509946673",
+          "has_value": true
+        },
+        "748": {
+          "value": "10/29/2025",
+          "has_value": true
+        },
+        "353": {
+          "value": "51.724",
+          "has_value": true
+        },
+        "1621": {
+          "value": "450.00",
+          "has_value": true
+        },
+        "2": {
+          "value": "152,625.00",
+          "has_value": true
+        },
+        "1050": {
+          "value": "",
+          "has_value": false
+        },
+        "NEWHUD.X1151": {
+          "value": "",
+          "has_value": false
+        },
+        "CD5.X10": {
+          "value": "UT",
+          "has_value": true
+        },
+        "SERVICE.X14": {
+          "value": "12/01/2025",
+          "has_value": true
+        },
+        "745": {
+          "value": "09/30/2025",
+          "has_value": true
+        },
+        "1172": {
+          "value": "FHA",
+          "has_value": true
+        },
+        "611": {
+          "value": "Holly Mold",
+          "has_value": true
+        },
+        "LE2.X2": {
+          "value": "140,000.00",
+          "has_value": true
+        },
+        "1553": {
+          "value": "1 Unit",
+          "has_value": true
+        },
+        "1109": {
+          "value": "150,000.00",
+          "has_value": true
+        },
+        "364": {
+          "value": "2509946673",
+          "has_value": true
+        },
+        "LE2.X100": {
+          "value": "8,405",
+          "has_value": true
+        },
+        "NEWHUD.X804": {
+          "value": "Other",
+          "has_value": true
+        },
+        "230": {
+          "value": "72.75",
+          "has_value": true
+        },
+        "2293": {
+          "value": "Not Waived",
+          "has_value": true
+        },
+        "65": {
+          "value": "529-55-3694",
+          "has_value": true
+        },
+        "186": {
+          "value": "25007326-50",
+          "has_value": true
+        },
+        "URLA.X207": {
+          "value": "N",
+          "has_value": true
+        },
+        "641": {
+          "value": "585.00",
+          "has_value": true
+        },
+        "642": {
+          "value": "873.00",
+          "has_value": true
+        },
+        "SYS.X23": {
+          "value": "Y",
+          "has_value": true
+        },
+        "1347": {
+          "value": "30",
+          "has_value": true
+        },
+        "640": {
+          "value": "260.00",
+          "has_value": true
+        }
+      },
+      "error": null
+    }
+  }
+}

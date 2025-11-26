@@ -24,21 +24,21 @@ from datetime import datetime
 from dataclasses import dataclass, field
 from dotenv import load_dotenv
 
-load_dotenv(Path(__file__).parent.parent / ".env")
+load_dotenv(Path(__file__).parent.parent.parent / ".env")
 
 # Add project root to path
-project_root = Path(__file__).parent.parent
+project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 # Add agent directories to path (for their internal imports)
-sys.path.insert(0, str(project_root / "agents" / "preparation_agent"))
-sys.path.insert(0, str(project_root / "agents" / "verification_agent"))
-sys.path.insert(0, str(project_root / "agents" / "orderdocs_agent"))
+sys.path.insert(0, str(project_root / "agents" / "drawdocs" / "subagents" / "preparation_agent"))
+sys.path.insert(0, str(project_root / "agents" / "drawdocs" / "subagents" / "verification_agent"))
+sys.path.insert(0, str(project_root / "agents" / "drawdocs" / "subagents" / "orderdocs_agent"))
 
 # Import sub-agents
-from agents.preparation_agent.preparation_agent import process_loan_documents
-from agents.verification_agent.verification_agent import run_verification
-from agents.orderdocs_agent.orderdocs_agent import process_orderdocs_request
+from agents.drawdocs.subagents.preparation_agent.preparation_agent import process_loan_documents
+from agents.drawdocs.subagents.verification_agent.verification_agent import run_verification
+from agents.drawdocs.subagents.orderdocs_agent.orderdocs_agent import process_orderdocs_request
 
 # Configure logging
 logging.basicConfig(

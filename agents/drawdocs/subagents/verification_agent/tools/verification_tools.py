@@ -16,13 +16,13 @@ from typing import Annotated
 from langchain_core.messages import ToolMessage
 
 # Add project root to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent.parent))
 
 from copilotagent import EncompassConnect
 from dotenv import load_dotenv
 
 # Load environment variables from project root
-load_dotenv(Path(__file__).parent.parent.parent.parent / ".env")
+load_dotenv(Path(__file__).parent.parent.parent.parent.parent / ".env")
 
 
 def _get_encompass_client() -> EncompassConnect:
