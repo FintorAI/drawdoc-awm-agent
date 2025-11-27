@@ -6,6 +6,14 @@ after each sub-agent completes, enabling live status updates.
 
 Usage:
     python agent_runner.py --loan-id <uuid> --output <path> [--production] [--max-retries N] [--document-types type1,type2]
+
+The status file is updated in real-time using the StatusWriter utility,
+allowing the frontend to poll for live progress updates.
+
+Status transitions:
+- "pending" → "running" (when agent starts)
+- "running" → "success" (when agent completes successfully)
+- "running" → "failed" (when agent errors after all retries)
 """
 
 import argparse
@@ -25,6 +33,9 @@ sys.path.insert(0, str(project_root))
 from dotenv import load_dotenv
 load_dotenv(project_root / ".env")
 
+# Import status writer
+from agents.drawdocs.status_writer import StatusWriter, get_status_writer
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -34,90 +45,84 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def update_status_file(
-    output_file: Path,
-    agent_name: str,
-    result: dict,
-    orchestrator
-) -> None:
+def create_status_callback(run_id: str, output_dir: Path):
     """
-    Progress callback that updates the status file after each agent completes.
+    Create a progress callback that updates the status file using StatusWriter.
     
     Args:
-        agent_name: Name of the agent that completed
-        result: Result from the agent
-        orchestrator: The OrchestratorAgent instance
+        run_id: The run identifier
+        output_dir: Directory containing the status file
+        
+    Returns:
+        Callback function for orchestrator progress updates
     """
-    try:
-        # Build current state from orchestrator
-        current_data = {
-            "loan_id": orchestrator.config.loan_id,
-            "execution_timestamp": orchestrator.results.get("execution_timestamp"),
-            "demo_mode": orchestrator.config.demo_mode,
-            "summary": orchestrator.results.get("summary", {}),
-            "agents": {}
-        }
+    writer = StatusWriter(output_dir)
+    
+    def progress_callback(agent_name: str, result: dict, orchestrator) -> None:
+        """
+        Progress callback that updates the status file after each agent completes.
         
-        # Add all agent results
-        for name in ["preparation", "verification", "orderdocs"]:
-            agent_result = orchestrator.results.get("agents", {}).get(name)
-            if agent_result:
-                current_data["agents"][name] = {
-                    "status": agent_result.get("status", "pending"),
-                    "attempts": agent_result.get("attempts", 0),
-                    "elapsed_seconds": agent_result.get("elapsed_seconds", 0),
-                    "output": agent_result.get("output"),
-                    "error": agent_result.get("error"),
-                }
+        Uses StatusWriter for clean status transitions:
+        - "running" → "success" (if agent succeeded)
+        - "running" → "failed" (if agent failed)
+        - Next agent is set to "running" automatically on success
+        
+        Args:
+            agent_name: Name of the agent that completed
+            result: Result from the agent
+            orchestrator: The OrchestratorAgent instance
+        """
+        try:
+            status = result.get("status", "failed")
+            attempts = result.get("attempts", 1)
+            elapsed = result.get("elapsed_seconds", 0)
+            output = result.get("output")
+            error = result.get("error")
+            
+            if status == "success":
+                # Mark agent as success - StatusWriter will set next agent to "running"
+                writer.mark_agent_success(
+                    run_id=run_id,
+                    agent_name=agent_name,
+                    attempts=attempts,
+                    elapsed_seconds=elapsed,
+                    output=output,
+                )
+                logger.info(f"Updated status file: {agent_name} → success")
             else:
-                # Agent hasn't run yet - determine status
-                if name == "preparation":
-                    # If we're past preparation, it should have a result
-                    status = "pending"
-                elif name == "verification":
-                    # Running if preparation is done and we haven't gotten to verification yet
-                    prep_result = orchestrator.results.get("agents", {}).get("preparation")
-                    if prep_result and prep_result.get("status") == "success":
-                        if agent_name == "preparation":
-                            status = "running"
-                        else:
-                            status = "pending"
-                    else:
-                        status = "pending"
-                else:  # orderdocs
-                    ver_result = orchestrator.results.get("agents", {}).get("verification")
-                    if ver_result:
-                        if agent_name == "verification":
-                            status = "running"
-                        else:
-                            status = "pending"
-                    else:
-                        status = "pending"
+                # Mark agent as failed
+                writer.mark_agent_failed(
+                    run_id=run_id,
+                    agent_name=agent_name,
+                    attempts=attempts,
+                    elapsed_seconds=elapsed,
+                    error=error or "Unknown error",
+                )
+                logger.info(f"Updated status file: {agent_name} → failed")
                 
-                current_data["agents"][name] = {
-                    "status": status,
-                    "attempts": 0,
-                    "elapsed_seconds": 0,
-                    "output": None,
-                    "error": None,
-                }
+        except Exception as e:
+            logger.error(f"Failed to update status file after {agent_name}: {e}")
+    
+    return progress_callback
+
+
+def extract_run_id_from_output_file(output_file: Path) -> str:
+    """
+    Extract run_id from output file path.
+    
+    Expected format: {run_id}_results.json
+    Where run_id = {loan_id}_{timestamp}
+    
+    Args:
+        output_file: Path to output file
         
-        # Update status for next agent to "running"
-        if agent_name == "preparation" and result.get("status") == "success":
-            if "verification" not in orchestrator.instructions.get("skip_agents", []):
-                current_data["agents"]["verification"]["status"] = "running"
-        elif agent_name == "verification":
-            if "orderdocs" not in orchestrator.instructions.get("skip_agents", []):
-                current_data["agents"]["orderdocs"]["status"] = "running"
-        
-        # Write to file
-        with open(output_file, "w", encoding="utf-8") as f:
-            json.dump(current_data, f, indent=2, default=str)
-        
-        logger.info(f"Updated status file after {agent_name} completed")
-        
-    except Exception as e:
-        logger.error(f"Failed to update status file: {e}")
+    Returns:
+        The run_id string
+    """
+    filename = output_file.name
+    if filename.endswith("_results.json"):
+        return filename[:-13]  # Remove "_results.json"
+    return filename
 
 
 def run_agent(
@@ -130,6 +135,9 @@ def run_agent(
     """
     Run the orchestrator agent with live status updates.
     
+    The status file is updated after each agent completes using StatusWriter,
+    allowing the frontend to poll for live progress updates.
+    
     Args:
         loan_id: Encompass loan GUID
         output_file: Path to the output JSON file
@@ -137,13 +145,19 @@ def run_agent(
         max_retries: Number of retry attempts per agent
         document_types: Optional list of document types to process
     """
+    # Extract run_id and output directory
+    run_id = extract_run_id_from_output_file(output_file)
+    output_dir = output_file.parent
+    
+    # Create status writer for error handling
+    writer = StatusWriter(output_dir)
+    
     try:
         # Import orchestrator (after path setup)
         from agents.drawdocs.orchestrator_agent import run_orchestrator
         
-        # Create progress callback that captures output_file
-        def progress_callback(agent_name: str, result: dict, orchestrator):
-            update_status_file(output_file, agent_name, result, orchestrator)
+        # Create progress callback using StatusWriter
+        progress_callback = create_status_callback(run_id, output_dir)
         
         # Run orchestrator with progress callback
         results = run_orchestrator(
@@ -155,41 +169,49 @@ def run_agent(
             progress_callback=progress_callback,
         )
         
+        # Finalize the run with summary information
+        # Note: Don't include json_output as it would duplicate data already 
+        # maintained by StatusWriter callbacks
+        writer.finalize_run(
+            run_id=run_id,
+            summary=results.get("summary", {}),
+            summary_text=results.get("summary_text"),
+        )
+        
         logger.info(f"Agent run completed for loan {loan_id}")
         
     except Exception as e:
         logger.error(f"Agent run failed: {e}")
         
-        # Update status file to reflect failure
+        # Update status file to reflect failure using StatusWriter
         try:
-            # Load current data
-            if output_file.exists():
-                with open(output_file, "r", encoding="utf-8") as f:
-                    data = json.load(f)
+            # Read current data to find which agent was running
+            data = writer.get_run_data(run_id)
+            
+            if data:
+                # Find which agent was running and mark it as failed
+                for agent_name in ["preparation", "verification", "orderdocs"]:
+                    agent_data = data.get("agents", {}).get(agent_name, {})
+                    if agent_data.get("status") == "running":
+                        writer.mark_agent_failed(
+                            run_id=run_id,
+                            agent_name=agent_name,
+                            attempts=agent_data.get("attempts", 0) + 1,
+                            elapsed_seconds=agent_data.get("elapsed_seconds", 0),
+                            error=str(e),
+                        )
+                        break
             else:
-                data = {
-                    "loan_id": loan_id,
-                    "execution_timestamp": datetime.now().isoformat(),
-                    "demo_mode": demo_mode,
-                    "summary": {},
-                    "agents": {},
-                }
-            
-            # Find which agent failed and update
-            for agent_name in ["preparation", "verification", "orderdocs"]:
-                agent_data = data.get("agents", {}).get(agent_name, {})
-                if agent_data.get("status") == "running":
-                    data["agents"][agent_name] = {
-                        "status": "failed",
-                        "attempts": agent_data.get("attempts", 0) + 1,
-                        "elapsed_seconds": agent_data.get("elapsed_seconds", 0),
-                        "output": None,
-                        "error": str(e),
-                    }
-                    break
-            
-            with open(output_file, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2, default=str)
+                # Status file doesn't exist - create a minimal failure record
+                logger.warning(f"Status file not found for run {run_id}, creating failure record")
+                writer.initialize_run(run_id, loan_id, demo_mode)
+                writer.mark_agent_failed(
+                    run_id=run_id,
+                    agent_name="preparation",
+                    attempts=1,
+                    elapsed_seconds=0,
+                    error=str(e),
+                )
                 
         except Exception as write_error:
             logger.error(f"Failed to write error status: {write_error}")

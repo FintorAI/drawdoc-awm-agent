@@ -21,6 +21,12 @@ from models import (
     CreateRunRequest,
 )
 
+# Add project root to path for status_writer import
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
+from agents.drawdocs.status_writer import StatusWriter
+
 
 def get_output_dir() -> Path:
     """Get the output directory from environment variable or default."""
@@ -236,7 +242,9 @@ def create_run(request: CreateRunRequest) -> str:
     """
     Create a new run.
     
-    Creates initial status file and spawns agent process in background.
+    Creates initial status file using StatusWriter and spawns agent process in background.
+    The initial status file shows preparation as "running" immediately, allowing
+    the frontend to display the run as soon as it starts.
     
     Args:
         request: CreateRunRequest with run configuration
@@ -244,18 +252,20 @@ def create_run(request: CreateRunRequest) -> str:
     Returns:
         The generated run_id
     """
-    # Generate run_id
-    timestamp = int(datetime.now().timestamp())
-    run_id = f"{request.loan_id}_{timestamp}"
+    # Use StatusWriter to generate run_id and create initial status file
+    output_dir = get_output_dir()
+    writer = StatusWriter(output_dir)
     
-    # Create initial status file
-    initial_data = RunData.create_initial(
+    run_id = writer.generate_run_id(request.loan_id)
+    
+    # Initialize run with status file - preparation is set to "running" immediately
+    writer.initialize_run(
+        run_id=run_id,
         loan_id=request.loan_id,
         demo_mode=request.demo_mode,
+        document_types=request.document_types,
+        max_retries=request.max_retries,
     )
-    
-    file_path = get_run_file_path(run_id)
-    save_run_data(file_path, initial_data.model_dump())
     
     # Spawn agent process in background
     spawn_agent_process(
