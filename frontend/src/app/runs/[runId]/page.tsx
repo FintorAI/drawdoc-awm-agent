@@ -1,191 +1,241 @@
 "use client";
 
+import * as React from "react";
 import { useParams } from "next/navigation";
-import Link from "next/link";
-import { Header } from "@/components/layout/header";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { StatusBadge } from "@/components/ui/status-badge";
-import { AgentIcon } from "@/components/ui/agent-icon";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, RefreshCw, Download } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { RunDetailHeader } from "@/components/runs/run-detail-header";
+import { AgentStatusCards } from "@/components/runs/agent-status-card";
+import { OverviewTab } from "@/components/runs/overview-tab";
+import { useRunDetail } from "@/hooks/use-runs";
+import { AlertTriangle, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+// =============================================================================
+// LOADING STATE
+// =============================================================================
+
+function LoadingState() {
+  return (
+    <div className="flex flex-col">
+      {/* Header skeleton */}
+      <div className="flex items-center justify-between py-6 px-8">
+        <div className="flex items-center gap-4">
+          <Skeleton className="h-8 w-20" />
+          <div className="h-6 w-px bg-border" />
+          <Skeleton className="h-5 w-32" />
+          <Skeleton className="h-6 w-16 rounded-full" />
+        </div>
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-9 w-24" />
+          <Skeleton className="h-9 w-24" />
+        </div>
+      </div>
+
+      <div className="px-8 pb-8 space-y-6">
+        {/* Agent Cards skeleton */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="p-4 rounded-xl border border-border bg-card">
+              <div className="flex items-center gap-3 mb-3">
+                <Skeleton className="h-10 w-10 rounded-lg" />
+                <div className="space-y-1.5 flex-1">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-3 w-32" />
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-5 w-16 rounded-full" />
+                <Skeleton className="h-4 w-12" />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Tabs skeleton */}
+        <Skeleton className="h-10 w-80" />
+
+        {/* Content skeleton */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardHeader className="pb-3">
+                <Skeleton className="h-4 w-32" />
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Skeleton className="h-8 w-24" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// ERROR STATE
+// =============================================================================
+
+interface ErrorStateProps {
+  error: Error;
+  onRetry: () => void;
+}
+
+function ErrorState({ error, onRetry }: ErrorStateProps) {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+      <div className="h-16 w-16 rounded-full bg-red-100 flex items-center justify-center mb-4">
+        <AlertTriangle className="h-8 w-8 text-red-600" />
+      </div>
+      <h2 className="text-xl font-semibold mb-2">Failed to load run details</h2>
+      <p className="text-muted-foreground mb-2 max-w-md">{error.message}</p>
+      <p className="text-sm text-muted-foreground mb-6">
+        Make sure the backend server is running on port 8000
+      </p>
+      <Button onClick={onRetry} variant="outline">
+        <RefreshCw className="h-4 w-4 mr-2" />
+        Retry
+      </Button>
+    </div>
+  );
+}
+
+// =============================================================================
+// PLACEHOLDER TAB CONTENT
+// =============================================================================
+
+function TimelineTabPlaceholder() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Timeline</CardTitle>
+        <CardDescription>Live execution logs and events</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-3">
+            <span className="text-2xl">📋</span>
+          </div>
+          <p className="text-muted-foreground">
+            Timeline view coming in Slice 5
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function DocumentsTabPlaceholder() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Documents</CardTitle>
+        <CardDescription>PDF viewer for processed documents</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-3">
+            <span className="text-2xl">📄</span>
+          </div>
+          <p className="text-muted-foreground">
+            Document viewer coming in Slice 6
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function FieldsTabPlaceholder() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Fields</CardTitle>
+        <CardDescription>Extracted data and field values</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-3">
+            <span className="text-2xl">🔍</span>
+          </div>
+          <p className="text-muted-foreground">
+            Fields view coming in Slice 7
+          </p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// =============================================================================
+// MAIN PAGE COMPONENT
+// =============================================================================
 
 export default function RunDetailPage() {
   const params = useParams();
   const runId = params.runId as string;
 
-  return (
-    <div className="flex flex-col">
-      <Header 
-        title={`Run Details`}
-        subtitle={`Run ID: ${runId}`}
-        actions={
-          <div className="flex items-center gap-2">
-            <Button variant="outline" asChild>
-              <Link href="/runs">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Runs
-              </Link>
-            </Button>
-            <Button variant="outline">
-              <Download className="h-4 w-4 mr-2" />
-              Export
-            </Button>
-            <Button>
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Rerun
-            </Button>
-          </div>
-        }
-      />
-      
-      <div className="px-8 pb-8">
-        {/* Run Overview */}
-        <Card className="mb-6">
-          <CardContent className="p-6">
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-4">
-                <AgentIcon type="orderdocs" showBackground size="lg" />
-                <div>
-                  <h2 className="text-xl font-semibold">LN-2024-001234</h2>
-                  <p className="text-sm text-muted-foreground">
-                    Started Jan 15, 2024 at 10:30 AM
-                  </p>
-                </div>
-              </div>
-              <StatusBadge variant="success" size="md">
-                Completed
-              </StatusBadge>
-            </div>
-            
-            <Separator className="my-6" />
-            
-            <div className="grid grid-cols-4 gap-8">
-              <div>
-                <p className="text-sm text-muted-foreground">Duration</p>
-                <p className="text-lg font-medium">2m 15s</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Documents</p>
-                <p className="text-lg font-medium">8 processed</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Verifications</p>
-                <p className="text-lg font-medium">24 passed</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Issues</p>
-                <p className="text-lg font-medium">0 found</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+  const { data: runDetail, isLoading, error, refetch } = useRunDetail(runId);
 
-        {/* Tabs for different views */}
-        <Tabs defaultValue="agents" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="agents">Agent Steps</TabsTrigger>
+  // Handle loading state
+  if (isLoading && !runDetail) {
+    return <LoadingState />;
+  }
+
+  // Handle error state
+  if (error && !runDetail) {
+    return <ErrorState error={error} onRetry={() => refetch()} />;
+  }
+
+  return (
+    <div className="flex flex-col min-h-screen">
+      {/* Header */}
+      <RunDetailHeader
+        runId={runId}
+        runDetail={runDetail}
+        isLoading={isLoading}
+      />
+
+      <div className="px-8 pb-8 space-y-6">
+        {/* Agent Status Cards */}
+        <AgentStatusCards
+          agents={runDetail?.agents}
+          isLoading={isLoading && !runDetail}
+        />
+
+        {/* Tabs */}
+        <Tabs defaultValue="overview" className="space-y-4">
+          <TabsList className="bg-muted/50">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="timeline">Timeline</TabsTrigger>
             <TabsTrigger value="documents">Documents</TabsTrigger>
-            <TabsTrigger value="verifications">Verifications</TabsTrigger>
-            <TabsTrigger value="logs">Logs</TabsTrigger>
+            <TabsTrigger value="fields">Fields</TabsTrigger>
           </TabsList>
-          
-          <TabsContent value="agents" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Agent Pipeline</CardTitle>
-                <CardDescription>Steps executed during this run</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {/* Preparation Agent */}
-                  <div className="flex items-center gap-4 p-4 rounded-lg border border-border">
-                    <AgentIcon type="preparation" showBackground />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium">Preparation Agent</p>
-                        <StatusBadge variant="success">Completed</StatusBadge>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        Extracted data from 8 documents
-                      </p>
-                    </div>
-                    <p className="text-sm text-muted-foreground">45s</p>
-                  </div>
-                  
-                  {/* Verification Agent */}
-                  <div className="flex items-center gap-4 p-4 rounded-lg border border-border">
-                    <AgentIcon type="verification" showBackground />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium">Verification Agent</p>
-                        <StatusBadge variant="success">Completed</StatusBadge>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        Verified 24 fields against SOP rules
-                      </p>
-                    </div>
-                    <p className="text-sm text-muted-foreground">1m 10s</p>
-                  </div>
-                  
-                  {/* OrderDocs Agent */}
-                  <div className="flex items-center gap-4 p-4 rounded-lg border border-border">
-                    <AgentIcon type="orderdocs" showBackground />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium">OrderDocs Agent</p>
-                        <StatusBadge variant="success">Completed</StatusBadge>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        Generated final document order
-                      </p>
-                    </div>
-                    <p className="text-sm text-muted-foreground">20s</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+
+          <TabsContent value="overview">
+            <OverviewTab
+              runDetail={runDetail}
+              isLoading={isLoading && !runDetail}
+            />
           </TabsContent>
-          
+
+          <TabsContent value="timeline">
+            <TimelineTabPlaceholder />
+          </TabsContent>
+
           <TabsContent value="documents">
-            <Card>
-              <CardHeader>
-                <CardTitle>Processed Documents</CardTitle>
-                <CardDescription>Documents included in this run</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">Document list will be displayed here.</p>
-              </CardContent>
-            </Card>
+            <DocumentsTabPlaceholder />
           </TabsContent>
-          
-          <TabsContent value="verifications">
-            <Card>
-              <CardHeader>
-                <CardTitle>Verification Results</CardTitle>
-                <CardDescription>Field verification status</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">Verification results will be displayed here.</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="logs">
-            <Card>
-              <CardHeader>
-                <CardTitle>Run Logs</CardTitle>
-                <CardDescription>Detailed execution logs</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground">Logs will be displayed here.</p>
-              </CardContent>
-            </Card>
+
+          <TabsContent value="fields">
+            <FieldsTabPlaceholder />
           </TabsContent>
         </Tabs>
       </div>
     </div>
   );
 }
-
