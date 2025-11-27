@@ -21,6 +21,8 @@ interface AgentStatusCardProps {
   isActive?: boolean;
   onClick?: () => void;
   className?: string;
+  /** Run execution timestamp for live duration calculation */
+  executionTimestamp?: string;
 }
 
 // =============================================================================
@@ -149,6 +151,7 @@ function AgentStatusCardSkeleton({ className }: { className?: string }) {
     isActive = false,
     onClick,
     className,
+    executionTimestamp,
   }: AgentStatusCardProps) {
     if (isLoading) {
       return <AgentStatusCardSkeleton className={className} />;
@@ -213,7 +216,7 @@ function AgentStatusCardSkeleton({ className }: { className?: string }) {
           <div className="text-sm font-medium">
             {isRunning ? (
               <span className="text-blue-600">
-                <LiveDuration />
+                <LiveDuration startTime={executionTimestamp} />
               </span>
             ) : result?.elapsed_seconds !== undefined ? (
               <span className={cn(
@@ -260,6 +263,8 @@ function AgentStatusCardSkeleton({ className }: { className?: string }) {
     activeAgent?: AgentType | null;
     onAgentClick?: (agent: AgentType) => void;
     className?: string;
+    /** Run execution timestamp for live duration calculation */
+    executionTimestamp?: string;
   }
   
   export function AgentStatusCards({
@@ -268,6 +273,7 @@ function AgentStatusCardSkeleton({ className }: { className?: string }) {
     activeAgent,
     onAgentClick,
     className,
+    executionTimestamp,
   }: AgentStatusCardsProps) {
     const agentTypes: AgentType[] = ["preparation", "verification", "orderdocs"];
   
@@ -281,6 +287,7 @@ function AgentStatusCardSkeleton({ className }: { className?: string }) {
             isLoading={isLoading}
             isActive={activeAgent === agentType}
             onClick={() => onAgentClick?.(agentType)}
+            executionTimestamp={executionTimestamp}
           />
         ))}
       </div>

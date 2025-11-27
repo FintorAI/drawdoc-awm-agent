@@ -56,14 +56,26 @@ class StatusWriter:
         Args:
             output_dir: Directory for status files. Defaults to OUTPUT_DIR env var
                        or backend/output relative to project root.
+                       
+        Note: Relative paths are resolved against the project root to ensure
+        consistency between backend and spawned agent processes.
         """
+        # Project root and backend directory for resolving paths
+        project_root = Path(__file__).parent.parent.parent
+        backend_dir = project_root / "backend"
+        
         if output_dir:
             self.output_dir = Path(output_dir)
         elif os.environ.get("OUTPUT_DIR"):
             self.output_dir = Path(os.environ["OUTPUT_DIR"])
         else:
-            # Default: backend/output relative to agents/drawdocs
-            self.output_dir = Path(__file__).parent.parent.parent / "backend" / "output"
+            # Default: backend/output
+            self.output_dir = backend_dir / "output"
+        
+        # If relative path, resolve against backend directory
+        # So OUTPUT_DIR=./output becomes backend/output
+        if not self.output_dir.is_absolute():
+            self.output_dir = backend_dir / self.output_dir
         
         # Ensure directory exists
         self.output_dir.mkdir(parents=True, exist_ok=True)

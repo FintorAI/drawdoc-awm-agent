@@ -29,13 +29,22 @@ from agents.drawdocs.status_writer import StatusWriter
 
 
 def get_output_dir() -> Path:
-    """Get the output directory from environment variable or default."""
+    """Get the output directory from environment variable or default.
+    
+    Handles relative paths by resolving them against the backend directory,
+    ensuring consistency between backend and spawned agent processes.
+    So OUTPUT_DIR=./output becomes backend/output.
+    """
+    backend_dir = Path(__file__).parent
     output_dir = os.environ.get("OUTPUT_DIR")
     if output_dir:
         path = Path(output_dir)
+        # If relative path, resolve against backend directory
+        if not path.is_absolute():
+            path = backend_dir / path
     else:
         # Default to backend/output
-        path = Path(__file__).parent / "output"
+        path = backend_dir / "output"
     path.mkdir(parents=True, exist_ok=True)
     return path
 

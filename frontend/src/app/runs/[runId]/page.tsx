@@ -205,6 +205,7 @@ export default function RunDetailPage() {
         <AgentStatusCards
           agents={runDetail?.agents}
           isLoading={isLoading && !runDetail}
+          executionTimestamp={runDetail?.execution_timestamp}
         />
 
         {/* Tabs */}
