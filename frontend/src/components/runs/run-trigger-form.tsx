@@ -13,33 +13,12 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/toast";
+import { useCreateRun } from "@/hooks/use-runs";
 import {
-  RunConfig,
   DOCUMENT_TYPES,
   validateLoanId,
   DEFAULT_RUN_CONFIG,
 } from "@/types";
-
-// =============================================================================
-// MOCK API FUNCTION
-// =============================================================================
-
-/**
- * Mock function to simulate starting an agent run.
- * In production, this would call the backend API.
- */
-async function startAgentRun(config: RunConfig): Promise<{ run_id: string }> {
-  // Simulate network delay
-  await new Promise((resolve) => setTimeout(resolve, 500));
-  
-  // Generate a mock run ID
-  const runId = `run-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 7)}`;
-  
-  // In production, this would POST to /api/runs
-  console.log("Starting agent run with config:", config);
-  
-  return { run_id: runId };
-}
 
 // =============================================================================
 // FORM COMPONENT
@@ -66,9 +45,29 @@ export function RunTriggerForm({ onSuccess, onError, className }: RunTriggerForm
   const [selectedDocTypes, setSelectedDocTypes] = React.useState<string[]>([]);
   const [allDocuments, setAllDocuments] = React.useState(true);
   
-  // Form state
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  // Validation state
   const [validationError, setValidationError] = React.useState<string | null>(null);
+
+  // Create run mutation
+  const createRunMutation = useCreateRun({
+    onSuccess: (data) => {
+      addToast({
+        title: "Run Started",
+        description: `Agent run has been queued`,
+        variant: "success",
+      });
+      onSuccess?.(data.run_id);
+      router.push(`/runs/${data.run_id}`);
+    },
+    onError: (error) => {
+      addToast({
+        title: "Failed to Start Run",
+        description: error.message,
+        variant: "error",
+      });
+      onError?.(error);
+    },
+  });
   
   // Handle loan ID change with auto-trim
   const handleLoanIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -118,17 +117,6 @@ export function RunTriggerForm({ onSuccess, onError, className }: RunTriggerForm
     }
   };
   
-  // Build the run config from form state
-  const buildConfig = (): RunConfig => {
-    return {
-      loan_id: loanId.trim(),
-      user_prompt: userPrompt.trim() || null,
-      demo_mode: demoMode,
-      max_retries: maxRetries,
-      document_types: allDocuments ? null : selectedDocTypes.length > 0 ? selectedDocTypes : null,
-    };
-  };
-  
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -140,37 +128,18 @@ export function RunTriggerForm({ onSuccess, onError, className }: RunTriggerForm
       return;
     }
     
-    setIsSubmitting(true);
     setValidationError(null);
     
-    try {
-      const config = buildConfig();
-      const result = await startAgentRun(config);
-      
-      addToast({
-        title: "Run Started",
-        description: `Agent run ${result.run_id} has been queued`,
-        variant: "success",
-      });
-      
-      onSuccess?.(result.run_id);
-      
-      // Navigate to the run detail page
-      router.push(`/runs/${result.run_id}`);
-    } catch (error) {
-      const err = error instanceof Error ? error : new Error("Failed to start run");
-      
-      addToast({
-        title: "Failed to Start Run",
-        description: err.message,
-        variant: "error",
-      });
-      
-      onError?.(err);
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Build config and submit
+    createRunMutation.mutate({
+      loan_id: loanId.trim(),
+      demo_mode: demoMode,
+      max_retries: maxRetries,
+      document_types: allDocuments ? null : selectedDocTypes.length > 0 ? selectedDocTypes : null,
+    });
   };
+
+  const isSubmitting = createRunMutation.isPending;
   
   return (
     <Card className={cn("w-full", className)}>

@@ -4,6 +4,7 @@ import "./globals.css";
 
 import { Sidebar } from "@/components/layout/sidebar";
 import { ToastProvider } from "@/components/ui/toast";
+import { QueryProvider } from "@/components/providers/query-provider";
 
 const inter = Inter({ 
   subsets: ["latin"],
@@ -23,14 +24,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} font-sans antialiased`}>
-        <ToastProvider>
-          <div className="flex min-h-screen bg-background">
-            <Sidebar />
-            <main className="flex-1 overflow-auto">
-              {children}
-            </main>
-          </div>
-        </ToastProvider>
+        <QueryProvider>
+          <ToastProvider>
+            <div className="flex min-h-screen bg-background">
+              <Sidebar />
+              <main className="flex-1 overflow-auto">
+                {children}
+              </main>
+            </div>
+          </ToastProvider>
+        </QueryProvider>
       </body>
     </html>
   );
