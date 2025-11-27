@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { RunDetailHeader } from "@/components/runs/run-detail-header";
 import { AgentStatusCards } from "@/components/runs/agent-status-card";
 import { OverviewTab } from "@/components/runs/overview-tab";
+import { TimelineTab } from "@/components/runs/timeline-tab";
 import { useRunDetail } from "@/hooks/use-runs";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -108,27 +109,6 @@ function ErrorState({ error, onRetry }: ErrorStateProps) {
 // PLACEHOLDER TAB CONTENT
 // =============================================================================
 
-function TimelineTabPlaceholder() {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Timeline</CardTitle>
-        <CardDescription>Live execution logs and events</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-3">
-            <span className="text-2xl">📋</span>
-          </div>
-          <p className="text-muted-foreground">
-            Timeline view coming in Slice 5
-          </p>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
 function DocumentsTabPlaceholder() {
   return (
     <Card>
@@ -225,7 +205,10 @@ export default function RunDetailPage() {
           </TabsContent>
 
           <TabsContent value="timeline">
-            <TimelineTabPlaceholder />
+            <TimelineTab
+              runDetail={runDetail}
+              isLoading={isLoading && !runDetail}
+            />
           </TabsContent>
 
           <TabsContent value="documents">

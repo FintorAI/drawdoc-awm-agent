@@ -12,18 +12,12 @@ import {
   Database,
   Settings,
   AlertTriangle,
-  BarChart3,
-  Gauge,
-  Terminal,
   CheckCircle,
   XCircle,
-  Info,
-  AlertCircle,
-  Scan,
-  PenLine,
+  Gauge,
+  BarChart3,
 } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import type { RunDetail, AgentResultDetail, LogEntry, ProgressData } from "@/lib/api";
+import type { RunDetail, AgentResultDetail, ProgressData } from "@/lib/api";
 
 // =============================================================================
 // TYPES
@@ -447,169 +441,6 @@ function MetricsCard({ runDetail }: MetricsCardProps) {
 }
 
 // =============================================================================
-// LIVE LOGS CARD
-// =============================================================================
-
-interface LiveLogsCardProps {
-  logs: LogEntry[] | undefined;
-}
-
-function getLogIcon(level: string, eventType?: string) {
-  // Event-specific icons
-  if (eventType === "document" || eventType === "fields_extracted") {
-    return <FileText className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />;
-  }
-  if (eventType === "correction") {
-    return <PenLine className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />;
-  }
-  if (eventType === "agent_start") {
-    return <Gauge className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />;
-  }
-  if (eventType === "agent_complete" || eventType === "agent_failed") {
-    return level === "success" 
-      ? <CheckCircle className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />
-      : <XCircle className="h-3.5 w-3.5 text-red-500 flex-shrink-0" />;
-  }
-  if (eventType === "prep_summary" || eventType === "field_mappings") {
-    return <BarChart3 className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />;
-  }
-  if (eventType === "verification_summary") {
-    return <Scan className="h-3.5 w-3.5 text-purple-500 flex-shrink-0" />;
-  }
-  if (eventType === "orderdocs_summary") {
-    return <Database className="h-3.5 w-3.5 text-purple-500 flex-shrink-0" />;
-  }
-  
-  // Level-based fallback
-  switch (level) {
-    case "success":
-      return <CheckCircle className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />;
-    case "error":
-      return <XCircle className="h-3.5 w-3.5 text-red-500 flex-shrink-0" />;
-    case "warning":
-      return <AlertCircle className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />;
-    default:
-      return <Info className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />;
-  }
-}
-
-function formatLogTime(timestamp: string): string {
-  const date = new Date(timestamp);
-  return date.toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false,
-  });
-}
-
-function getEventTypeLabel(eventType?: string): string | null {
-  switch (eventType) {
-    case "document": return "DOC";
-    case "fields_extracted": return "EXTRACT";
-    case "correction": return "FIX";
-    case "agent_start": return "START";
-    case "agent_complete": return "DONE";
-    case "agent_failed": return "FAIL";
-    case "prep_summary": return "PREP";
-    case "field_mappings": return "MAP";
-    case "verification_summary": return "VERIFY";
-    case "orderdocs_summary": return "ORDER";
-    default: return null;
-  }
-}
-
-function LiveLogsCard({ logs }: LiveLogsCardProps) {
-  const displayLogs = logs?.slice().reverse() || [];
-  
-  return (
-    <Card className="h-full">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-sm font-medium flex items-center gap-2">
-          <Terminal className="h-4 w-4 text-muted-foreground" />
-          Activity Log
-          {displayLogs.length > 0 && (
-            <span className="ml-auto text-[10px] font-normal text-muted-foreground">
-              {displayLogs.length} events
-            </span>
-          )}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="p-0">
-        <ScrollArea className="h-[220px] px-4 pb-4">
-          {displayLogs.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-muted-foreground text-sm gap-2">
-              <Terminal className="h-8 w-8 opacity-20" />
-              <p>Waiting for activity...</p>
-            </div>
-          ) : (
-            <div className="space-y-1.5">
-              {displayLogs.map((log, idx) => {
-                const eventLabel = getEventTypeLabel(log.event_type);
-                return (
-                  <div
-                    key={idx}
-                    className={cn(
-                      "flex items-start gap-2 text-xs p-2 rounded-md border-l-2",
-                      log.level === "error" && "bg-red-50 dark:bg-red-950/20 border-l-red-500",
-                      log.level === "success" && "bg-emerald-50 dark:bg-emerald-950/20 border-l-emerald-500",
-                      log.level === "warning" && "bg-amber-50 dark:bg-amber-950/20 border-l-amber-500",
-                      log.level === "info" && "bg-muted/30 border-l-blue-400",
-                    )}
-                  >
-                    {getLogIcon(log.level, log.event_type)}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-foreground leading-tight">{log.message}</p>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-muted-foreground font-mono text-[10px]">
-                          {formatLogTime(log.timestamp)}
-                        </span>
-                        {eventLabel && (
-                          <span className={cn(
-                            "text-[9px] font-medium px-1 py-0.5 rounded",
-                            log.level === "error" && "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
-                            log.level === "success" && "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-                            log.level === "warning" && "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-                            log.level === "info" && "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-                          )}>
-                            {eventLabel}
-                          </span>
-                        )}
-                        {log.agent && log.agent !== "orchestrator" && (
-                          <span className="text-muted-foreground text-[10px] capitalize">
-                            • {log.agent}
-                          </span>
-                        )}
-                      </div>
-                      {/* Show details if available */}
-                      {log.details && Object.keys(log.details).length > 0 && (() => {
-                        const details = log.details as Record<string, string | number | boolean | null>;
-                        const fieldName = details.field_name;
-                        const newValue = details.new_value;
-                        return (
-                          <div className="mt-1 text-[10px] text-muted-foreground font-mono">
-                            {fieldName && (
-                              <span className="block">Field: {String(fieldName)}</span>
-                            )}
-                            {newValue && (
-                              <span className="block truncate">Value: {String(newValue).slice(0, 40)}</span>
-                            )}
-                          </div>
-                        );
-                      })()}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </ScrollArea>
-      </CardContent>
-    </Card>
-  );
-}
-
-// =============================================================================
 // ERROR DETAILS CARD
 // =============================================================================
 
@@ -708,7 +539,6 @@ export function OverviewTab({ runDetail, isLoading, className }: OverviewTabProp
           executionTimestamp={runDetail.execution_timestamp}
         />
         <MetricsCard runDetail={runDetail} />
-        <LiveLogsCard logs={runDetail.logs} />
 
         {/* Corrected Fields Summary (if available) */}
         {runDetail.corrected_fields_summary && runDetail.corrected_fields_summary.length > 0 && (

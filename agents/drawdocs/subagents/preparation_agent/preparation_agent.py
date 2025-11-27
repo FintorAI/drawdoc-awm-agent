@@ -1203,7 +1203,7 @@ def process_loan_documents(
                         # Log successful extraction
                         if doc_field_count > 0:
                             _log_activity(
-                                f"Extracted {doc_field_count} fields from {doc_title[:25]}",
+                                f"Extracted {doc_field_count} fields from {doc_title}",
                                 level="info",
                                 event_type="fields_extracted",
                                 details={"document_name": doc_title, "field_count": doc_field_count}
@@ -1218,7 +1218,7 @@ def process_loan_documents(
                     })
                     # Log error
                     _log_activity(
-                        f"Failed to process {doc_title[:25]}: {str(e)[:50]}",
+                        f"Failed: {doc_title} - {str(e)[:80]}",
                         level="error",
                         event_type="document",
                         details={"document_name": doc_title, "error": str(e)}
@@ -1256,7 +1256,7 @@ def process_loan_documents(
                 
                 if doc_field_count > 0:
                     _log_activity(
-                        f"Extracted {doc_field_count} fields from {doc_title[:25]}",
+                        f"Extracted {doc_field_count} fields from {doc_title}",
                         level="info",
                         event_type="fields_extracted",
                         details={"document_name": doc_title, "field_count": doc_field_count}
