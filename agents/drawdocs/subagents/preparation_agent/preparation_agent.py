@@ -77,6 +77,39 @@ ENABLE_WRITES = False  # Always disabled - agent returns data, doesn't write
 
 
 # =============================================================================
+# PROGRESS CALLBACK
+# =============================================================================
+# Module-level progress callback for live updates during document processing
+# Set via set_progress_callback() before calling process_loan_documents()
+_progress_callback = None
+
+def set_progress_callback(callback):
+    """Set the progress callback for live updates during document processing.
+    
+    The callback signature should be:
+        callback(documents_found, documents_processed, fields_extracted, current_document)
+    
+    Args:
+        callback: Callable or None to clear
+    """
+    global _progress_callback
+    _progress_callback = callback
+
+def _notify_progress(documents_found=None, documents_processed=None, fields_extracted=None, current_document=None):
+    """Notify progress if callback is set."""
+    if _progress_callback:
+        try:
+            _progress_callback(
+                documents_found=documents_found,
+                documents_processed=documents_processed,
+                fields_extracted=fields_extracted,
+                current_document=current_document,
+            )
+        except Exception as e:
+            logger.warning(f"Progress callback failed: {e}")
+
+
+# =============================================================================
 # ENCOMPASS CLIENT
 # =============================================================================
 
@@ -858,6 +891,9 @@ def process_loan_documents(
     
     logger.info(f"[PROCESS] Found {len(all_documents)} total documents in loan")
     
+    # Notify progress: documents found
+    _notify_progress(documents_found=len(all_documents), documents_processed=0, fields_extracted=0)
+    
     # Step 2: Filter documents to only those matching requested types
     try:
         from tools.extraction_schemas import list_supported_document_types
@@ -1108,30 +1144,62 @@ def process_loan_documents(
     # Use prioritized list instead of original
     documents_to_process = prioritized_matching_documents
     
+    # Track progress for live updates
+    docs_processed_count = 0
+    fields_extracted_count = 0
+    
     if len(documents_to_process) > 1:
         logger.info(f"[PROCESS] Processing {len(documents_to_process)} best-matched documents in parallel (max {max_workers} concurrent)")
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             future_to_doc = {executor.submit(process_document, doc): doc for doc in documents_to_process}
             for future in as_completed(future_to_doc):
                 doc = future_to_doc[future]
+                doc_title = doc.get("title", "Unknown")
                 try:
                     result = future.result()
                     if result:
                         processing_results.append(result)
+                        # Count fields extracted from this document
+                        mapped_fields = result.get("mapped_fields", {})
+                        for doc_data in mapped_fields.values():
+                            if isinstance(doc_data, dict):
+                                fields_extracted_count += len([k for k in doc_data.keys() if k != "extracted_entities"])
                 except Exception as e:
-                    logger.error(f"[PROCESS] Exception processing document '{doc.get('title', 'Unknown')}': {e}")
+                    logger.error(f"[PROCESS] Exception processing document '{doc_title}': {e}")
                     processing_results.append({
-                        "document_title": doc.get("title", "Unknown"),
+                        "document_title": doc_title,
                         "document_type": doc.get("documentType", "Unknown"),
                         "status": "error",
                         "error": str(e),
                     })
+                
+                # Update progress after each document
+                docs_processed_count += 1
+                _notify_progress(
+                    documents_processed=docs_processed_count,
+                    fields_extracted=fields_extracted_count,
+                    current_document=doc_title[:30] if doc_title else None,
+                )
     else:
         # Sequential processing for single document
         for doc in documents_to_process:
+            doc_title = doc.get("title", "Unknown")
+            _notify_progress(current_document=doc_title[:30] if doc_title else None)
+            
             result = _process_single_document(doc, loan_id, document_types, dry_run)
             if result:
                 processing_results.append(result)
+                # Count fields extracted
+                mapped_fields = result.get("mapped_fields", {})
+                for doc_data in mapped_fields.values():
+                    if isinstance(doc_data, dict):
+                        fields_extracted_count += len([k for k in doc_data.keys() if k != "extracted_entities"])
+            
+            docs_processed_count += 1
+            _notify_progress(
+                documents_processed=docs_processed_count,
+                fields_extracted=fields_extracted_count,
+            )
     
     step3_time = time.time() - step3_start
     logger.info(f"[PROCESS] Step 3 (Process documents) took {step3_time:.2f}s")

@@ -43,7 +43,7 @@ export function RunTriggerForm({ onSuccess, onError, className }: RunTriggerForm
   const [demoMode, setDemoMode] = React.useState(DEFAULT_RUN_CONFIG.demo_mode);
   const [maxRetries, setMaxRetries] = React.useState(DEFAULT_RUN_CONFIG.max_retries);
   const [selectedDocTypes, setSelectedDocTypes] = React.useState<string[]>([]);
-  const [allDocuments, setAllDocuments] = React.useState(true);
+  const [allDocuments, setAllDocuments] = React.useState(false);
   
   // Validation state
   const [validationError, setValidationError] = React.useState<string | null>(null);
@@ -264,12 +264,17 @@ export function RunTriggerForm({ onSuccess, onError, className }: RunTriggerForm
                     </div>
                   ))}
                 </div>
-                <p className="text-xs text-muted-foreground">
+                <p className={cn(
+                  "text-xs",
+                  !allDocuments && selectedDocTypes.length === 0 
+                    ? "text-amber-600" 
+                    : "text-muted-foreground"
+                )}>
                   {allDocuments
                     ? "Processing all document types"
                     : selectedDocTypes.length > 0
                     ? `${selectedDocTypes.length} type(s) selected`
-                    : "Select specific document types to process"}
+                    : "⚠ Select document types or check 'All Documents'"}
                 </p>
               </div>
             </div>
@@ -296,7 +301,7 @@ export function RunTriggerForm({ onSuccess, onError, className }: RunTriggerForm
             type="submit"
             className="w-full"
             size="lg"
-            disabled={isSubmitting || !loanId.trim()}
+            disabled={isSubmitting || !loanId.trim() || (!allDocuments && selectedDocTypes.length === 0)}
           >
             {isSubmitting ? (
               <>

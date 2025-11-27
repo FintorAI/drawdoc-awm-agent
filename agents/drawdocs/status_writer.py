@@ -21,7 +21,7 @@ import logging
 import os
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 logger = logging.getLogger(__name__)
 
@@ -154,6 +154,20 @@ class StatusWriter:
                     "output": None,
                     "error": None,
                 },
+            },
+            "logs": [
+                {
+                    "timestamp": datetime.now().isoformat(),
+                    "level": "info",
+                    "agent": "orchestrator",
+                    "message": f"Starting orchestrator for loan {loan_id}",
+                }
+            ],
+            "progress": {
+                "documents_found": 0,
+                "documents_processed": 0,
+                "fields_extracted": 0,
+                "current_document": None,
             },
         }
         
@@ -313,6 +327,259 @@ class StatusWriter:
             output=None,
             error=error,
             set_next_running=False,
+        )
+    
+    def add_log(
+        self,
+        run_id: str,
+        message: str,
+        level: str = "info",
+        agent: Optional[str] = None,
+        event_type: Optional[str] = None,
+        details: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Add a log entry to the run's logs array.
+        
+        Args:
+            run_id: Unique run identifier
+            message: Log message (human-readable)
+            level: Log level ("info", "warning", "error", "success")
+            agent: Agent name (optional, defaults to "orchestrator")
+            event_type: Type of event for filtering (e.g., "agent_start", "document", "field", "correction")
+            details: Additional structured data for the event
+            
+        Returns:
+            The updated status data dict
+        """
+        file_path = self.get_file_path(run_id)
+        data = self._read_json(file_path)
+        
+        if not data:
+            logger.error(f"Cannot add log - file not found: {file_path}")
+            return {}
+        
+        # Ensure logs array exists
+        if "logs" not in data:
+            data["logs"] = []
+        
+        # Add new log entry
+        log_entry = {
+            "timestamp": datetime.now().isoformat(),
+            "level": level,
+            "agent": agent or "orchestrator",
+            "message": message,
+        }
+        
+        if event_type:
+            log_entry["event_type"] = event_type
+        if details:
+            log_entry["details"] = details
+        
+        data["logs"].append(log_entry)
+        
+        # Keep only the last 50 logs to prevent file bloat
+        if len(data["logs"]) > 50:
+            data["logs"] = data["logs"][-50:]
+        
+        self._write_json(file_path, data)
+        return data
+    
+    def update_progress(
+        self,
+        run_id: str,
+        documents_found: Optional[int] = None,
+        documents_processed: Optional[int] = None,
+        fields_extracted: Optional[int] = None,
+        current_document: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """
+        Update the progress section with live metrics.
+        
+        Args:
+            run_id: Unique run identifier
+            documents_found: Total documents found (set once)
+            documents_processed: Number of documents processed so far
+            fields_extracted: Number of fields extracted so far
+            current_document: Name of document currently being processed
+            
+        Returns:
+            The updated status data dict
+        """
+        file_path = self.get_file_path(run_id)
+        data = self._read_json(file_path)
+        
+        if not data:
+            logger.error(f"Cannot update progress - file not found: {file_path}")
+            return {}
+        
+        # Ensure progress section exists
+        if "progress" not in data:
+            data["progress"] = {
+                "documents_found": 0,
+                "documents_processed": 0,
+                "fields_extracted": 0,
+                "current_document": None,
+            }
+        
+        # Update only the provided fields
+        if documents_found is not None:
+            data["progress"]["documents_found"] = documents_found
+        if documents_processed is not None:
+            data["progress"]["documents_processed"] = documents_processed
+        if fields_extracted is not None:
+            data["progress"]["fields_extracted"] = fields_extracted
+        if current_document is not None:
+            data["progress"]["current_document"] = current_document
+        
+        self._write_json(file_path, data)
+        return data
+    
+    # =========================================================================
+    # STRUCTURED LOG HELPERS
+    # =========================================================================
+    
+    def log_agent_start(self, run_id: str, agent_name: str) -> Dict[str, Any]:
+        """Log when an agent starts processing."""
+        return self.add_log(
+            run_id=run_id,
+            message=f"Starting {agent_name.title()} agent...",
+            level="info",
+            agent=agent_name,
+            event_type="agent_start",
+        )
+    
+    def log_agent_complete(
+        self, 
+        run_id: str, 
+        agent_name: str, 
+        elapsed_seconds: float,
+        success: bool = True,
+        error: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Log when an agent completes."""
+        if success:
+            return self.add_log(
+                run_id=run_id,
+                message=f"{agent_name.title()} completed in {elapsed_seconds:.1f}s",
+                level="success",
+                agent=agent_name,
+                event_type="agent_complete",
+                details={"elapsed_seconds": elapsed_seconds},
+            )
+        else:
+            return self.add_log(
+                run_id=run_id,
+                message=f"{agent_name.title()} failed: {error or 'Unknown error'}",
+                level="error",
+                agent=agent_name,
+                event_type="agent_failed",
+                details={"elapsed_seconds": elapsed_seconds, "error": error},
+            )
+    
+    def log_document_processing(
+        self, 
+        run_id: str, 
+        doc_name: str, 
+        doc_type: str,
+        status: str = "processing",
+    ) -> Dict[str, Any]:
+        """Log document processing events."""
+        if status == "processing":
+            message = f"Processing: {doc_name}"
+        elif status == "success":
+            message = f"Extracted: {doc_name}"
+        elif status == "error":
+            message = f"Failed: {doc_name}"
+        else:
+            message = f"{status}: {doc_name}"
+            
+        return self.add_log(
+            run_id=run_id,
+            message=message,
+            level="info" if status != "error" else "warning",
+            agent="preparation",
+            event_type="document",
+            details={"document_name": doc_name, "document_type": doc_type, "status": status},
+        )
+    
+    def log_fields_extracted(
+        self, 
+        run_id: str, 
+        doc_name: str,
+        field_count: int,
+        fields: Optional[List[str]] = None,
+    ) -> Dict[str, Any]:
+        """Log when fields are extracted from a document."""
+        return self.add_log(
+            run_id=run_id,
+            message=f"Extracted {field_count} fields from {doc_name}",
+            level="info",
+            agent="preparation",
+            event_type="fields_extracted",
+            details={"document_name": doc_name, "field_count": field_count, "fields": fields},
+        )
+    
+    def log_field_correction(
+        self,
+        run_id: str,
+        field_id: str,
+        field_name: str,
+        old_value: Any,
+        new_value: Any,
+        reason: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Log when a field correction is identified."""
+        return self.add_log(
+            run_id=run_id,
+            message=f"Correction: {field_name} → {str(new_value)[:30]}{'...' if len(str(new_value)) > 30 else ''}",
+            level="info",
+            agent="verification",
+            event_type="correction",
+            details={
+                "field_id": field_id,
+                "field_name": field_name,
+                "old_value": str(old_value)[:50],
+                "new_value": str(new_value)[:50],
+                "reason": reason,
+            },
+        )
+    
+    def log_verification_summary(
+        self,
+        run_id: str,
+        corrections_count: int,
+        fields_checked: int,
+    ) -> Dict[str, Any]:
+        """Log verification summary."""
+        return self.add_log(
+            run_id=run_id,
+            message=f"Found {corrections_count} corrections in {fields_checked} fields",
+            level="info",
+            agent="verification",
+            event_type="verification_summary",
+            details={"corrections_count": corrections_count, "fields_checked": fields_checked},
+        )
+    
+    def log_orderdocs_summary(
+        self,
+        run_id: str,
+        total_fields: int,
+        fields_with_values: int,
+        corrections_applied: int,
+    ) -> Dict[str, Any]:
+        """Log orderdocs summary."""
+        return self.add_log(
+            run_id=run_id,
+            message=f"Checked {total_fields} fields, {fields_with_values} have values, {corrections_applied} corrections applied",
+            level="info",
+            agent="orderdocs",
+            event_type="orderdocs_summary",
+            details={
+                "total_fields": total_fields,
+                "fields_with_values": fields_with_values,
+                "corrections_applied": corrections_applied,
+            },
         )
     
     def finalize_run(

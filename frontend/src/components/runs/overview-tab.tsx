@@ -13,9 +13,15 @@ import {
   Settings,
   AlertTriangle,
   BarChart3,
-  Gauge
+  Gauge,
+  Terminal,
+  CheckCircle,
+  XCircle,
+  Info,
+  AlertCircle,
 } from "lucide-react";
-import type { RunDetail, AgentResultDetail } from "@/lib/api";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import type { RunDetail, AgentResultDetail, LogEntry } from "@/lib/api";
 
 // =============================================================================
 // TYPES
@@ -149,11 +155,25 @@ function ConfigCard({ runDetail }: ConfigCardProps) {
 }
 
 // =============================================================================
-// TIMING BREAKDOWN CARD
+// TIMING BREAKDOWN CARD (Progress Bars)
 // =============================================================================
 
 interface TimingBreakdownProps {
   agents: RunDetail["agents"];
+}
+
+function getProgressPercentage(status: string | undefined): number {
+  switch (status) {
+    case "success":
+      return 100;
+    case "failed":
+      return 100;
+    case "running":
+      return 50; // Indeterminate - show partial progress
+    case "pending":
+    default:
+      return 0;
+  }
 }
 
 function TimingBreakdown({ agents }: TimingBreakdownProps) {
@@ -200,9 +220,9 @@ function TimingBreakdown({ agents }: TimingBreakdownProps) {
 
         <div className="space-y-3">
           {agentTimings.map((agent) => {
-            const percentage = totalDuration > 0 
-              ? (agent.seconds / totalDuration) * 100 
-              : 0;
+            const progress = getProgressPercentage(agent.status);
+            const isRunning = agent.status === "running";
+            const isFailed = agent.status === "failed";
             
             return (
               <div key={agent.key} className="space-y-1.5">
@@ -211,25 +231,38 @@ function TimingBreakdown({ agents }: TimingBreakdownProps) {
                     <AgentIcon type={agent.key as "preparation" | "verification" | "orderdocs"} size="sm" />
                     <span>{agent.name}</span>
                   </div>
-                  <span className="text-muted-foreground tabular-nums">
-                    {agent.status === "success" || agent.status === "failed" 
-                      ? formatDuration(agent.seconds)
-                      : agent.status === "running" 
-                        ? "Running..."
-                        : "—"
-                    }
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-muted-foreground tabular-nums">
+                      {agent.status === "success" || agent.status === "failed" 
+                        ? formatDuration(agent.seconds)
+                        : agent.status === "running" 
+                          ? "Running..."
+                          : "—"
+                      }
+                    </span>
+                    {agent.status === "success" && (
+                      <CheckCircle className="h-4 w-4 text-emerald-500" />
+                    )}
+                    {agent.status === "failed" && (
+                      <XCircle className="h-4 w-4 text-red-500" />
+                    )}
+                  </div>
                 </div>
                 <div className="h-2 bg-muted rounded-full overflow-hidden">
                   <div
                     className={cn(
                       "h-full rounded-full transition-all duration-500",
-                      agent.key === "preparation" && "bg-blue-500",
-                      agent.key === "verification" && "bg-emerald-500",
-                      agent.key === "orderdocs" && "bg-purple-500",
-                      agent.status === "running" && "animate-pulse"
+                      isFailed 
+                        ? "bg-red-500"
+                        : agent.key === "preparation" && "bg-blue-500",
+                      !isFailed && agent.key === "verification" && "bg-emerald-500",
+                      !isFailed && agent.key === "orderdocs" && "bg-purple-500",
+                      isRunning && "animate-pulse bg-gradient-to-r from-blue-400 to-blue-600"
                     )}
-                    style={{ width: `${percentage}%` }}
+                    style={{ 
+                      width: isRunning ? "100%" : `${progress}%`,
+                      opacity: isRunning ? 0.6 : 1,
+                    }}
                   />
                 </div>
               </div>
@@ -252,29 +285,47 @@ interface MetricsCardProps {
 function MetricsCard({ runDetail }: MetricsCardProps) {
   const prepOutput = getPreparationOutput(runDetail.agents.preparation);
   const fieldsInEncompass = getFieldsInEncompass(runDetail.agents.orderdocs?.output);
+  const progress = runDetail.progress;
+  const isPrepRunning = runDetail.agents.preparation?.status === "running";
+
+  // Use live progress when preparation is running, otherwise use final output
+  const documentsFound = isPrepRunning && progress?.documents_found 
+    ? progress.documents_found 
+    : prepOutput.documentsFound;
+  const documentsProcessed = isPrepRunning && progress?.documents_processed !== undefined
+    ? progress.documents_processed 
+    : prepOutput.documentsProcessed;
+  const fieldsExtracted = isPrepRunning && progress?.fields_extracted !== undefined
+    ? progress.fields_extracted 
+    : prepOutput.fieldsExtracted;
 
   const metrics = [
     {
       icon: FileText,
       label: "Documents Found",
-      value: prepOutput.documentsFound,
+      value: documentsFound,
       color: "text-blue-600",
       bgColor: "bg-blue-100",
+      isLive: isPrepRunning && progress?.documents_found !== undefined,
     },
     {
       icon: Gauge,
       label: "Documents Processed",
-      value: prepOutput.documentsProcessed,
+      value: documentsProcessed,
       color: "text-emerald-600",
       bgColor: "bg-emerald-100",
+      isLive: isPrepRunning,
     },
     {
       icon: BarChart3,
       label: "Fields Extracted",
-      value: prepOutput.fieldsExtracted,
+      value: fieldsExtracted,
       color: "text-amber-600",
       bgColor: "bg-amber-100",
-      subtext: "from prep",
+      subtext: isPrepRunning && progress?.current_document 
+        ? `from ${progress.current_document.slice(0, 20)}...` 
+        : "from prep",
+      isLive: isPrepRunning,
     },
     {
       icon: Database,
@@ -283,6 +334,7 @@ function MetricsCard({ runDetail }: MetricsCardProps) {
       color: "text-purple-600",
       bgColor: "bg-purple-100",
       subtext: "with values",
+      isLive: false,
     },
   ];
 
@@ -292,6 +344,11 @@ function MetricsCard({ runDetail }: MetricsCardProps) {
         <CardTitle className="text-sm font-medium flex items-center gap-2">
           <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
           Key Metrics
+          {isPrepRunning && (
+            <span className="ml-auto text-[10px] font-normal text-blue-500 animate-pulse">
+              ● Live
+            </span>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -299,21 +356,116 @@ function MetricsCard({ runDetail }: MetricsCardProps) {
           {metrics.map((metric) => (
             <div
               key={metric.label}
-              className="flex items-start gap-3 p-3 rounded-lg bg-muted/50"
+              className={cn(
+                "flex items-start gap-3 p-3 rounded-lg bg-muted/50",
+                metric.isLive && "ring-1 ring-blue-200 dark:ring-blue-800"
+              )}
             >
               <div className={cn("p-2 rounded-lg", metric.bgColor)}>
                 <metric.icon className={cn("h-4 w-4", metric.color)} />
               </div>
               <div>
-                <p className="text-2xl font-semibold tabular-nums">{metric.value}</p>
+                <p className={cn(
+                  "text-2xl font-semibold tabular-nums",
+                  metric.isLive && "text-blue-600"
+                )}>
+                  {metric.value}
+                </p>
                 <p className="text-xs text-muted-foreground">{metric.label}</p>
                 {metric.subtext && (
-                  <p className="text-[10px] text-muted-foreground/70">{metric.subtext}</p>
+                  <p className="text-[10px] text-muted-foreground/70 truncate max-w-[120px]">
+                    {metric.subtext}
+                  </p>
                 )}
               </div>
             </div>
           ))}
         </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// =============================================================================
+// LIVE LOGS CARD
+// =============================================================================
+
+interface LiveLogsCardProps {
+  logs: LogEntry[] | undefined;
+}
+
+function getLogIcon(level: string) {
+  switch (level) {
+    case "success":
+      return <CheckCircle className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />;
+    case "error":
+      return <XCircle className="h-3.5 w-3.5 text-red-500 flex-shrink-0" />;
+    case "warning":
+      return <AlertCircle className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />;
+    default:
+      return <Info className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />;
+  }
+}
+
+function formatLogTime(timestamp: string): string {
+  const date = new Date(timestamp);
+  return date.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
+}
+
+function LiveLogsCard({ logs }: LiveLogsCardProps) {
+  const displayLogs = logs?.slice().reverse() || [];
+  
+  return (
+    <Card className="h-full">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm font-medium flex items-center gap-2">
+          <Terminal className="h-4 w-4 text-muted-foreground" />
+          Activity Log
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-0">
+        <ScrollArea className="h-[200px] px-4 pb-4">
+          {displayLogs.length === 0 ? (
+            <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
+              No activity yet...
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {displayLogs.map((log, idx) => (
+                <div
+                  key={idx}
+                  className={cn(
+                    "flex items-start gap-2 text-xs p-2 rounded-md",
+                    log.level === "error" && "bg-red-50 dark:bg-red-950/20",
+                    log.level === "success" && "bg-emerald-50 dark:bg-emerald-950/20",
+                    log.level === "warning" && "bg-amber-50 dark:bg-amber-950/20",
+                    log.level === "info" && "bg-muted/50",
+                  )}
+                >
+                  {getLogIcon(log.level)}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-foreground leading-tight">{log.message}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-muted-foreground font-mono text-[10px]">
+                        {formatLogTime(log.timestamp)}
+                      </span>
+                      {log.agent && log.agent !== "orchestrator" && (
+                        <span className="text-muted-foreground text-[10px] capitalize">
+                          • {log.agent}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </ScrollArea>
       </CardContent>
     </Card>
   );
@@ -414,6 +566,7 @@ export function OverviewTab({ runDetail, isLoading, className }: OverviewTabProp
         <ConfigCard runDetail={runDetail} />
         <TimingBreakdown agents={runDetail.agents} />
         <MetricsCard runDetail={runDetail} />
+        <LiveLogsCard logs={runDetail.logs} />
 
         {/* Corrected Fields Summary (if available) */}
         {runDetail.corrected_fields_summary && runDetail.corrected_fields_summary.length > 0 && (
