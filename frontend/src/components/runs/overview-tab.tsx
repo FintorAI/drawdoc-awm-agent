@@ -16,7 +16,11 @@ import {
   XCircle,
   Gauge,
   BarChart3,
+  ChevronRight,
+  ChevronDown,
+  X,
 } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import type { RunDetail, AgentResultDetail, ProgressData } from "@/lib/api";
 
 // =============================================================================
@@ -215,7 +219,7 @@ function TimingBreakdown({ agents, progress, executionTimestamp }: TimingBreakdo
     }
     return 10; // Default to 10% if running but no progress data
   }, [agents.preparation?.status, progress?.documents_found, progress?.documents_processed]);
-
+  
   const agentTimings = [
     { 
       key: "preparation", 
@@ -290,13 +294,13 @@ function TimingBreakdown({ agents, progress, executionTimestamp }: TimingBreakdo
                       "tabular-nums",
                       isRunning ? "text-blue-600 font-medium" : "text-muted-foreground"
                     )}>
-                      {agent.status === "success" || agent.status === "failed" 
-                        ? formatDuration(agent.seconds)
+                    {agent.status === "success" || agent.status === "failed" 
+                      ? formatDuration(agent.seconds)
                         : isRunning 
                           ? `${agent.progress}%`
-                          : "—"
-                      }
-                    </span>
+                        : "—"
+                    }
+                  </span>
                     {agent.status === "success" && (
                       <CheckCircle className="h-4 w-4 text-emerald-500" />
                     )}
@@ -329,14 +333,75 @@ function TimingBreakdown({ agents, progress, executionTimestamp }: TimingBreakdo
 }
 
 // =============================================================================
-// METRICS CARD
+// METRICS CARD (Expandable with Side Panel)
 // =============================================================================
 
 interface MetricsCardProps {
   runDetail: RunDetail;
 }
 
+type MetricKey = "documents_found" | "documents_processed" | "fields_extracted" | "fields_encompass";
+
+// Helper to get field mappings from prep output
+function getFieldMappingsDetail(prepResult: AgentResultDetail | undefined): Array<{
+  fieldId: string;
+  value: string;
+  document?: string;
+}> {
+  if (!prepResult?.output) return [];
+  
+  const output = prepResult.output as {
+    results?: {
+      field_mappings?: Record<string, { value?: string; source_document?: string } | string>;
+    };
+  };
+  
+  const mappings = output.results?.field_mappings;
+  if (!mappings) return [];
+  
+  return Object.entries(mappings).map(([fieldId, mapping]) => ({
+    fieldId,
+    value: typeof mapping === "string" ? mapping : (mapping?.value || ""),
+    document: typeof mapping === "object" ? mapping?.source_document : undefined,
+  }));
+}
+
+// Helper to get encompass fields with values
+function getEncompassFieldsDetail(orderdocsOutput: unknown): Array<{
+  fieldId: string;
+  value: string;
+}> {
+  if (!orderdocsOutput || typeof orderdocsOutput !== "object") return [];
+  
+  const output = orderdocsOutput as Record<string, { value?: string; has_value?: boolean }>;
+  
+  return Object.entries(output)
+    .filter(([, field]) => field?.has_value === true)
+    .map(([fieldId, field]) => ({
+      fieldId,
+      value: field.value || "",
+    }));
+}
+
+// Helper to get documents processed info from logs - get ALL processed documents
+function getProcessedDocumentsFromLogs(logs: RunDetail["logs"]): string[] {
+  if (!logs) return [];
+  
+  // Get documents from fields_extracted events AND document events
+  const docNames = new Set<string>();
+  
+  logs.forEach(log => {
+    if (log.details?.document_name) {
+      docNames.add(String(log.details.document_name));
+    }
+  });
+  
+  return [...docNames];
+}
+
 function MetricsCard({ runDetail }: MetricsCardProps) {
+  const [expandedMetric, setExpandedMetric] = React.useState<MetricKey | null>(null);
+  
   const prepOutput = getPreparationOutput(runDetail.agents.preparation);
   const fieldsInEncompass = getFieldsInEncompass(runDetail.agents.orderdocs?.output);
   const progress = runDetail.progress;
@@ -353,47 +418,221 @@ function MetricsCard({ runDetail }: MetricsCardProps) {
     ? progress.fields_extracted 
     : prepOutput.fieldsExtracted;
 
-  const metrics = [
+  // Get detailed data for expanded views
+  const fieldMappings = getFieldMappingsDetail(runDetail.agents.preparation);
+  const encompassFields = getEncompassFieldsDetail(runDetail.agents.orderdocs?.output);
+  const processedDocs = getProcessedDocumentsFromLogs(runDetail.logs);
+
+  const metrics: Array<{
+    key: MetricKey;
+    icon: typeof FileText;
+    label: string;
+    value: number;
+    color: string;
+    bgColor: string;
+    ringColor: string;
+    panelBg: string;
+    subtext?: string;
+    isLive: boolean;
+  }> = [
     {
+      key: "documents_found",
       icon: FileText,
       label: "Documents Found",
       value: documentsFound,
       color: "text-blue-600",
       bgColor: "bg-blue-100",
+      ringColor: "ring-blue-400",
+      panelBg: "bg-blue-50/50 border-blue-200 dark:bg-blue-950/20 dark:border-blue-800",
       isLive: isPrepRunning && progress?.documents_found !== undefined,
     },
     {
+      key: "documents_processed",
       icon: Gauge,
       label: "Documents Processed",
       value: documentsProcessed,
       color: "text-emerald-600",
       bgColor: "bg-emerald-100",
+      ringColor: "ring-emerald-400",
+      panelBg: "bg-emerald-50/50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-800",
       isLive: isPrepRunning,
     },
     {
+      key: "fields_extracted",
       icon: BarChart3,
       label: "Fields Extracted",
       value: fieldsExtracted,
       color: "text-amber-600",
       bgColor: "bg-amber-100",
+      ringColor: "ring-amber-400",
+      panelBg: "bg-amber-50/50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800",
       subtext: isPrepRunning && progress?.current_document 
         ? `from ${progress.current_document.slice(0, 20)}...` 
-        : "from prep",
+        : undefined,
       isLive: isPrepRunning,
     },
     {
+      key: "fields_encompass",
       icon: Database,
       label: "Fields in Encompass",
       value: fieldsInEncompass,
       color: "text-purple-600",
       bgColor: "bg-purple-100",
+      ringColor: "ring-purple-400",
+      panelBg: "bg-purple-50/50 border-purple-200 dark:bg-purple-950/20 dark:border-purple-800",
       subtext: "with values",
       isLive: false,
     },
   ];
 
+  const selectedMetric = metrics.find(m => m.key === expandedMetric);
+
+  const toggleExpand = (key: MetricKey) => {
+    setExpandedMetric(expandedMetric === key ? null : key);
+  };
+
+  // Render expanded content based on metric type
+  const renderExpandedContent = (key: MetricKey) => {
+    switch (key) {
+      case "documents_found":
+        return (
+          <div className="text-sm text-muted-foreground space-y-3">
+            <p>
+              <span className="text-3xl font-bold text-blue-600">{documentsFound}</span>
+              <span className="ml-2">total documents in loan file</span>
+            </p>
+            <p className="text-xs">
+              The preparation agent scans all documents from Encompass and filters to the requested document types for processing.
+            </p>
+            <div className="pt-2 border-t text-xs">
+              <p className="text-muted-foreground/70">
+                Documents are filtered by type (ID, Title Report, Appraisal, LE, 1003, etc.) before extraction begins.
+              </p>
+            </div>
+          </div>
+        );
+      
+      case "documents_processed":
+        return (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              <span className="text-3xl font-bold text-emerald-600">{documentsProcessed}</span>
+              <span className="ml-2">documents processed</span>
+            </p>
+            {processedDocs.length > 0 ? (
+              <>
+                <p className="text-xs text-muted-foreground">
+                  Documents with extracted fields ({processedDocs.length} logged):
+                </p>
+                <ScrollArea className="h-[180px]">
+                  <div className="space-y-1 pr-3">
+                    {processedDocs.map((doc, idx) => (
+                      <div 
+                        key={idx}
+                        className="flex items-center gap-2 text-xs p-2 rounded bg-emerald-50 dark:bg-emerald-950/30"
+                      >
+                        <FileText className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />
+                        <span className="truncate">{doc}</span>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                {isPrepRunning 
+                  ? "Documents being processed..." 
+                  : "Document details logged during extraction."}
+              </p>
+            )}
+          </div>
+        );
+      
+      case "fields_extracted":
+        return (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              <span className="text-3xl font-bold text-amber-600">{fieldsExtracted}</span>
+              <span className="ml-2">fields extracted</span>
+            </p>
+            {fieldMappings.length > 0 ? (
+              <>
+                <p className="text-xs text-muted-foreground">
+                  Fields mapped to Encompass IDs:
+                </p>
+                <ScrollArea className="h-[180px]">
+                  <div className="space-y-1 pr-3">
+                    {fieldMappings.map((field, idx) => (
+                      <div 
+                        key={idx}
+                        className="flex items-center justify-between gap-2 text-xs p-2 rounded bg-amber-50 dark:bg-amber-950/30"
+                      >
+                        <span className="font-mono text-amber-700 dark:text-amber-400 flex-shrink-0">
+                          {field.fieldId}
+                        </span>
+                        <span className="truncate text-muted-foreground text-right">
+                          {field.value || "—"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                {isPrepRunning 
+                  ? "Extracting fields..." 
+                  : "Field mappings stored in preparation output."}
+              </p>
+            )}
+          </div>
+        );
+      
+      case "fields_encompass":
+        return (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              <span className="text-3xl font-bold text-purple-600">{fieldsInEncompass}</span>
+              <span className="ml-2">fields with values</span>
+            </p>
+            {encompassFields.length > 0 ? (
+              <>
+                <p className="text-xs text-muted-foreground">
+                  Current Encompass field values:
+                </p>
+                <ScrollArea className="h-[180px]">
+                  <div className="space-y-1 pr-3">
+                    {encompassFields.map((field, idx) => (
+                      <div 
+                        key={idx}
+                        className="flex items-center justify-between gap-2 text-xs p-2 rounded bg-purple-50 dark:bg-purple-950/30"
+                      >
+                        <span className="font-mono text-purple-700 dark:text-purple-400 flex-shrink-0">
+                          {field.fieldId}
+                        </span>
+                        <span className="truncate text-muted-foreground text-right max-w-[180px]">
+                          {field.value || "—"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                No Encompass fields read yet. OrderDocs agent will populate this.
+              </p>
+            )}
+          </div>
+        );
+      
+      default:
+        return null;
+    }
+  };
+
   return (
-    <Card>
+    <Card className="col-span-full">
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-medium flex items-center gap-2">
           <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
@@ -405,36 +644,68 @@ function MetricsCard({ runDetail }: MetricsCardProps) {
           )}
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-3">
+        {/* Metrics Grid - 2x2 full width */}
         <div className="grid grid-cols-2 gap-4">
-          {metrics.map((metric) => (
-            <div
-              key={metric.label}
-              className={cn(
-                "flex items-start gap-3 p-3 rounded-lg bg-muted/50",
-                metric.isLive && "ring-1 ring-blue-200 dark:ring-blue-800"
-              )}
-            >
-              <div className={cn("p-2 rounded-lg", metric.bgColor)}>
+          {metrics.map((metric) => {
+            const isExpanded = expandedMetric === metric.key;
+            
+            return (
+              <button
+                key={metric.key}
+                onClick={() => toggleExpand(metric.key)}
+                className={cn(
+                  "flex items-center gap-3 p-3 rounded-lg bg-muted/50 transition-all h-[80px]",
+                  "hover:bg-muted/80 cursor-pointer text-left",
+                  metric.isLive && "ring-1 ring-blue-200 dark:ring-blue-800",
+                  isExpanded && "ring-2 ring-offset-1",
+                  isExpanded && metric.ringColor,
+                )}
+              >
+                <div className={cn("p-2 rounded-lg flex-shrink-0", metric.bgColor)}>
                 <metric.icon className={cn("h-4 w-4", metric.color)} />
               </div>
-              <div>
-                <p className={cn(
-                  "text-2xl font-semibold tabular-nums",
-                  metric.isLive && "text-blue-600"
-                )}>
-                  {metric.value}
-                </p>
-                <p className="text-xs text-muted-foreground">{metric.label}</p>
-                {metric.subtext && (
-                  <p className="text-[10px] text-muted-foreground/70 truncate max-w-[120px]">
-                    {metric.subtext}
+                <div className="flex-1 min-w-0">
+                  <p className={cn(
+                    "text-2xl font-semibold tabular-nums leading-tight",
+                    metric.isLive && "text-blue-600"
+                  )}>
+                    {metric.value}
                   </p>
+                  <p className="text-xs text-muted-foreground leading-tight">{metric.label}</p>
+                {metric.subtext && (
+                    <p className="text-[10px] text-muted-foreground/70 truncate leading-tight">
+                      {metric.subtext}
+                    </p>
                 )}
               </div>
-            </div>
-          ))}
+                <ChevronRight className={cn(
+                  "h-4 w-4 text-muted-foreground flex-shrink-0 transition-transform",
+                  isExpanded && "rotate-90"
+                )} />
+              </button>
+            );
+          })}
         </div>
+        
+        {/* Expanded Panel - Below */}
+        {expandedMetric && selectedMetric && (
+          <div className={cn(
+            "p-4 rounded-lg border animate-in slide-in-from-top-2 duration-200",
+            selectedMetric.panelBg
+          )}>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-medium">{selectedMetric.label}</span>
+              <button 
+                onClick={() => setExpandedMetric(null)}
+                className="p-1 rounded hover:bg-muted/50 transition-colors"
+              >
+                <X className="h-4 w-4 text-muted-foreground" />
+              </button>
+            </div>
+            {renderExpandedContent(expandedMetric)}
+        </div>
+        )}
       </CardContent>
     </Card>
   );
