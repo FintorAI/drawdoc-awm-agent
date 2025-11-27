@@ -261,7 +261,7 @@ def run_agent(
         from agents.drawdocs.orchestrator_agent import run_orchestrator
         
         # Set up live progress callback for preparation agent
-        from agents.drawdocs.subagents.preparation_agent.preparation_agent import set_progress_callback
+        from agents.drawdocs.subagents.preparation_agent.preparation_agent import set_progress_callback, set_log_callback
         
         def prep_progress_callback(documents_found=None, documents_processed=None, fields_extracted=None, current_document=None):
             """Update status file with live progress from preparation agent."""
@@ -276,7 +276,22 @@ def run_agent(
             except Exception as e:
                 logger.warning(f"Failed to update progress: {e}")
         
+        def prep_log_callback(message: str, level: str = "info", event_type: str = None, details: dict = None):
+            """Add log entry from preparation agent."""
+            try:
+                writer.add_log(
+                    run_id=run_id,
+                    message=message,
+                    level=level,
+                    agent="preparation",
+                    event_type=event_type,
+                    details=details,
+                )
+            except Exception as e:
+                logger.warning(f"Failed to add log: {e}")
+        
         set_progress_callback(prep_progress_callback)
+        set_log_callback(prep_log_callback)
         
         # Create progress callback using StatusWriter
         progress_callback = create_status_callback(run_id, output_dir)
@@ -300,8 +315,9 @@ def run_agent(
             summary_text=results.get("summary_text"),
         )
         
-        # Clear progress callback
+        # Clear callbacks
         set_progress_callback(None)
+        set_log_callback(None)
         
         logger.info(f"Agent run completed for loan {loan_id}")
         

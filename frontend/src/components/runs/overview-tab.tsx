@@ -19,9 +19,11 @@ import {
   XCircle,
   Info,
   AlertCircle,
+  Scan,
+  PenLine,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import type { RunDetail, AgentResultDetail, LogEntry } from "@/lib/api";
+import type { RunDetail, AgentResultDetail, LogEntry, ProgressData } from "@/lib/api";
 
 // =============================================================================
 // TYPES
@@ -31,6 +33,29 @@ interface OverviewTabProps {
   runDetail: RunDetail | undefined;
   isLoading: boolean;
   className?: string;
+}
+
+// Live elapsed time hook
+function useLiveElapsed(startTime: string | undefined, isRunning: boolean): number {
+  const [elapsed, setElapsed] = React.useState(0);
+  
+  React.useEffect(() => {
+    if (!startTime || !isRunning) {
+      setElapsed(0);
+      return;
+    }
+    
+    const start = new Date(startTime).getTime();
+    const updateElapsed = () => {
+      setElapsed((Date.now() - start) / 1000);
+    };
+    
+    updateElapsed();
+    const interval = setInterval(updateElapsed, 1000);
+    return () => clearInterval(interval);
+  }, [startTime, isRunning]);
+  
+  return elapsed;
 }
 
 // =============================================================================
@@ -160,43 +185,69 @@ function ConfigCard({ runDetail }: ConfigCardProps) {
 
 interface TimingBreakdownProps {
   agents: RunDetail["agents"];
+  progress?: ProgressData;
+  executionTimestamp?: string;
 }
 
-function getProgressPercentage(status: string | undefined): number {
-  switch (status) {
-    case "success":
-      return 100;
-    case "failed":
-      return 100;
-    case "running":
-      return 50; // Indeterminate - show partial progress
-    case "pending":
-    default:
-      return 0;
-  }
-}
-
-function TimingBreakdown({ agents }: TimingBreakdownProps) {
-  const totalDuration = getTotalDuration(agents);
+function TimingBreakdown({ agents, progress, executionTimestamp }: TimingBreakdownProps) {
+  const isPrepRunning = agents.preparation?.status === "running";
+  const isVerifRunning = agents.verification?.status === "running";
+  const isOrderRunning = agents.orderdocs?.status === "running";
+  const anyRunning = isPrepRunning || isVerifRunning || isOrderRunning;
   
+  // Live elapsed time for overall
+  const liveElapsed = useLiveElapsed(executionTimestamp, anyRunning);
+  
+  // Calculate total from completed agents + live elapsed
+  const completedTime = 
+    (agents.preparation?.status === "success" || agents.preparation?.status === "failed" 
+      ? agents.preparation?.elapsed_seconds || 0 : 0) +
+    (agents.verification?.status === "success" || agents.verification?.status === "failed" 
+      ? agents.verification?.elapsed_seconds || 0 : 0) +
+    (agents.orderdocs?.status === "success" || agents.orderdocs?.status === "failed" 
+      ? agents.orderdocs?.elapsed_seconds || 0 : 0);
+  
+  const totalDuration = anyRunning ? liveElapsed : getTotalDuration(agents);
+  
+  // Calculate progress percentage based on documents for preparation
+  const prepProgress = React.useMemo(() => {
+    if (agents.preparation?.status === "success") return 100;
+    if (agents.preparation?.status === "failed") return 100;
+    if (agents.preparation?.status === "pending") return 0;
+    
+    // Running - use document progress
+    if (progress?.documents_found && progress.documents_found > 0) {
+      return Math.min(99, Math.round((progress.documents_processed / progress.documents_found) * 100));
+    }
+    return 10; // Default to 10% if running but no progress data
+  }, [agents.preparation?.status, progress?.documents_found, progress?.documents_processed]);
+
   const agentTimings = [
     { 
       key: "preparation", 
       name: "Preparation", 
       seconds: agents.preparation?.elapsed_seconds || 0,
       status: agents.preparation?.status,
+      progress: prepProgress,
+      progressText: isPrepRunning && progress?.documents_found 
+        ? `${progress.documents_processed}/${progress.documents_found} docs`
+        : undefined,
     },
     { 
       key: "verification", 
       name: "Verification", 
       seconds: agents.verification?.elapsed_seconds || 0,
       status: agents.verification?.status,
+      progress: agents.verification?.status === "success" || agents.verification?.status === "failed" ? 100 
+        : agents.verification?.status === "running" ? 50 : 0,
     },
     { 
       key: "orderdocs", 
       name: "OrderDocs", 
       seconds: agents.orderdocs?.elapsed_seconds || 0,
       status: agents.orderdocs?.status,
+      progress: agents.orderdocs?.status === "success" || agents.orderdocs?.status === "failed" ? 100 
+        : agents.orderdocs?.status === "running" ? 50 : 0,
     },
   ];
 
@@ -211,16 +262,20 @@ function TimingBreakdown({ agents }: TimingBreakdownProps) {
       <CardContent>
         <div className="mb-4">
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-semibold tabular-nums">
+            <span className={cn(
+              "text-3xl font-semibold tabular-nums",
+              anyRunning && "text-blue-600"
+            )}>
               {formatDuration(totalDuration)}
             </span>
-            <span className="text-sm text-muted-foreground">total</span>
+            <span className="text-sm text-muted-foreground">
+              {anyRunning ? "elapsed" : "total"}
+            </span>
           </div>
         </div>
 
         <div className="space-y-3">
           {agentTimings.map((agent) => {
-            const progress = getProgressPercentage(agent.status);
             const isRunning = agent.status === "running";
             const isFailed = agent.status === "failed";
             
@@ -232,11 +287,19 @@ function TimingBreakdown({ agents }: TimingBreakdownProps) {
                     <span>{agent.name}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground tabular-nums">
+                    {agent.progressText && (
+                      <span className="text-xs text-blue-600 font-medium">
+                        {agent.progressText}
+                      </span>
+                    )}
+                    <span className={cn(
+                      "tabular-nums",
+                      isRunning ? "text-blue-600 font-medium" : "text-muted-foreground"
+                    )}>
                       {agent.status === "success" || agent.status === "failed" 
                         ? formatDuration(agent.seconds)
-                        : agent.status === "running" 
-                          ? "Running..."
+                        : isRunning 
+                          ? `${agent.progress}%`
                           : "—"
                       }
                     </span>
@@ -251,17 +314,14 @@ function TimingBreakdown({ agents }: TimingBreakdownProps) {
                 <div className="h-2 bg-muted rounded-full overflow-hidden">
                   <div
                     className={cn(
-                      "h-full rounded-full transition-all duration-500",
-                      isFailed 
-                        ? "bg-red-500"
-                        : agent.key === "preparation" && "bg-blue-500",
+                      "h-full rounded-full transition-all duration-300",
+                      isFailed && "bg-red-500",
+                      !isFailed && agent.key === "preparation" && "bg-blue-500",
                       !isFailed && agent.key === "verification" && "bg-emerald-500",
                       !isFailed && agent.key === "orderdocs" && "bg-purple-500",
-                      isRunning && "animate-pulse bg-gradient-to-r from-blue-400 to-blue-600"
                     )}
                     style={{ 
-                      width: isRunning ? "100%" : `${progress}%`,
-                      opacity: isRunning ? 0.6 : 1,
+                      width: `${agent.progress}%`,
                     }}
                   />
                 </div>
@@ -394,7 +454,33 @@ interface LiveLogsCardProps {
   logs: LogEntry[] | undefined;
 }
 
-function getLogIcon(level: string) {
+function getLogIcon(level: string, eventType?: string) {
+  // Event-specific icons
+  if (eventType === "document" || eventType === "fields_extracted") {
+    return <FileText className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />;
+  }
+  if (eventType === "correction") {
+    return <PenLine className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />;
+  }
+  if (eventType === "agent_start") {
+    return <Gauge className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />;
+  }
+  if (eventType === "agent_complete" || eventType === "agent_failed") {
+    return level === "success" 
+      ? <CheckCircle className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />
+      : <XCircle className="h-3.5 w-3.5 text-red-500 flex-shrink-0" />;
+  }
+  if (eventType === "prep_summary" || eventType === "field_mappings") {
+    return <BarChart3 className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />;
+  }
+  if (eventType === "verification_summary") {
+    return <Scan className="h-3.5 w-3.5 text-purple-500 flex-shrink-0" />;
+  }
+  if (eventType === "orderdocs_summary") {
+    return <Database className="h-3.5 w-3.5 text-purple-500 flex-shrink-0" />;
+  }
+  
+  // Level-based fallback
   switch (level) {
     case "success":
       return <CheckCircle className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />;
@@ -417,6 +503,22 @@ function formatLogTime(timestamp: string): string {
   });
 }
 
+function getEventTypeLabel(eventType?: string): string | null {
+  switch (eventType) {
+    case "document": return "DOC";
+    case "fields_extracted": return "EXTRACT";
+    case "correction": return "FIX";
+    case "agent_start": return "START";
+    case "agent_complete": return "DONE";
+    case "agent_failed": return "FAIL";
+    case "prep_summary": return "PREP";
+    case "field_mappings": return "MAP";
+    case "verification_summary": return "VERIFY";
+    case "orderdocs_summary": return "ORDER";
+    default: return null;
+  }
+}
+
 function LiveLogsCard({ logs }: LiveLogsCardProps) {
   const displayLogs = logs?.slice().reverse() || [];
   
@@ -426,43 +528,79 @@ function LiveLogsCard({ logs }: LiveLogsCardProps) {
         <CardTitle className="text-sm font-medium flex items-center gap-2">
           <Terminal className="h-4 w-4 text-muted-foreground" />
           Activity Log
+          {displayLogs.length > 0 && (
+            <span className="ml-auto text-[10px] font-normal text-muted-foreground">
+              {displayLogs.length} events
+            </span>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        <ScrollArea className="h-[200px] px-4 pb-4">
+        <ScrollArea className="h-[220px] px-4 pb-4">
           {displayLogs.length === 0 ? (
-            <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-              No activity yet...
+            <div className="flex flex-col items-center justify-center h-full text-muted-foreground text-sm gap-2">
+              <Terminal className="h-8 w-8 opacity-20" />
+              <p>Waiting for activity...</p>
             </div>
           ) : (
-            <div className="space-y-2">
-              {displayLogs.map((log, idx) => (
-                <div
-                  key={idx}
-                  className={cn(
-                    "flex items-start gap-2 text-xs p-2 rounded-md",
-                    log.level === "error" && "bg-red-50 dark:bg-red-950/20",
-                    log.level === "success" && "bg-emerald-50 dark:bg-emerald-950/20",
-                    log.level === "warning" && "bg-amber-50 dark:bg-amber-950/20",
-                    log.level === "info" && "bg-muted/50",
-                  )}
-                >
-                  {getLogIcon(log.level)}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-foreground leading-tight">{log.message}</p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-muted-foreground font-mono text-[10px]">
-                        {formatLogTime(log.timestamp)}
-                      </span>
-                      {log.agent && log.agent !== "orchestrator" && (
-                        <span className="text-muted-foreground text-[10px] capitalize">
-                          • {log.agent}
+            <div className="space-y-1.5">
+              {displayLogs.map((log, idx) => {
+                const eventLabel = getEventTypeLabel(log.event_type);
+                return (
+                  <div
+                    key={idx}
+                    className={cn(
+                      "flex items-start gap-2 text-xs p-2 rounded-md border-l-2",
+                      log.level === "error" && "bg-red-50 dark:bg-red-950/20 border-l-red-500",
+                      log.level === "success" && "bg-emerald-50 dark:bg-emerald-950/20 border-l-emerald-500",
+                      log.level === "warning" && "bg-amber-50 dark:bg-amber-950/20 border-l-amber-500",
+                      log.level === "info" && "bg-muted/30 border-l-blue-400",
+                    )}
+                  >
+                    {getLogIcon(log.level, log.event_type)}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-foreground leading-tight">{log.message}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-muted-foreground font-mono text-[10px]">
+                          {formatLogTime(log.timestamp)}
                         </span>
-                      )}
+                        {eventLabel && (
+                          <span className={cn(
+                            "text-[9px] font-medium px-1 py-0.5 rounded",
+                            log.level === "error" && "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+                            log.level === "success" && "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+                            log.level === "warning" && "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+                            log.level === "info" && "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+                          )}>
+                            {eventLabel}
+                          </span>
+                        )}
+                        {log.agent && log.agent !== "orchestrator" && (
+                          <span className="text-muted-foreground text-[10px] capitalize">
+                            • {log.agent}
+                          </span>
+                        )}
+                      </div>
+                      {/* Show details if available */}
+                      {log.details && Object.keys(log.details).length > 0 && (() => {
+                        const details = log.details as Record<string, string | number | boolean | null>;
+                        const fieldName = details.field_name;
+                        const newValue = details.new_value;
+                        return (
+                          <div className="mt-1 text-[10px] text-muted-foreground font-mono">
+                            {fieldName && (
+                              <span className="block">Field: {String(fieldName)}</span>
+                            )}
+                            {newValue && (
+                              <span className="block truncate">Value: {String(newValue).slice(0, 40)}</span>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </ScrollArea>
@@ -564,7 +702,11 @@ export function OverviewTab({ runDetail, isLoading, className }: OverviewTabProp
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <ConfigCard runDetail={runDetail} />
-        <TimingBreakdown agents={runDetail.agents} />
+        <TimingBreakdown 
+          agents={runDetail.agents} 
+          progress={runDetail.progress}
+          executionTimestamp={runDetail.execution_timestamp}
+        />
         <MetricsCard runDetail={runDetail} />
         <LiveLogsCard logs={runDetail.logs} />
 
