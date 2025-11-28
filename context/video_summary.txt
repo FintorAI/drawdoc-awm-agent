@@ -1,0 +1,31 @@
+The video features a remote meeting with several people, including Masoud, Raj, Tori, and Shabbendu, discussing and walking through the document drawing process.
+
+Meeting Logistics and Attendees
+Masoud is joining from India.
+Raj is expected to join, but the speaker is unsure if Tori and Ty will join. Tori and Raj eventually joined.
+The call is being recorded for future reference.
+Raj runs the closing department and has been with the company for about 13 years. The discussion about the document drawing process is meant to help map out the entire process to see what can be automated and what cannot.
+Document Drawing Process Overview
+
+The goal is to walk through the document drawing process, which is the procedure for loans that are clear to close from the underwriter. The process is demonstrated using a file in a pipeline called the "doc order" or "doc stro pipeline" in the Encompass system.
+Initial Validation (First Step): The first mandatory step is to confirm that the initial Closing Disclosure (CD) is signed by the borrower and that the CD has been approved and balanced with the title. This is because a 3-day waiting window is required between the CD and the documents, based on the TILA-RESPA Integrated Disclosure (TRID) CFPB guideline. This check is done using the "disclosure tracking" tool. The user must also confirm the signing date with the loan officers and processors.
+Assigning a Closer: The closer assigns their name right over here in the milestones section when they start to draw the documents.
+Reviewing Forms and Documents:
+The borrower's information, property address, loan number, and loan amount are available on the left side.
+The process uses universal forms, but only those necessary for the doc order (to validate or update data) are checked.
+Documents are available in the "efolder" option on the right side, including the Closing Disclosure, appraisal report, and purchase contract.
+The property address is validated against multiple documents, including the tax summary, appraisal report, evidence of insurance, hazard insurance, and purchase contract. The United States Postal Service (USPS) search tool is also used to verify the property address.
+All processes, conditions, documents for validation, and data fields (variables) are documented in the Standard Operating Procedures (SOPs).
+Checking Prior to Funding (PTF) Conditions: The closer must review certain PTF conditions added by departments like underwriting or QA. The closer will have a list of conditions to review at the document stage. The closer may add a PTF condition if a discrepancy is identified, like an issue with the cash-to-close condition.
+If a simple fix is needed, the docs are not held up; instead, a condition is added. If a major fix is required, the processors and loan officers are contacted.
+If a condition is added, the user selects a department (typically loan processor or underwriter) that should fix it. Selecting the loan processor is typical for third-party documents like the appraisal report, contract, or hazard insurance.
+Reviewing Specific Loan Information:
+For FHA loans, the FHA case number, case assignment date, and Section of the Act (SOA) are validated against the FHA case assignment document. This includes checking the correct ADP code based on the property type.
+For VA loans, the VA case number is validated against the VA case assignment document.
+Borrower and Property Information:
+Borrower names are validated, usually with a driving license. First and last names must be accurate.
+The system allows for updating "also known as" (AKA) names for borrowers, usually gathered from the credit report and fraud report.
+The existence of a secondary loan (subordinate financing) must be verified. If one exists, a specific box must be unchecked.
+If a file is closing in a trust name, the closer must input the trust information, including the trust name, state of origination, and date from the trust document.
+For all loans, the Municipal Information System (MIN) number must be unique and is verified using the MERS website.
+For Planned Unit Development (PUD) properties, the PUD name must be verified from the title and appraisal reports. The flood zone is also verified to determine if flood insurance is mandatory.

@@ -1,9 +1,12 @@
 """Disclosure Orchestrator Agent.
 
-Manages sequential execution of disclosure sub-agents:
-1. Verification: Check required fields
-2. Preparation: Populate missing fields with AI
-3. Request: Send email to LO
+MVP: Manages sequential execution of disclosure sub-agents with non-MVP case handling.
+
+Workflow:
+1. Verification: Check required fields + MVP eligibility
+2. Preparation: Calculate MI, check tolerance, populate CD
+3. Request: Send email to LO with full summary
+4. Handoff: Generate handoff data for Draw Docs
 """
 
 import os
@@ -28,6 +31,15 @@ from agents.disclosure.subagents.verification_agent.verification_agent import ru
 from agents.disclosure.subagents.preparation_agent.preparation_agent import run_disclosure_preparation
 from agents.disclosure.subagents.request_agent.request_agent import run_disclosure_request
 
+# Import shared utilities
+from packages.shared import (
+    get_loan_type,
+    LoanType,
+    PropertyState,
+    DisclosureHandoff,
+    create_handoff_from_results,
+)
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -44,10 +56,19 @@ class DisclosureConfig:
     lo_email: str
     demo_mode: bool = True
     max_retries: int = 2
+    skip_non_mvp: bool = False  # If True, skip processing for non-MVP loans
 
 
 class DisclosureOrchestrator:
-    """Orchestrator for disclosure agent pipeline."""
+    """Orchestrator for disclosure agent pipeline.
+    
+    MVP workflow:
+    1. Verify fields + check MVP eligibility
+    2. If non-MVP and skip_non_mvp=True, return early with manual_required status
+    3. Calculate MI, check tolerance, populate CD
+    4. Send email to LO with MI and tolerance info
+    5. Generate handoff data for Draw Docs
+    """
     
     def __init__(self, config: DisclosureConfig, progress_callback: Optional[Callable] = None):
         self.config = config
@@ -56,7 +77,9 @@ class DisclosureOrchestrator:
             "loan_id": config.loan_id,
             "execution_timestamp": datetime.now().isoformat(),
             "demo_mode": config.demo_mode,
-            "agents": {}
+            "agents": {},
+            "is_mvp_supported": True,
+            "handoff": None,
         }
         
         if self.config.demo_mode:
@@ -100,10 +123,30 @@ class DisclosureOrchestrator:
                 logger.info(f"[{agent_name.upper()}] Waiting {wait_time}s before retry...")
                 time.sleep(wait_time)
     
+    def _check_mvp_eligibility(self, verification_output: Dict[str, Any]) -> bool:
+        """Check if loan is MVP eligible based on verification results.
+        
+        MVP eligible:
+        - Loan type: Conventional only
+        - State: NV or CA only
+        """
+        is_mvp_supported = verification_output.get("is_mvp_supported", True)
+        loan_type = verification_output.get("loan_type", "Unknown")
+        property_state = verification_output.get("property_state", "Unknown")
+        
+        logger.info(f"[MVP CHECK] Loan Type: {loan_type}, State: {property_state}")
+        logger.info(f"[MVP CHECK] MVP Supported: {is_mvp_supported}")
+        
+        return is_mvp_supported
+    
     def run(self) -> Dict[str, Any]:
-        """Execute disclosure pipeline."""
+        """Execute disclosure pipeline.
+        
+        Returns:
+            Dictionary with complete results including handoff data
+        """
         logger.info("=" * 80)
-        logger.info(f"DISCLOSURE ORCHESTRATOR STARTING - Loan {self.config.loan_id}")
+        logger.info(f"DISCLOSURE ORCHESTRATOR STARTING (MVP) - Loan {self.config.loan_id}")
         logger.info("=" * 80)
         
         try:
@@ -123,9 +166,29 @@ class DisclosureOrchestrator:
                 logger.error("[ORCHESTRATOR] Verification failed - stopping")
                 return self._finalize_results()
             
+            verification_output = verification_result.get("output", {})
+            
+            # Check MVP eligibility
+            is_mvp_supported = self._check_mvp_eligibility(verification_output)
+            self.results["is_mvp_supported"] = is_mvp_supported
+            self.results["loan_type"] = verification_output.get("loan_type")
+            self.results["property_state"] = verification_output.get("property_state")
+            
+            # Handle non-MVP loans
+            if not is_mvp_supported:
+                mvp_warnings = verification_output.get("mvp_warnings", [])
+                logger.warning("[ORCHESTRATOR] Non-MVP loan detected")
+                
+                if self.config.skip_non_mvp:
+                    logger.warning("[ORCHESTRATOR] Skipping non-MVP loan - manual processing required")
+                    self.results["status"] = "manual_required"
+                    self.results["manual_reasons"] = mvp_warnings
+                    return self._finalize_results()
+                else:
+                    logger.info("[ORCHESTRATOR] Continuing with non-MVP loan (will flag for review)")
+            
             # Step 2: Preparation
             logger.info("[PREPARATION] Starting")
-            verification_output = verification_result.get("output", {})
             missing_fields = verification_output.get("fields_missing", [])
             
             preparation_result = self._run_with_retry(
@@ -141,9 +204,10 @@ class DisclosureOrchestrator:
             if self.progress_callback:
                 self.progress_callback("preparation", preparation_result, self)
             
+            preparation_output = preparation_result.get("output", {})
+            
             # Step 3: Request
             logger.info("[REQUEST] Starting")
-            preparation_output = preparation_result.get("output", {})
             
             request_result = self._run_with_retry(
                 run_disclosure_request,
@@ -158,6 +222,16 @@ class DisclosureOrchestrator:
             
             if self.progress_callback:
                 self.progress_callback("request", request_result, self)
+            
+            # Step 4: Generate handoff for Draw Docs
+            logger.info("[HANDOFF] Generating handoff data")
+            handoff = create_handoff_from_results(
+                self.config.loan_id,
+                verification_output,
+                preparation_output,
+                request_result.get("output"),
+            )
+            self.results["handoff"] = handoff.to_dict()
             
             logger.info("=" * 80)
             logger.info("DISCLOSURE ORCHESTRATOR COMPLETE")
@@ -180,13 +254,27 @@ class DisclosureOrchestrator:
         """Generate human-readable summary."""
         lines = [
             "=" * 80,
-            "DISCLOSURE EXECUTION SUMMARY",
+            "DISCLOSURE EXECUTION SUMMARY (MVP)",
             "=" * 80,
             f"Loan ID: {self.config.loan_id}",
             f"Timestamp: {self.results['execution_timestamp']}",
             f"Mode: {'DEMO (no actual writes)' if self.config.demo_mode else 'PRODUCTION'}",
+            f"MVP Supported: {self.results.get('is_mvp_supported', 'Unknown')}",
+            f"Loan Type: {self.results.get('loan_type', 'Unknown')}",
+            f"State: {self.results.get('property_state', 'Unknown')}",
             ""
         ]
+        
+        # Manual required check
+        if self.results.get("status") == "manual_required":
+            lines.extend([
+                "⚠️ MANUAL PROCESSING REQUIRED",
+                "-" * 40,
+            ])
+            for reason in self.results.get("manual_reasons", []):
+                lines.append(f"  - {reason}")
+            lines.append("")
+            return "\n".join(lines)
         
         # Verification
         ver = self.results["agents"].get("verification", {})
@@ -211,13 +299,31 @@ class DisclosureOrchestrator:
         prep = self.results["agents"].get("preparation", {})
         if prep.get("status") == "success":
             prep_output = prep.get("output", {})
+            mi_result = prep_output.get("mi_result", {})
+            tolerance_result = prep_output.get("tolerance_result", {})
+            
             lines.extend([
                 "[PREPARATION AGENT]",
                 f"✓ Success ({prep.get('attempts', 1)} attempt(s))",
                 f"- Fields populated: {len(prep_output.get('fields_populated', []))}",
                 f"- Fields cleaned: {len(prep_output.get('fields_cleaned', []))}",
-                ""
             ])
+            
+            # MI info
+            if mi_result:
+                if mi_result.get("requires_mi"):
+                    lines.append(f"- MI Monthly: ${mi_result.get('monthly_amount', 0):.2f}")
+                else:
+                    lines.append("- MI: Not required")
+            
+            # Tolerance info
+            if tolerance_result:
+                if tolerance_result.get("has_violations"):
+                    lines.append(f"- ⚠️ Tolerance violations: ${tolerance_result.get('total_cure_needed', 0):.2f} cure needed")
+                else:
+                    lines.append("- Tolerance: No violations")
+            
+            lines.append("")
         
         # Request
         req = self.results["agents"].get("request", {})
@@ -230,12 +336,30 @@ class DisclosureOrchestrator:
                 ""
             ])
         
+        # Handoff
+        if self.results.get("handoff"):
+            handoff = self.results["handoff"]
+            lines.extend([
+                "[HANDOFF TO DRAW DOCS]",
+                f"- Ready for Draw Docs: {not handoff.get('requires_manual', False)}",
+            ])
+            if handoff.get("requires_manual"):
+                lines.append("- ⚠️ Manual processing required")
+            lines.append("")
+        
         # Overall status
         all_success = all(
             self.results["agents"].get(agent, {}).get("status") == "success"
             for agent in ["verification", "preparation", "request"]
         )
-        lines.append(f"OVERALL STATUS: {'SUCCESS' if all_success else 'PARTIAL FAILURE'}")
+        
+        if self.results.get("status") == "manual_required":
+            lines.append(f"OVERALL STATUS: MANUAL PROCESSING REQUIRED")
+        elif all_success:
+            lines.append(f"OVERALL STATUS: SUCCESS")
+        else:
+            lines.append(f"OVERALL STATUS: PARTIAL FAILURE")
+        
         lines.append("=" * 80)
         
         return "\n".join(lines)
@@ -246,9 +370,15 @@ class DisclosureOrchestrator:
             "loan_id": self.config.loan_id,
             "timestamp": self.results["execution_timestamp"],
             "demo_mode": self.config.demo_mode,
+            "is_mvp_supported": self.results.get("is_mvp_supported"),
+            "loan_type": self.results.get("loan_type"),
+            "property_state": self.results.get("property_state"),
             "verification": self.results["agents"].get("verification", {}),
             "preparation": self.results["agents"].get("preparation", {}),
-            "request": self.results["agents"].get("request", {})
+            "request": self.results["agents"].get("request", {}),
+            "handoff": self.results.get("handoff"),
+            "status": self.results.get("status"),
+            "manual_reasons": self.results.get("manual_reasons"),
         }
 
 
@@ -257,25 +387,35 @@ def run_disclosure_orchestrator(
     lo_email: str,
     demo_mode: bool = True,
     max_retries: int = 2,
+    skip_non_mvp: bool = False,
     progress_callback: Optional[Callable] = None
 ) -> Dict[str, Any]:
     """Main entry point for disclosure orchestrator.
+    
+    MVP: Handles Conventional loans in NV/CA only.
+    Non-MVP loans are flagged for manual processing.
     
     Args:
         loan_id: Encompass loan GUID
         lo_email: Loan officer email address
         demo_mode: If True, run in dry-run mode
         max_retries: Number of retries per agent
+        skip_non_mvp: If True, return early for non-MVP loans
         progress_callback: Optional callback for progress updates
         
     Returns:
-        Dictionary with complete results
+        Dictionary with complete results including:
+        - verification results
+        - preparation results (MI, tolerance)
+        - request results
+        - handoff data for Draw Docs
     """
     config = DisclosureConfig(
         loan_id=loan_id,
         lo_email=lo_email,
         demo_mode=demo_mode,
-        max_retries=max_retries
+        max_retries=max_retries,
+        skip_non_mvp=skip_non_mvp,
     )
     
     orchestrator = DisclosureOrchestrator(config, progress_callback)
@@ -285,10 +425,11 @@ def run_disclosure_orchestrator(
 if __name__ == "__main__":
     import argparse
     
-    parser = argparse.ArgumentParser(description="Disclosure Orchestrator Agent")
+    parser = argparse.ArgumentParser(description="Disclosure Orchestrator Agent (MVP)")
     parser.add_argument("--loan-id", type=str, required=True, help="Loan ID")
     parser.add_argument("--lo-email", type=str, required=True, help="LO email")
     parser.add_argument("--demo", action="store_true", help="Demo mode")
+    parser.add_argument("--skip-non-mvp", action="store_true", help="Skip non-MVP loans")
     parser.add_argument("--output", type=str, help="Output JSON file")
     
     args = parser.parse_args()
@@ -296,7 +437,8 @@ if __name__ == "__main__":
     results = run_disclosure_orchestrator(
         loan_id=args.loan_id,
         lo_email=args.lo_email,
-        demo_mode=args.demo
+        demo_mode=args.demo,
+        skip_non_mvp=args.skip_non_mvp
     )
     
     print("\n" + results.get("summary", ""))
@@ -305,4 +447,3 @@ if __name__ == "__main__":
         with open(args.output, 'w') as f:
             json.dump(results, f, indent=2, default=str)
         print(f"\nResults saved to: {args.output}")
-
