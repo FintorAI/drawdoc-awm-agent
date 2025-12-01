@@ -1,0 +1,326 @@
+(1) Mavent/Compliance
+{
+					"name": "Encompass Compliance Service",
+					"item": [
+						{
+							"name": "01 - GetLatestReport",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{ACCESS_TOKEN}}",
+										"type": "text"
+									},
+									{
+										"key": "Accept",
+										"value": "application/vnd.maventxml",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{API_SERVER}}/ecs/v1/compliancereports?EntityType=urn:elli:encompass:loan&EntityId={{loanId}}",
+									"host": [
+										"{{API_SERVER}}"
+									],
+									"path": [
+										"ecs",
+										"v1",
+										"compliancereports"
+									],
+									"query": [
+										{
+											"key": "EntityType",
+											"value": "urn:elli:encompass:loan"
+										},
+										{
+											"key": "EntityId",
+											"value": "{{loanId}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "02 - OrderReport",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{ACCESS_TOKEN}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Accept",
+										"value": "application/vnd.maventxml",
+										"type": "text",
+										"disabled": true
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"entity\": {\r\n    \"entityType\": \"urn:elli:encompass:loan\",\r\n    \"entityId\": \"{{loanId}}\"\r\n  },\"reportType\": \"review\",\r\n  \"reportMode\": \"manual\",\r\n  \"skipAudit\": \"true\",\r\n  \"channelName\": \"retail\",\r\n  \"reviewSource\": \"retail\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{API_SERVER}}/ecs/v1/ComplianceReports",
+									"host": [
+										"{{API_SERVER}}"
+									],
+									"path": [
+										"ecs",
+										"v1",
+										"ComplianceReports"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+
+(2) Field Write
+{
+									"name": "04 - Field Writer for Standard, Custom, lockable, indexed, variable collection fields",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"type": "text/javascript",
+												"exec": [
+													"if (pm.response.code == 201) {",
+													"    var locationHeader = postman.getResponseHeader(\"Location\");",
+													"    var res = locationHeader.split(\"/loans/\");",
+													"    pm.environment.set(\"loanId\",res[1]);",
+													"    ",
+													"    var jsonData = pm.response.json();",
+													"    var applications = jsonData.applications;",
+													"    pm.environment.set(\"applicationId\", applications[0].id);",
+													"}",
+													"",
+													"pm.test(\"Status code is 201\", function () {",
+													"    pm.response.to.have.status(201);",
+													"});"
+												]
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer {{ACCESS_TOKEN}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "[\n    {\n        \"id\": \"4002\",\n        \"value\": \"Doe\"\n    },\n    {\n        \"id\": \"4000#2\",\n        \"value\": \"John\"\n    },\n    {\n        \"id\": \"1109\",\n        \"value\": 400000,\n        \"lock\": true\n    },\n    {\n        \"id\": \"CUST02FV\",\n        \"value\": \"cs2s1\"\n    },\n    {\n        \"id\": \"LR.1500\",\n        \"value\": \"FloodInsuranceCo\"\n    },\n    {\n        \"id\": \"BE0139\",\n        \"value\": \"employeeID\"\n    }\n]"
+										},
+										"url": {
+											"raw": "{{API_SERVER}}/encompass/v3/loans/{{loanId}}/fieldWriter",
+											"host": [
+												"{{API_SERVER}}"
+											],
+											"path": [
+												"encompass",
+												"v3",
+												"loans",
+												"{{loanId}}",
+												"fieldWriter"
+											]
+										}
+									},
+									"response": []
+								},
+
+(3) Field Read 
+{
+									"name": "05 - Field Reader",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"if (pm.response.code == 201) {",
+													"    var locationHeader = postman.getResponseHeader(\"Location\");",
+													"    var res = locationHeader.split(\"/loans/\");",
+													"    pm.environment.set(\"loanId\",res[1]);",
+													"    ",
+													"    var jsonData = pm.response.json();",
+													"    var applications = jsonData.applications;",
+													"    pm.environment.set(\"applicationId\", applications[0].id);",
+													"}",
+													"",
+													"pm.test(\"Status code is 201\", function () {",
+													"    pm.response.to.have.status(201);",
+													"});"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer {{ACCESS_TOKEN}}"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "[\n    \"4002\",\n    \"4000#2\",\n    \"1109\",\n    \"CUST02FV\",\n    \"LR.1500\",\n    \"BE0139x\"\n]"
+										},
+										"url": {
+											"raw": "{{API_SERVER}}/encompass/v3/loans/{{loanId}}/fieldReader?invalidFieldBehavior=Include",
+											"host": [
+												"{{API_SERVER}}"
+											],
+											"path": [
+												"encompass",
+												"v3",
+												"loans",
+												"{{loanId}}",
+												"fieldReader"
+											],
+											"query": [
+												{
+													"key": "invalidFieldBehavior",
+													"value": "Include",
+													"description": "Supported values: Fail, Exclude, Include"
+												}
+											]
+										}
+									},
+									"response": []
+								}
+
+(4) eDisclosure - Opening Package (Initial Disclosure)
+
+# Step 1: Audit loan before ordering
+POST /encompassdocs/v1/documentAudits/opening
+Body: { "loanId": "{{loanId}}" }
+→ Returns audit issues (if any) - BLOCKING if issues exist
+
+# Step 2: Generate opening (Initial Disclosure) doc set
+POST /encompassdocs/v1/documentOrders/opening
+Body: { 
+  "loanId": "{{loanId}}",
+  "consumerConnectSiteId": "{{siteId}}"
+}
+→ Returns docSetId
+
+# Step 3: Send package to borrower
+POST /encompassdocs/v1/documentOrders/opening/{docSetId}/delivery
+→ Sends to borrower via Consumer Connect
+→ Creates Disclosure Tracking entry
+
+# Optional: Get status
+GET /encompassdocs/v1/documentOrders/opening/{docSetId}/status
+
+
+(5) ATR/QM
+Context: V3 Get Document API - Updated
+The V3 Get Document API has been updated to retrieve ATR/QM document verification details such as employment, income, obligations and assets for a given document.
+
+In addition, a new retrieve only attribute documentStatus has been added to the Document Contract to indicate the status of the document. This attribute is a replacement for the existing status attribute which will be deprecated in a future release.
+
+This update impacts the following endpoint:
+
+V3 Get a Document
+GET /v3/loans/{loanId}/documents/{documentId}
+
+{
+									"name": "02 - Retrieve a Document",
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{ACCESS_TOKEN}}"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{API_SERVER}}/encompass/v3/loans/{{loanId}}/documents/{{doc_id}}",
+											"host": [
+												"{{API_SERVER}}"
+											],
+											"path": [
+												"encompass",
+												"v3",
+												"loans",
+												"{{loanId}}",
+												"documents",
+												"{{doc_id}}"
+											]
+										},
+										"description": "This step retrieves the loan you created."
+									},
+									"response": []
+								},
+
+
+(6) Alerts & Messages
+{
+					"name": "Loan Alerts",
+					"item": [
+						{
+							"name": "25.4R Get Good Faith Fee Variance Violations",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{ACCESS_TOKEN}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{API_SERVER}}/encompass/v3/loans/{{loanId}}/fundingFees",
+									"host": [
+										"{{API_SERVER}}"
+									],
+									"path": [
+										"encompass",
+										"v3",
+										"loans",
+										"{{loanId}}",
+										"fundingFees"
+									]
+								},
+								"description": "This step retrieves the loan you created."
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}

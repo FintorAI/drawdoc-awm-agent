@@ -6,9 +6,10 @@ as well as utility functions for getting loan metadata.
 
 import os
 import logging
+import requests
 from typing import Any, Dict, List, Optional
 
-from .encompass_client import get_encompass_client
+from .auth import get_access_token
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +19,10 @@ logger = logging.getLogger(__name__)
 # =============================================================================
 
 def read_fields(loan_id: str, field_ids: List[str]) -> Dict[str, Any]:
-    """Read multiple field values from Encompass.
+    """Read multiple field values from Encompass using Field Reader API.
+    
+    This function uses the Encompass Field Reader endpoint which is more
+    permissive and designed for bulk field reads.
     
     Args:
         loan_id: Encompass loan GUID
@@ -34,12 +38,41 @@ def read_fields(loan_id: str, field_ids: List[str]) -> Dict[str, Any]:
     if not field_ids:
         return {}
     
-    logger.debug(f"[READ] Reading {len(field_ids)} fields for loan {loan_id[:8]}...")
+    # Get OAuth2 token
+    access_token = get_access_token()
     
-    encompass = get_encompass_client()
+    # Build API request
+    api_base_url = os.getenv("ENCOMPASS_API_BASE_URL", "https://api.elliemae.com")
+    url = f"{api_base_url}/encompass/v3/loans/{loan_id}/fieldReader"
+    
+    logger.info(f"[READ] Reading {len(field_ids)} fields for loan {loan_id[:8]}...")
+    logger.info(f"[READ] API Base URL: {api_base_url}")
+    logger.info(f"[READ] Endpoint: POST /encompass/v3/loans/{loan_id[:8]}...{loan_id[-8:]}/fieldReader")
+    logger.info(f"[READ] Token: {access_token[:10]}...{access_token[-6:]}")
+    
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+    
+    params = {
+        "invalidFieldBehavior": "Exclude"  # Exclude invalid fields from response
+    }
     
     try:
-        result = encompass.get_field(loan_id, field_ids)
+        # POST to Field Reader endpoint with field IDs in body
+        response = requests.post(
+            url,
+            json=field_ids,
+            headers=headers,
+            params=params,
+            timeout=60
+        )
+        
+        response.raise_for_status()
+        
+        # Field Reader returns: { "field_id": "value", ... }
+        result = response.json()
         
         # Normalize: convert empty strings to None
         normalized = {}
@@ -53,9 +86,13 @@ def read_fields(loan_id: str, field_ids: List[str]) -> Dict[str, Any]:
         logger.debug(f"[READ] Retrieved {sum(1 for v in normalized.values() if v is not None)} values")
         return normalized
         
+    except requests.HTTPError as e:
+        error_msg = f"Field read failed (status {e.response.status_code}): {e.response.text}"
+        logger.error(f"[READ] {error_msg}")
+        raise RuntimeError(error_msg)
     except Exception as e:
         logger.error(f"[READ] Error reading fields: {e}")
-        return {field_id: None for field_id in field_ids}
+        raise
 
 
 def read_field(loan_id: str, field_id: str) -> Optional[Any]:

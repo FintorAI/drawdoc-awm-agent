@@ -1,5 +1,11 @@
 """Shared utilities for all agent pipelines (draw docs, disclosure, LOA)."""
 
+from .auth import (
+    EncompassAuthManager,
+    TokenInfo,
+    get_auth_manager,
+    get_access_token,
+)
 from .encompass_client import get_encompass_client
 from .csv_utils import load_field_mappings, get_field_by_id, get_field_by_name, get_fields_for_document_type
 from .encompass_io import (
@@ -50,6 +56,11 @@ from .handoff import (
 )
 
 __all__ = [
+    # Authentication
+    "EncompassAuthManager",
+    "TokenInfo",
+    "get_auth_manager",
+    "get_access_token",
     # Encompass client
     "get_encompass_client",
     # CSV utilities
