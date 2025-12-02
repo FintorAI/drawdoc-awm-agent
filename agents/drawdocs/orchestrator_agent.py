@@ -732,6 +732,8 @@ def run_orchestrator(
         output_file: Optional file path to save results
         progress_callback: Optional callback function called after each agent completes.
                           Signature: callback(agent_name: str, result: dict, orchestrator: OrchestratorAgent)
+                          When provided, file writes are delegated to the callback system
+                          (typically StatusWriter) instead of being done here.
         
     Returns:
         Dictionary with complete execution results
@@ -758,8 +760,12 @@ def run_orchestrator(
     # Print summary
     print("\n" + results["summary_text"])
     
-    # Save to file if requested
-    if output_file:
+    # Save to file only if:
+    # 1. output_file is specified AND
+    # 2. No progress_callback is provided (callback system handles file writes)
+    # When progress_callback is used, the calling code (agent_runner.py) manages
+    # the status file through StatusWriter for live updates
+    if output_file and not progress_callback:
         output_path = Path(output_file)
         
         # Save JSON output

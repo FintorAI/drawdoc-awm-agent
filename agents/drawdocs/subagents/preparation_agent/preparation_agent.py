@@ -85,6 +85,65 @@ ENABLE_WRITES = False  # Always disabled - agent returns data, doesn't write
 
 
 # =============================================================================
+# PROGRESS CALLBACK
+# =============================================================================
+# Module-level callbacks for live updates during document processing
+# Set via set_progress_callback() and set_log_callback() before calling process_loan_documents()
+_progress_callback = None
+_log_callback = None
+
+def set_progress_callback(callback):
+    """Set the progress callback for live metric updates.
+    
+    The callback signature should be:
+        callback(documents_found, documents_processed, fields_extracted, current_document)
+    
+    Args:
+        callback: Callable or None to clear
+    """
+    global _progress_callback
+    _progress_callback = callback
+
+def set_log_callback(callback):
+    """Set the log callback for detailed activity logging.
+    
+    The callback signature should be:
+        callback(message, level, event_type, details)
+    
+    Args:
+        callback: Callable or None to clear
+    """
+    global _log_callback
+    _log_callback = callback
+
+def _notify_progress(documents_found=None, documents_processed=None, fields_extracted=None, current_document=None):
+    """Notify progress if callback is set."""
+    if _progress_callback:
+        try:
+            _progress_callback(
+                documents_found=documents_found,
+                documents_processed=documents_processed,
+                fields_extracted=fields_extracted,
+                current_document=current_document,
+            )
+        except Exception as e:
+            logger.warning(f"Progress callback failed: {e}")
+
+def _log_activity(message: str, level: str = "info", event_type: str = None, details: dict = None):
+    """Log activity if callback is set."""
+    if _log_callback:
+        try:
+            _log_callback(
+                message=message,
+                level=level,
+                event_type=event_type,
+                details=details,
+            )
+        except Exception as e:
+            logger.warning(f"Log callback failed: {e}")
+
+
+# =============================================================================
 # ENCOMPASS CLIENT
 # =============================================================================
 
@@ -1016,6 +1075,9 @@ def process_loan_documents(
     
     logger.info(f"[PROCESS] Found {len(all_documents)} total documents in loan")
     
+    # Notify progress: documents found
+    _notify_progress(documents_found=len(all_documents), documents_processed=0, fields_extracted=0)
+    
     # Step 2: Filter documents to only those matching requested types
     try:
         from tools.extraction_schemas import list_supported_document_types
@@ -1266,30 +1328,103 @@ def process_loan_documents(
     # Use prioritized list instead of original
     documents_to_process = prioritized_matching_documents
     
+    # Track progress for live updates
+    docs_processed_count = 0
+    fields_extracted_count = 0
+    
     if len(documents_to_process) > 1:
         logger.info(f"[PROCESS] Processing {len(documents_to_process)} best-matched documents in parallel (max {max_workers} concurrent)")
+        _log_activity(
+            f"Processing {len(documents_to_process)} documents in parallel",
+            level="info",
+            event_type="prep_summary",
+            details={"document_count": len(documents_to_process)}
+        )
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             future_to_doc = {executor.submit(process_document, doc): doc for doc in documents_to_process}
             for future in as_completed(future_to_doc):
                 doc = future_to_doc[future]
+                doc_title = doc.get("title", "Unknown")
+                doc_type = doc.get("documentType") or doc.get("type", "Unknown")
                 try:
                     result = future.result()
                     if result:
                         processing_results.append(result)
+                        # Count fields extracted from this document
+                        mapped_fields = result.get("mapped_fields", {})
+                        doc_field_count = 0
+                        for doc_data in mapped_fields.values():
+                            if isinstance(doc_data, dict):
+                                doc_field_count += len([k for k in doc_data.keys() if k != "extracted_entities"])
+                        fields_extracted_count += doc_field_count
+                        
+                        # Log successful extraction
+                        if doc_field_count > 0:
+                            _log_activity(
+                                f"Extracted {doc_field_count} fields from {doc_title}",
+                                level="info",
+                                event_type="fields_extracted",
+                                details={"document_name": doc_title, "field_count": doc_field_count}
+                            )
                 except Exception as e:
-                    logger.error(f"[PROCESS] Exception processing document '{doc.get('title', 'Unknown')}': {e}")
+                    logger.error(f"[PROCESS] Exception processing document '{doc_title}': {e}")
                     processing_results.append({
-                        "document_title": doc.get("title", "Unknown"),
-                        "document_type": doc.get("documentType", "Unknown"),
+                        "document_title": doc_title,
+                        "document_type": doc_type,
                         "status": "error",
                         "error": str(e),
                     })
+                    # Log error
+                    _log_activity(
+                        f"Failed: {doc_title} - {str(e)[:80]}",
+                        level="error",
+                        event_type="document",
+                        details={"document_name": doc_title, "error": str(e)}
+                    )
+                
+                # Update progress after each document
+                docs_processed_count += 1
+                _notify_progress(
+                    documents_processed=docs_processed_count,
+                    fields_extracted=fields_extracted_count,
+                    current_document=doc_title[:30] if doc_title else None,
+                )
     else:
         # Sequential processing for single document
         for doc in documents_to_process:
+            doc_title = doc.get("title", "Unknown")
+            _notify_progress(current_document=doc_title[:30] if doc_title else None)
+            _log_activity(
+                f"Processing: {doc_title[:30]}",
+                level="info",
+                event_type="document",
+                details={"document_name": doc_title}
+            )
+            
             result = _process_single_document(doc, loan_id, document_types, dry_run)
             if result:
                 processing_results.append(result)
+                # Count fields extracted
+                mapped_fields = result.get("mapped_fields", {})
+                doc_field_count = 0
+                for doc_data in mapped_fields.values():
+                    if isinstance(doc_data, dict):
+                        doc_field_count += len([k for k in doc_data.keys() if k != "extracted_entities"])
+                fields_extracted_count += doc_field_count
+                
+                if doc_field_count > 0:
+                    _log_activity(
+                        f"Extracted {doc_field_count} fields from {doc_title}",
+                        level="info",
+                        event_type="fields_extracted",
+                        details={"document_name": doc_title, "field_count": doc_field_count}
+                    )
+            
+            docs_processed_count += 1
+            _notify_progress(
+                documents_processed=docs_processed_count,
+                fields_extracted=fields_extracted_count,
+            )
     
     step3_time = time.time() - step3_start
     logger.info(f"[PROCESS] Step 3 (Process documents) took {step3_time:.2f}s")

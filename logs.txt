@@ -1,0 +1,472 @@
+Loading environment from: /Users/benjogerochi/drawdoc-awm-agent/agents/drawdocs/subagents/preparation_agent/.env
+================================================================================
+🚀 Starting Draw Docs Interface
+================================================================================
+Demo mode is ENABLED - no actual writes will be made to Encompass
+Local URL: http://localhost:7860
+================================================================================
+17:37:37 [INFO] [httpx] HTTP Request: GET https://api.gradio.app/pkg-version "HTTP/1.1 200 OK"
+17:37:37 [INFO] [httpx] HTTP Request: HEAD https://huggingface.co/api/telemetry/https%3A/api.gradio.app/gradio-initiated-analytics "HTTP/1.1 200 OK"
+* Running on local URL:  http://0.0.0.0:7860
+17:37:38 [INFO] [httpx] HTTP Request: GET http://localhost:7860/gradio_api/startup-events "HTTP/1.1 200 OK"
+17:37:38 [INFO] [httpx] HTTP Request: HEAD http://localhost:7860/ "HTTP/1.1 200 OK"
+* To create a public link, set `share=True` in `launch()`.
+17:37:38 [INFO] [httpx] HTTP Request: HEAD https://huggingface.co/api/telemetry/https%3A/api.gradio.app/gradio-launched-telemetry "HTTP/1.1 200 OK"
+17:37:51 [INFO] [agents.drawdocs.orchestrator_agent] ================================================================================
+17:37:51 [INFO] [agents.drawdocs.orchestrator_agent] 🔍 DEMO MODE ENABLED - No changes will be written to Encompass
+17:37:51 [INFO] [agents.drawdocs.orchestrator_agent] ================================================================================
+17:37:51 [INFO] [agents.drawdocs.orchestrator_agent] ================================================================================
+17:37:51 [INFO] [agents.drawdocs.orchestrator_agent] ORCHESTRATOR STARTING - Loan 387596ee-7090-47ca-8385-206e22c9c9da
+17:37:51 [INFO] [agents.drawdocs.orchestrator_agent] ================================================================================
+17:37:51 [INFO] [agents.drawdocs.orchestrator_agent] [PREPARATION] Attempt 1/2
+17:37:51 [INFO] [agents.drawdocs.orchestrator_agent] [PREPARATION] Starting for loan 387596ee-7090-47ca-8385-206e22c9c9da
+17:37:51 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Starting - Loan: 387596ee...
+17:37:51 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Document types filter: ['ID', 'Title Report', 'Appraisal', 'LE', '1003']
+17:37:51 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Dry run: True
+17:37:51 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [GET_DOCS] Starting - Loan: 387596ee...
+17:37:56 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [GET_DOCS] Found 172 documents
+17:37:56 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Step 1 (Get documents) took 4.95s
+17:37:56 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Found 172 total documents in loan
+17:37:56 [INFO] [agents.drawdocs.subagents.preparation_agent.tools.csv_loader] Loaded 234 rows from CSV
+17:37:56 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Processing ALL 2 ID documents (no limit for ID)
+17:37:56 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Selected match for 'ID': ID Customer Identification Documentation (score: 600, exact_title: False, preferred: True)
+17:37:56 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Selected match for 'ID': Request for Taxpayer ID Number & Certification (IRS W-9) (score: 400, exact_title: False, preferred: True)
+17:37:56 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Selected match for 'Title Report': Title Report (score: 1600, exact_title: True, preferred: True)
+17:37:56 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Selected match for 'Title Report': Title Report (score: 1600, exact_title: True, preferred: True)
+17:37:56 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Selected match for 'Appraisal': Appraisal (score: 1600, exact_title: True, preferred: True)
+17:37:56 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Selected match for 'Appraisal': Appraisal (score: 1600, exact_title: True, preferred: True)
+17:37:56 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Selected match for 'Appraisal': Appraisal Acknowledgment Receipt (score: 600, exact_title: False, preferred: True)
+17:37:56 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Selected match for 'LE': Letter of Explanations (score: 600, exact_title: False, preferred: True)
+17:37:56 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Selected match for '1003': 1003 (score: 1200, exact_title: True, preferred: False)
+17:37:56 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Filtered to 9 matching documents to process
+17:37:56 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [OPTIMIZE] Processing 9 best-matched documents (up to 5 per requested type)
+17:37:56 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Processing 9 best-matched documents in parallel (max 5 concurrent)
+17:37:56 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Processing document: ID Customer Identification Documentation (type: Unknown)
+17:37:56 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Processing document: Request for Taxpayer ID Number & Certification (IRS W-9) (type: Unknown)
+17:37:56 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Processing document: Title Report (type: Unknown)
+17:37:56 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [DOWNLOAD] Starting - Loan: 387596ee..., Attachment: 31f61560...
+17:37:56 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Processing document: Title Report (type: Unknown)
+17:37:56 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Processing document: Appraisal (type: Unknown)
+17:37:56 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [DOWNLOAD] Starting - Loan: 387596ee..., Attachment: 775f510d...
+17:37:56 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [DOWNLOAD] Starting - Loan: 387596ee..., Attachment: 246fbcb5...
+17:37:56 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [DOWNLOAD] Starting - Loan: 387596ee..., Attachment: 318be174...
+17:37:56 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [DOWNLOAD] Starting - Loan: 387596ee..., Attachment: caa54e1f...
+17:38:02 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [DOWNLOAD] Success - 204,132 bytes (199.35 KB) saved to 775f510d-a44e-4701-815c-13b8840a450e.pdf
+17:38:02 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Normalized document type from 'Unknown' to 'ID' based on requested types (match score: 1610)
+17:38:02 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Found extraction schema for 'ID' with 4 fields
+17:38:02 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Starting - Type: ID, File: 775f510d-a44e-4701-815c-13b8840a450e.pdf
+17:38:02 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] File size: 199.35 KB (0.19 MB), Timeout: 120s
+[LandingAI Debug] Filename: id_document.pdf, Extension: pdf, Field: pdf, Mimetype: application/pdf
+17:38:03 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [DOWNLOAD] Success - 469,283 bytes (458.28 KB) saved to 318be174-03ec-4b99-85ea-1de0cc286702.pdf
+17:38:03 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Normalized document type from 'Unknown' to 'Title Report' based on requested types (match score: 1620)
+17:38:03 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Found extraction schema for 'Title Report' with 6 fields
+17:38:03 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Starting - Type: Title Report, File: 318be174-03ec-4b99-85ea-1de0cc286702.pdf
+17:38:03 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] File size: 458.28 KB (0.45 MB), Timeout: 120s
+[LandingAI Debug] Filename: title_report_document.pdf, Extension: pdf, Field: pdf, Mimetype: application/pdf
+17:38:03 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [DOWNLOAD] Success - 680,806 bytes (664.85 KB) saved to 31f61560-d483-4441-b12b-1cefebdda23e.pdf
+17:38:03 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Normalized document type from 'Unknown' to 'ID' based on requested types (match score: 1610)
+17:38:03 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Found extraction schema for 'ID' with 4 fields
+17:38:03 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Starting - Type: ID, File: 31f61560-d483-4441-b12b-1cefebdda23e.pdf
+17:38:03 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] File size: 664.85 KB (0.65 MB), Timeout: 120s
+[LandingAI Debug] Filename: id_document.pdf, Extension: pdf, Field: pdf, Mimetype: application/pdf
+17:38:03 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [DOWNLOAD] Success - 224,505 bytes (219.24 KB) saved to 246fbcb5-9483-43be-a94e-6225a769ae4c.pdf
+17:38:03 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Normalized document type from 'Unknown' to 'Title Report' based on requested types (match score: 1620)
+17:38:03 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Found extraction schema for 'Title Report' with 6 fields
+17:38:03 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Starting - Type: Title Report, File: 246fbcb5-9483-43be-a94e-6225a769ae4c.pdf
+17:38:03 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] File size: 219.24 KB (0.21 MB), Timeout: 120s
+[LandingAI Debug] Filename: title_report_document.pdf, Extension: pdf, Field: pdf, Mimetype: application/pdf
+17:38:05 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [DOWNLOAD] Success - 3,902,017 bytes (3810.56 KB) saved to caa54e1f-c756-4d93-ac50-1a6416fd2939.pdf
+17:38:05 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Normalized document type from 'Unknown' to 'Appraisal' based on requested types (match score: 1610)
+17:38:05 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Found extraction schema for 'Appraisal' with 2 fields
+17:38:05 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Starting - Type: Appraisal, File: caa54e1f-c756-4d93-ac50-1a6416fd2939.pdf
+17:38:05 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] File size: 3810.56 KB (3.72 MB), Timeout: 201.637601852417s
+[LandingAI Debug] Filename: appraisal_document.pdf, Extension: pdf, Field: pdf, Mimetype: application/pdf
+17:38:06 [ERROR] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Extraction failed after 1 attempts: Document extraction failed (status 422): {"message":"Failed to split PDF into pages. Ensure it is a valid PDF file. is no PDF"}
+17:38:06 [ERROR] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Error processing document 'ID Customer Identification Documentation': Document extraction failed (status 422): {"message":"Failed to split PDF into pages. Ensure it is a valid PDF file. is no PDF"}
+17:38:06 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Processing document: Appraisal (type: Unknown)
+17:38:06 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [DOWNLOAD] Starting - Loan: 387596ee..., Attachment: 73ca6c70...
+17:38:12 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [DOWNLOAD] Success - 297,273 bytes (290.31 KB) saved to 73ca6c70-2645-4445-bf1b-8fa6b9a9f32f.pdf
+17:38:12 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Normalized document type from 'Unknown' to 'Appraisal' based on requested types (match score: 1610)
+17:38:12 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Found extraction schema for 'Appraisal' with 2 fields
+17:38:12 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Starting - Type: Appraisal, File: 73ca6c70-2645-4445-bf1b-8fa6b9a9f32f.pdf
+17:38:12 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] File size: 290.31 KB (0.28 MB), Timeout: 120s
+[LandingAI Debug] Filename: appraisal_document.pdf, Extension: pdf, Field: pdf, Mimetype: application/pdf
+17:38:24 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Looking up mappings for document_type: 'Title Report'
+17:38:24 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Available mappings: ['borrower_vesting_type', 'escrow_company_name', 'loan_amount', 'title_insurance_company_name']
+17:38:24 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Extracted fields: ['borrower_vesting_type', 'escrow_company_name', 'loan_amount', 'title_company_address', 'title_insurance_company_name', 'title_report_date']
+17:38:24 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Success - 6 fields in 20.62s
+17:38:24 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Mappings - Ready: 4, Pending: 0, Unmapped: 2
+17:38:24 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] Processing - Loan: 387596ee..., Document: Title Report
+17:38:24 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] Mode: DRY RUN (no writes)
+17:38:24 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] Fields to process: 4
+17:38:24 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] [DRY RUN] Would write borrower_vesting_type (4008) = 
+17:38:24 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] [DRY RUN] Would write escrow_company_name (610) = 
+17:38:24 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] [DRY RUN] Would write loan_amount (1109) = 0
+17:38:24 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] [DRY RUN] Would write title_insurance_company_name (411) = 
+17:38:24 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] Complete - Mapped fields: 4, Skipped: 0
+17:38:24 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Processing document: Appraisal Acknowledgment Receipt (type: Unknown)
+17:38:24 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [DOWNLOAD] Starting - Loan: 387596ee..., Attachment: 130afcd9...
+17:38:30 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [DOWNLOAD] Success - 136,371 bytes (133.17 KB) saved to 130afcd9-8651-4755-8974-ec8fb64c2c15.pdf
+17:38:30 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Normalized document type from 'Unknown' to 'Appraisal' based on requested types (match score: 1610)
+17:38:30 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Found extraction schema for 'Appraisal' with 2 fields
+17:38:30 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Starting - Type: Appraisal, File: 130afcd9-8651-4755-8974-ec8fb64c2c15.pdf
+17:38:30 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] File size: 133.17 KB (0.13 MB), Timeout: 120s
+[LandingAI Debug] Filename: appraisal_document.pdf, Extension: pdf, Field: pdf, Mimetype: application/pdf
+17:38:44 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Looking up mappings for document_type: 'Appraisal'
+17:38:44 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Available mappings: ['appraised_value', 'loan_estimate_construction_loan']
+17:38:44 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Extracted fields: ['appraised_value', 'loan_estimate_construction_loan']
+17:38:44 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Success - 2 fields in 14.22s
+17:38:44 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Mappings - Ready: 2, Pending: 0, Unmapped: 0
+17:38:44 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] Processing - Loan: 387596ee..., Document: Appraisal
+17:38:44 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] Mode: DRY RUN (no writes)
+17:38:44 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] Fields to process: 2
+17:38:44 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] [DRY RUN] Would write appraised_value (356) = 0
+17:38:44 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] [DRY RUN] Would write loan_estimate_construction_loan (LE3.X15) = 
+17:38:44 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] Complete - Mapped fields: 2, Skipped: 0
+17:38:44 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Processing document: Letter of Explanations (type: Unknown)
+17:38:44 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [DOWNLOAD] Starting - Loan: 387596ee..., Attachment: bd4a623b...
+17:38:51 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [DOWNLOAD] Success - 429,733 bytes (419.66 KB) saved to bd4a623b-3784-4081-8be5-4951988ba7bf.pdf
+17:38:51 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Normalized document type from 'Unknown' to 'LE' based on requested types (match score: 1610)
+17:38:51 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Found extraction schema for 'LE' with 14 fields
+17:38:51 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Starting - Type: LE, File: bd4a623b-3784-4081-8be5-4951988ba7bf.pdf
+17:38:51 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] File size: 419.66 KB (0.41 MB), Timeout: 120s
+[LandingAI Debug] Filename: le_document.pdf, Extension: pdf, Field: pdf, Mimetype: application/pdf
+17:38:57 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Looking up mappings for document_type: 'Appraisal'
+17:38:57 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Available mappings: ['appraised_value', 'loan_estimate_construction_loan']
+17:38:57 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Extracted fields: ['appraised_value', 'loan_estimate_construction_loan']
+17:38:57 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Success - 2 fields in 44.69s
+17:38:57 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Mappings - Ready: 2, Pending: 0, Unmapped: 0
+17:38:57 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] Processing - Loan: 387596ee..., Document: Appraisal
+17:38:57 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] Mode: DRY RUN (no writes)
+17:38:57 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] Fields to process: 2
+17:38:57 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] [DRY RUN] Would write appraised_value (356) = 290000
+17:38:57 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] [DRY RUN] Would write loan_estimate_construction_loan (LE3.X15) = 
+17:38:57 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] Complete - Mapped fields: 2, Skipped: 0
+17:38:57 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Processing document: 1003 (type: Unknown)
+17:38:57 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [DOWNLOAD] Starting - Loan: 387596ee..., Attachment: ab5c53fe...
+17:38:58 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Looking up mappings for document_type: 'Title Report'
+17:38:58 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Available mappings: ['borrower_vesting_type', 'escrow_company_name', 'loan_amount', 'title_insurance_company_name']
+17:38:58 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Extracted fields: ['borrower_vesting_type', 'escrow_company_name', 'loan_amount', 'title_company_address', 'title_insurance_company_name', 'title_report_date']
+17:38:58 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Success - 6 fields in 54.94s
+17:38:58 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Mappings - Ready: 4, Pending: 0, Unmapped: 2
+17:38:58 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] Processing - Loan: 387596ee..., Document: Title Report
+17:38:58 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] Mode: DRY RUN (no writes)
+17:38:58 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] Fields to process: 4
+17:38:58 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] [DRY RUN] Would write borrower_vesting_type (4008) = Christopher Berger and Alva Scott Sorensen
+17:38:58 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] [DRY RUN] Would write escrow_company_name (610) = Truly Title, Inc.
+17:38:58 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] [DRY RUN] Would write loan_amount (1109) = 152625
+17:38:58 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] [DRY RUN] Would write title_insurance_company_name (411) = Old Republic National Title Insurance Company
+17:38:58 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] Complete - Mapped fields: 4, Skipped: 0
+17:39:04 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [DOWNLOAD] Success - 1,861,557 bytes (1817.93 KB) saved to ab5c53fe-c2fd-47e6-97d6-b2bf22d8122a.pdf
+17:39:04 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Normalized document type from 'Unknown' to '1003' based on requested types (match score: 1610)
+17:39:04 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Found extraction schema for '1003' with 1 fields
+17:39:04 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Starting - Type: 1003, File: ab5c53fe-c2fd-47e6-97d6-b2bf22d8122a.pdf
+17:39:04 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] File size: 1817.93 KB (1.78 MB), Timeout: 143.2595729827881s
+[LandingAI Debug] Filename: 1003_document.pdf, Extension: pdf, Field: pdf, Mimetype: application/pdf
+17:39:04 [WARNING] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Attempt 1/3 failed (LandingAIError). Retrying in 5s...
+17:39:07 [WARNING] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Attempt 1/3 failed (LandingAIError). Retrying in 5s...
+[LandingAI Debug] Filename: id_document.pdf, Extension: pdf, Field: pdf, Mimetype: application/pdf
+17:39:12 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Looking up mappings for document_type: 'LE'
+17:39:12 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Available mappings: ['fees_appraisal_fee_borr', 'fees_credit_report_borr', 'fees_loan_discount_fee_borr', 'fees_loan_origination_fee_borr', 'fees_process_fee_borr', 'fees_tax_svc_fee_borr', 'fees_underwriting_fee_apr', 'fees_va_fund_fee_borr', 'insurance_mtg_ins_upfront_factor', 'lender_credits', 'lo_compensation_borrower_paid_discount_point_amount_line_1', 'loan_purpose', 'loan_type', 'total_credit_for_rate_chosen']
+17:39:12 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Extracted fields: ['fees_appraisal_fee_borr', 'fees_credit_report_borr', 'fees_loan_discount_fee_borr', 'fees_loan_origination_fee_borr', 'fees_process_fee_borr', 'fees_tax_svc_fee_borr', 'fees_underwriting_fee_apr', 'fees_va_fund_fee_borr', 'insurance_mtg_ins_upfront_factor', 'lender_credits', 'lo_compensation_borrower_paid_discount_point_amount_line_1', 'loan_purpose', 'loan_type', 'total_credit_for_rate_chosen']
+17:39:12 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Success - 14 fields in 20.67s
+17:39:12 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Mappings - Ready: 14, Pending: 0, Unmapped: 0
+17:39:12 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] Processing - Loan: 387596ee..., Document: LE
+17:39:12 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] Mode: DRY RUN (no writes)
+17:39:12 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] Fields to process: 14
+17:39:12 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] [DRY RUN] Would write fees_appraisal_fee_borr (641) = 0
+17:39:12 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] [DRY RUN] Would write fees_credit_report_borr (640) = 0
+17:39:12 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] [DRY RUN] Would write fees_loan_discount_fee_borr (1093) = 0
+17:39:12 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] [DRY RUN] Would write fees_loan_origination_fee_borr (454) = 0
+17:39:12 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] [DRY RUN] Would write fees_process_fee_borr (1621) = 0
+17:39:12 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] [DRY RUN] Would write fees_tax_svc_fee_borr (336) = 0
+17:39:12 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] [DRY RUN] Would write fees_underwriting_fee_apr (SYS.X23) = 0
+17:39:12 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] [DRY RUN] Would write fees_va_fund_fee_borr (1050) = 0
+17:39:12 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] [DRY RUN] Would write insurance_mtg_ins_upfront_factor (1107) = 
+17:39:12 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] [DRY RUN] Would write lender_credits (CD2.XSTLC) = 
+17:39:12 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] [DRY RUN] Would write lo_compensation_borrower_paid_discount_point_amount_line_1 (NEWHUD.X1151) = 0
+17:39:12 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] [DRY RUN] Would write loan_purpose (384) = 
+17:39:12 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] [DRY RUN] Would write loan_type (1172) = 
+17:39:12 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] [DRY RUN] Would write total_credit_for_rate_chosen (NEWHUD.X1149) = 
+17:39:12 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] Complete - Mapped fields: 14, Skipped: 0
+[LandingAI Debug] Filename: appraisal_document.pdf, Extension: pdf, Field: pdf, Mimetype: application/pdf
+17:39:45 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Looking up mappings for document_type: 'ID'
+17:39:45 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Available mappings: ['borrower_first_name', 'borrower_first_middle_name', 'borrower_home_phone', 'borrower_last_name']
+17:39:45 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Extracted fields: ['borrower_first_name', 'borrower_first_middle_name', 'borrower_home_phone', 'borrower_last_name']
+17:39:45 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Success - 4 fields in 102.84s
+17:39:45 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Mappings - Ready: 4, Pending: 0, Unmapped: 0
+17:39:45 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] Processing - Loan: 387596ee..., Document: ID
+17:39:45 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] Mode: DRY RUN (no writes)
+17:39:45 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] Fields to process: 4
+17:39:45 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] [DRY RUN] Would write borrower_first_name (4000) = Alva
+17:39:45 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] [DRY RUN] Would write borrower_first_middle_name (36) = Alva Scott
+17:39:45 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] [DRY RUN] Would write borrower_home_phone (66) = 
+17:39:45 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] [DRY RUN] Would write borrower_last_name (4002) = Sorensen
+17:39:45 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [WRITE] Complete - Mapped fields: 4, Skipped: 0
+17:40:05 [WARNING] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Attempt 1/3 failed (LandingAIError). Retrying in 5s...
+[LandingAI Debug] Filename: 1003_document.pdf, Extension: pdf, Field: pdf, Mimetype: application/pdf
+17:40:15 [WARNING] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Attempt 2/3 failed (LandingAIError). Retrying in 10s...
+[LandingAI Debug] Filename: appraisal_document.pdf, Extension: pdf, Field: pdf, Mimetype: application/pdf
+17:41:12 [WARNING] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Attempt 2/3 failed (LandingAIError). Retrying in 10s...
+[LandingAI Debug] Filename: 1003_document.pdf, Extension: pdf, Field: pdf, Mimetype: application/pdf
+17:41:27 [ERROR] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Extraction failed after 3 attempts: Network error during extraction: HTTPSConnectionPool(host='api.va.landing.ai', port=443): Read timed out. (read timeout=60)
+17:41:27 [ERROR] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Error processing document 'Appraisal': Network error during extraction: HTTPSConnectionPool(host='api.va.landing.ai', port=443): Read timed out. (read timeout=60)
+17:42:24 [ERROR] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [EXTRACT] Extraction failed after 3 attempts: Network error during extraction: HTTPSConnectionPool(host='api.va.landing.ai', port=443): Read timed out. (read timeout=60)
+17:42:24 [ERROR] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Error processing document '1003': Network error during extraction: HTTPSConnectionPool(host='api.va.landing.ai', port=443): Read timed out. (read timeout=60)
+17:42:24 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Step 3 (Process documents) took 268.38s
+17:42:24 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] Complete - Processed 9 documents
+17:42:25 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [AGGREGATE] Field mappings summary: 17 total (8 non-zero, 9 zero values)
+17:42:25 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] ========================================
+17:42:25 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] TIMING SUMMARY:
+17:42:25 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS]   Total time: 273.36s (4.56 minutes)
+17:42:25 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS]   - Get documents: 4.95s
+17:42:25 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS]   - Preload schemas: 0.00s
+17:42:25 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS]   - Process documents: 268.38s
+17:42:25 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS]   - Aggregate results: 0.00s
+17:42:25 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS]   Average per document: 29.82s
+17:42:25 [INFO] [agents.drawdocs.subagents.preparation_agent.preparation_agent] [PROCESS] ========================================
+17:42:25 [INFO] [agents.drawdocs.orchestrator_agent] [PREPARATION] ✓ Success (273.4s)
+17:42:25 [INFO] [agents.drawdocs.orchestrator_agent] [VERIFICATION] Attempt 1/2
+17:42:25 [INFO] [agents.drawdocs.orchestrator_agent] [VERIFICATION] Starting with prep output
+
+================================================================================
+🔍 DRY RUN MODE ENABLED - No changes will be written to Encompass
+================================================================================
+
+✓ Detected NEW prep output format (with attachment_ids)
+17:42:31 [INFO] [httpx] HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+17:42:47 [INFO] [httpx] HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+17:42:57 [INFO] [httpx] HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+17:43:17 [INFO] [httpx] HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+17:43:23 [INFO] [httpx] HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+17:44:02 [INFO] [httpx] HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+
+================================================================================
+🔍 DRY RUN - Field Correction (NOT written to Encompass)
+================================================================================
+Loan ID:         387596ee-7090-47ca-8385-206e22c9c9da
+Field ID:        610
+Field Name:      610
+Source Document: 318be174-03ec-4b99-85ea-1de0cc286702
+Corrected Value: Truly Title, Inc.
+Finding:         Field 610 (Escrow Company Name): Prep output shows 'Truly Title, Inc.' from Title Report with comma punctuation, but Encompass has 'Truly Title Inc' without comma. Correcting to match exact Title Report format.
+Reason:          Escrow company name punctuation mismatch - missing comma before Inc.
+================================================================================
+
+
+================================================================================
+🔍 DRY RUN - Field Correction (NOT written to Encompass)
+================================================================================
+Loan ID:         387596ee-7090-47ca-8385-206e22c9c9da
+
+================================================================================
+
+================================================================================
+🔍 DRY RUN - Field Correction (NOT written to Encompass)
+================================================================================
+Loan ID:         387596ee-7090-47ca-8385-206e22c9c9da
+Field ID:        4008
+Field Name:      4008
+Source Document: 318be174-03ec-4b99-85ea-1de0cc286702
+Field ID:        356
+Field Name:      356
+Source Document: 73ca6c70-2645-4445-bf1b-8fa6b9a9f32f
+Corrected Value: 290000
+🔍 DRY RUN - Field Correction (NOT written to Encompass)
+Finding:         Field 356 (Appraised Value): Prep output shows 290000 from Appraisal, Encompass has '290,000' with comma formatting. Normalizing to unformatted numeric value to match prep output.
+
+================================================================================
+Reason:          Appraised value format normalization - numeric value without formatting
+Corrected Value: Christopher Berger and Alva Scott Sorensen
+🔍 DRY RUN - Field Correction (NOT written to Encompass)
+================================================================================
+================================================================================
+Finding:         Field 4008 (Borrower Vesting Type): Prep output extracted 'Christopher Berger and Alva Scott Sorensen' from Title Report, but Encompass currently has 'Individual'. Correcting to match Title Report.
+
+================================================================================
+Loan ID:         387596ee-7090-47ca-8385-206e22c9c9da
+Field ID:        1109
+
+Reason:          Borrower vesting type mismatch - Encompass shows generic 'Individual' but Title Report shows specific vesting names
+
+================================================================================
+================================================================================
+
+================================================================================
+🔍 DRY RUN - Field Correction (NOT written to Encompass)
+================================================================================
+🔍 DRY RUN - Field Correction (NOT written to Encompass)
+🔍 DRY RUN - Field Correction (NOT written to Encompass)
+
+================================================================================
+================================================================================
+Loan ID:         387596ee-7090-47ca-8385-206e22c9c9da
+
+================================================================================
+🔍 DRY RUN - Field Correction (NOT written to Encompass)
+================================================================================
+
+================================================================================
+
+================================================================================
+================================================================================
+Loan ID:         387596ee-7090-47ca-8385-206e22c9c9da
+Field Name:      1109
+Source Document: 318be174-03ec-4b99-85ea-1de0cc286702
+Corrected Value: 152625
+Finding:         Field 1109 (Loan Amount): Prep output extracted $152,625 from Title Report, but Encompass has $150,000. This is a $2,625 discrepancy. Correcting to match Title Report.
+
+================================================================================Loan ID:         387596ee-7090-47ca-8385-206e22c9c9da
+
+🔍 DRY RUN - Field Correction (NOT written to Encompass)
+================================================================================
+Loan ID:         387596ee-7090-47ca-8385-206e22c9c9da
+================================================================================
+Field ID:        1093
+🔍 DRY RUN - Field Correction (NOT written to Encompass)
+Field ID:        641
+
+🔍 DRY RUN - Field Correction (NOT written to Encompass)
+🔍 DRY RUN - Field Correction (NOT written to Encompass)
+================================================================================
+Field ID:        640
+Field ID:        SYS.X23
+Field Name:      SYS.X23
+Source Document: bd4a623b-3784-4081-8be5-4951988ba7bf
+Reason:          Loan amount discrepancy - Encompass has $150,000 but Title Report shows $152,625
+Field Name:      641
+Loan ID:         387596ee-7090-47ca-8385-206e22c9c9da
+================================================================================
+================================================================================
+Loan ID:         387596ee-7090-47ca-8385-206e22c9c9da
+Field Name:      640
+Source Document: bd4a623b-3784-4081-8be5-4951988ba7bf
+Loan ID:         387596ee-7090-47ca-8385-206e22c9c9da
+Field Name:      1093
+Corrected Value: 0
+================================================================================
+
+Source Document: bd4a623b-3784-4081-8be5-4951988ba7bf
+Loan ID:         387596ee-7090-47ca-8385-206e22c9c9da
+Loan ID:         387596ee-7090-47ca-8385-206e22c9c9da
+Field ID:        454
+Field ID:        1050
+Source Document: bd4a623b-3784-4081-8be5-4951988ba7bf
+Field ID:        336
+Field Name:      336
+Field Name:      454
+Source Document: bd4a623b-3784-4081-8be5-4951988ba7bf
+Finding:         Field SYS.X23 (Underwriting Fee APR): Prep output extracted 0 from Loan Estimate, but Encompass has 'Y'. Correcting to match LE value.
+Reason:          Underwriting fee APR discrepancy - LE shows $0 but Encompass has 'Y'
+================================================================================
+
+Field Name:      1050
+Field ID:        1621
+Field Name:      1621
+Source Document: bd4a623b-3784-4081-8be5-4951988ba7bf
+Corrected Value: 0
+Field ID:        NEWHUD.X1151
+Corrected Value: 0
+Corrected Value: 0
+Finding:         Field 454 (Loan Origination Fee - Borrower): Prep output extracted $0 from Loan Estimate, but Encompass field is empty. Populating with correct value from LE.
+Corrected Value: 0
+Corrected Value: 0
+Source Document: bd4a623b-3784-4081-8be5-4951988ba7bf
+Finding:         Field 1621 (Processing Fee - Borrower): Prep output extracted $0 from Loan Estimate, but Encompass has $450.00. Correcting to match LE showing no borrower-paid processing fee.
+Field Name:      NEWHUD.X1151
+Finding:         Field 640 (Credit Report Fee - Borrower): Prep output extracted $0 from Loan Estimate, but Encompass has $260.00. Correcting to match LE showing no borrower-paid credit report fee.
+Reason:          Credit report fee discrepancy - LE shows $0 borrower-paid but Encompass has $260
+Corrected Value: 0
+Finding:         Field 1093 (Loan Discount Fee - Borrower): Prep output extracted $0 from Loan Estimate, but Encompass has $2,875.46. This is a significant fee discrepancy. Correcting to match LE.
+Finding:         Field 641 (Appraisal Fee - Borrower): Prep output extracted $0 from Loan Estimate, but Encompass has $585.00. Correcting to match LE showing no borrower-paid appraisal fee.
+Reason:          Appraisal fee discrepancy - LE shows $0 borrower-paid but Encompass has $585
+Reason:          Loan origination fee missing - LE shows $0 but Encompass is empty
+Source Document: bd4a623b-3784-4081-8be5-4951988ba7bf
+Corrected Value: 0
+Finding:         Field NEWHUD.X1151 (LO Compensation Borrower Paid Discount Point Amount Line 1): Prep output extracted $0 from Loan Estimate, but Encompass field is empty. Populating with correct value from LE.
+Finding:         Field 1050 (VA Funding Fee - Borrower): Prep output extracted $0 from Loan Estimate, but Encompass field is empty. Populating with correct value from LE.
+Reason:          Loan discount fee discrepancy - LE shows $0 borrower-paid but Encompass has $2,875.46
+================================================================================
+Reason:          Processing fee discrepancy - LE shows $0 borrower-paid but Encompass has $450
+================================================================================
+Reason:          VA funding fee missing - LE shows $0 but Encompass is empty
+================================================================================
+
+
+
+================================================================================
+
+Reason:          LO compensation discount point missing - LE shows $0 but Encompass is empty
+================================================================================
+
+================================================================================
+
+Source Document: bd4a623b-3784-4081-8be5-4951988ba7bf
+================================================================================
+Corrected Value: 0
+
+Finding:         Field 336 (Tax Service Fee - Borrower): Prep output extracted $0 from Loan Estimate, but Encompass field is empty. Populating with correct value from LE.
+Reason:          Tax service fee missing - LE shows $0 but Encompass is empty
+================================================================================
+
+17:44:10 [INFO] [httpx] HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+17:44:14 [INFO] [httpx] HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+17:45:13 [INFO] [httpx] HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+17:45:13 [INFO] [agents.drawdocs.orchestrator_agent] [VERIFICATION] ✓ Success (168.5s)
+17:45:13 [INFO] [agents.drawdocs.orchestrator_agent] [ORDERDOCS] Attempt 1/2
+17:45:13 [INFO] [agents.drawdocs.orchestrator_agent] [ORDERDOCS] Starting
+17:45:13 [INFO] [agents.drawdocs.subagents.orderdocs_agent.orderdocs_agent] [ORDERDOCS] Processing - Loan: 387596ee..., Document types: ['Title Report', 'Appraisal', 'LE', 'ID']
+17:45:13 [INFO] [agents.drawdocs.subagents.orderdocs_agent.orderdocs_agent] [READ_DOC_FIELDS] Starting - Loan: 387596ee..., Document types: ['Title Report', 'Appraisal', 'LE', 'ID']
+17:45:13 [INFO] [agents.drawdocs.subagents.orderdocs_agent.orderdocs_agent] [CSV] Loading fields from CSV: /Users/benjogerochi/drawdoc-awm-agent/packages/data/DrawingDoc Verifications - Sheet1.csv
+17:45:13 [INFO] [agents.drawdocs.subagents.orderdocs_agent.orderdocs_agent] [CSV] Total fields in CSV: 914
+17:45:13 [INFO] [agents.drawdocs.subagents.orderdocs_agent.orderdocs_agent] [CSV] Filtering: Fields where document type appears in primary OR secondary columns
+17:45:13 [INFO] [agents.drawdocs.subagents.orderdocs_agent.orderdocs_agent] [READ_DOC_FIELDS] Document 'Title Report': 26 fields
+17:45:13 [INFO] [agents.drawdocs.subagents.orderdocs_agent.orderdocs_agent] [READ_DOC_FIELDS] Document 'Appraisal': 7 fields
+17:45:13 [INFO] [agents.drawdocs.subagents.orderdocs_agent.orderdocs_agent] [READ_DOC_FIELDS] Document 'LE': 76 fields
+17:45:13 [INFO] [agents.drawdocs.subagents.orderdocs_agent.orderdocs_agent] [READ_DOC_FIELDS] Document 'ID': 8 fields
+17:45:13 [INFO] [agents.drawdocs.subagents.orderdocs_agent.orderdocs_agent] [READ_DOC_FIELDS] Attempting to read 86 field IDs from Encompass
+17:45:17 [WARNING] [agents.drawdocs.subagents.orderdocs_agent.orderdocs_agent] [READ_DOC_FIELDS] Some field IDs are invalid. Parsing error to identify bad IDs...
+17:45:17 [WARNING] [agents.drawdocs.subagents.orderdocs_agent.orderdocs_agent] [READ_DOC_FIELDS] Found 1 invalid field IDs (will skip): ['Loan TeamMember Name Doc Drawer']
+17:45:17 [INFO] [agents.drawdocs.subagents.orderdocs_agent.orderdocs_agent] [READ_DOC_FIELDS] Retrying with 85 valid field IDs (skipped 1 invalid)
+17:45:18 [INFO] [agents.drawdocs.subagents.orderdocs_agent.orderdocs_agent] [READ_DOC_FIELDS] Success on retry - Read 85 field values
+17:45:18 [INFO] [agents.drawdocs.orchestrator_agent] [ORDERDOCS] Applying 13 corrections from verification
+17:45:18 [INFO] [agents.drawdocs.orchestrator_agent] [ORDERDOCS] ✓ Success (5.3s)
+17:45:18 [INFO] [agents.drawdocs.orchestrator_agent] ================================================================================
+17:45:18 [INFO] [agents.drawdocs.orchestrator_agent] ORCHESTRATOR COMPLETED
+17:45:18 [INFO] [agents.drawdocs.orchestrator_agent] ================================================================================
+
+================================================================================
+ORCHESTRATOR EXECUTION SUMMARY
+================================================================================
+Loan ID: 387596ee-7090-47ca-8385-206e22c9c9da
+Timestamp: 2025-11-26T17:37:51.654751
+Mode: DEMO (no actual writes)
+
+[PREPARATION AGENT]
+✓ Success (1 attempt(s))
+- Documents processed: 9/172
+- Fields extracted: 17
+
+[VERIFICATION AGENT]
+✓ Success (1 attempt(s))
+- Corrections needed: 13
+  • Field 4008 (4008): 'Christopher Berger and Alva Scott Sor...'
+    Source: 318be174-03ec-4b99-85ea-1de0cc286702.pdf
+  • Field 610 (610): 'Truly Title, Inc.'
+    Source: 318be174-03ec-4b99-85ea-1de0cc286702.pdf
+  • Field 1109 (1109): '152625'
+    Source: 318be174-03ec-4b99-85ea-1de0cc286702.pdf
+  • Field 356 (356): '290000'
+    Source: 73ca6c70-2645-4445-bf1b-8fa6b9a9f32f.pdf
+  • Field 641 (641): '0'
+    Source: bd4a623b-3784-4081-8be5-4951988ba7bf.pdf
+  ... and 8 more
+
+[ORDERDOCS AGENT]
+✓ Success (1 attempt(s))
+- Total fields checked: 85
+- Fields with values: 73
+- Corrections applied (demo): 13
+
+OVERALL STATUS: SUCCESS
+================================================================================
