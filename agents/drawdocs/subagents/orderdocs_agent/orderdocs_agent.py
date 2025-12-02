@@ -1,471 +1,653 @@
 """
-OrderDocs Agent - Reads field values from Encompass based on document types
+OrderDocs Agent - Runs Mavent compliance checks and orders closing documents
 
-This agent reads field values from Encompass based on document types specified in input.
-It uses the CSV file to determine which field IDs correspond to each document type,
-then reads those field values from Encompass and returns them in JSON format.
+This agent implements the complete workflow for:
+1. Running Mavent compliance checks (Loan Audit)
+2. Ordering closing documents through Encompass
+3. Delivering documents to eFolder
 
-Example:
-    Input: {"loan_id": "...", "document_types": ["ID"]}
-    Output: {"4000": "Jane", "4001": "Doe", "4002": "Smith"}
+Based on: MAVENT_AND_ORDER_DOCS_GUIDE.md
 """
 
 import os
 import sys
 import json
-import csv
+import time
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Set
-from langchain_core.tools import tool
+from typing import Dict, Any, Optional, List
+from datetime import datetime
 
-# Load environment variables from .env file
+# Load environment variables
 try:
     from dotenv import load_dotenv
-    # Try to load .env from parent directories
     env_paths = [
         Path(__file__).parent.parent.parent.parent / ".env",
         Path(__file__).parent.parent.parent.parent.parent / ".env",
-        Path(__file__).parent / ".env",
     ]
     for env_path in env_paths:
         if env_path.exists():
             load_dotenv(env_path)
-            logger = logging.getLogger(__name__)
-            logger.debug(f"Loaded .env from: {env_path}")
             break
 except ImportError:
-    pass  # dotenv not installed, rely on system environment variables
+    pass
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
-
-# Import shared utilities
-from packages.shared import get_encompass_client
-
-def _get_encompass_client():
-    """Get an initialized Encompass client. Wrapper for shared utility."""
-    return get_encompass_client()
+sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent.parent))
 
 # Configure logging
 logging.basicConfig(
-    level=logging.DEBUG,  # Changed to DEBUG to show field parsing details
+    level=logging.INFO,
     format='%(asctime)s [%(levelname)s] [%(name)s] %(message)s',
     datefmt='%H:%M:%S'
 )
 logger = logging.getLogger(__name__)
 
-# CSV file path - use the Sheet1 version in data folder
-CSV_PATH = Path(__file__).parent.parent.parent.parent.parent / "packages" / "data" / "DrawingDoc Verifications - Sheet1.csv"
 
-
-def _load_csv_fields() -> List[Dict[str, str]]:
-    """Load field mappings from CSV file.
-    
-    Returns:
-        List of dictionaries with field information
-    """
-    if not CSV_PATH.exists():
-        logger.error(f"CSV file not found: {CSV_PATH}")
-        return []
-    
-    fields = []
+def _get_mcp_client():
+    """Get MCP server client for Encompass API calls."""
     try:
-        with open(CSV_PATH, 'r', encoding='utf-8-sig') as f:  # utf-8-sig to handle BOM
-            reader = csv.DictReader(f)
-            for row in reader:
-                fields.append({
-                    'name': row.get('Name', '').strip(),
-                    'field_id': row.get('ID', '').strip(),
-                    'primary_document': row.get('Primary document', '').strip(),
-                    'secondary_documents': row.get('Secondary documents', '').strip(),
-                })
+        # Import MCP server utilities
+        mcp_server_path = Path(__file__).parent.parent.parent.parent.parent / "encompass-mcp-server"
+        
+        if not mcp_server_path.exists():
+            logger.error(f"MCP server not found at: {mcp_server_path}")
+            return None
+        
+        sys.path.insert(0, str(mcp_server_path))
+        
+        # Load MCP server .env
+        mcp_env_path = mcp_server_path / ".env"
+        if mcp_env_path.exists():
+            load_dotenv(mcp_env_path, override=False)
+        
+        from encompass_http_client import EncompassHttpClient
+        from encompass_auth import EncompassAuthManager
+        
+        # Initialize auth manager
+        api_server = os.getenv("ENCOMPASS_API_SERVER", "https://concept.api.elliemae.com")
+        api_host = api_server.replace("https://", "").replace("http://", "")
+        
+        auth_manager = EncompassAuthManager(api_server=api_server)
+        
+        # Initialize HTTP client
+        http_client = EncompassHttpClient(
+            auth_manager=auth_manager,
+            api_host=api_host
+        )
+        
+        return http_client
+        
     except Exception as e:
-        logger.error(f"Error loading CSV: {e}")
-        return []
-    
-    return fields
+        logger.error(f"Failed to initialize MCP client: {e}")
+        return None
 
 
-def _parse_and_validate_field_id(field_id: str, field_name: str = "") -> List[str]:
-    """Parse field ID string and return all field IDs (keep everything from CSV).
-    
-    Handles cases like:
-    - "4000" -> ["4000"]
-    - "1041 | 1553 | HMDA.X11" -> ["1041", "1553", "HMDA.X11"] (keep all)
-    - "324 | CD5.X18" -> ["324", "CD5.X18"] (keep all)
-    - "Loan TeamMember Name Doc Drawer" -> ["Loan TeamMember Name Doc Drawer"] (keep as-is)
-    - "AuditTrail" -> ["AuditTrail"] (keep as-is)
-    
-    Args:
-        field_id: Field ID string from CSV
-        field_name: Field name for debugging
-        
-    Returns:
-        List of all field IDs from CSV (no filtering)
-    """
-    if not field_id or field_id.strip() == '':
-        logger.debug(f"[PARSE] Field '{field_name}': Empty field_id")
-        return []
-    
-    # Split by | if multiple field IDs, otherwise keep as single ID
-    if '|' in field_id:
-        parts = [p.strip() for p in field_id.split('|')]
-        # Filter out empty parts
-        parts = [p for p in parts if p]
-        logger.debug(f"[PARSE] Field '{field_name}': Split '{field_id}' into {len(parts)} IDs: {parts}")
-        return parts
-    else:
-        # Single field ID - return as-is
-        field_id_clean = field_id.strip()
-        logger.debug(f"[PARSE] Field '{field_name}': Single ID '{field_id_clean}'")
-        return [field_id_clean]
-
-
-def get_field_ids_for_document_types(document_types: List[str]) -> Dict[str, List[str]]:
-    """Get field IDs for specified document types from CSV.
-    
-    Includes fields where the document type appears in primary OR secondary columns (or both).
-    
-    Args:
-        document_types: List of document type names (e.g., ["ID", "Title Report"])
-        
-    Returns:
-        Dictionary mapping document_type -> list of valid field IDs (fields in primary or secondary)
-    """
-    all_fields = _load_csv_fields()
-    
-    # Normalize document types for matching (case-insensitive)
-    doc_types_lower = {dt.lower().strip(): dt for dt in document_types}
-    
-    # Map document type -> field IDs
-    doc_to_field_ids: Dict[str, List[str]] = {dt: [] for dt in document_types}
-    
-    logger.info(f"[CSV] Loading fields from CSV: {CSV_PATH}")
-    logger.info(f"[CSV] Total fields in CSV: {len(all_fields)}")
-    logger.info(f"[CSV] Filtering: Fields where document type appears in primary OR secondary columns")
-    
-    for field in all_fields:
-        field_name = field['name']
-        field_id_str = field['field_id']
-        primary_doc = field['primary_document']
-        secondary_docs = field['secondary_documents']
-        
-        logger.debug(f"[CSV] Processing field: '{field_name}' | ID: '{field_id_str}' | Primary: '{primary_doc}' | Secondary: '{secondary_docs}'")
-        
-        if not field_id_str or field_id_str == '':
-            logger.debug(f"[CSV] Field '{field_name}': No field ID - skipping")
-            continue
-        
-        # Parse and validate field ID(s)
-        valid_field_ids = _parse_and_validate_field_id(field_id_str, field_name)
-        if not valid_field_ids:
-            logger.debug(f"[CSV] Field '{field_name}': No valid field IDs after parsing - skipping")
-            continue  # Skip fields with no valid IDs
-        
-        logger.debug(f"[CSV] Field '{field_name}': Parsed {len(valid_field_ids)} valid IDs: {valid_field_ids}")
-        
-        # Normalize primary document for matching
-        primary_doc_lower = primary_doc.lower().strip() if primary_doc else ""
-        
-        # Parse secondary documents (semicolon-separated, case-insensitive)
-        secondary_docs_list = []
-        if secondary_docs and secondary_docs.strip():
-            secondary_docs_list = [doc.strip().lower() for doc in secondary_docs.split(';') if doc.strip()]
-        
-        # Check each requested document type
-        for doc_type_lower, doc_type in doc_types_lower.items():
-            # Check if document type appears in primary OR secondary (or both)
-            # Match if exact match or document type is contained in the doc string
-            in_primary = (
-                primary_doc_lower == doc_type_lower or
-                doc_type_lower in primary_doc_lower or
-                primary_doc_lower in doc_type_lower
-            ) if primary_doc_lower else False
-            
-            in_secondary = (
-                doc_type_lower in secondary_docs_list or
-                any(doc_type_lower in sec_doc or sec_doc in doc_type_lower for sec_doc in secondary_docs_list)
-            ) if secondary_docs_list else False
-            
-            # Include if document type is in primary OR secondary (or both)
-            if in_primary or in_secondary:
-                match_type = "BOTH" if (in_primary and in_secondary) else ("PRIMARY" if in_primary else "SECONDARY")
-                logger.debug(f"[CSV] Field '{field_name}': Matched {match_type} for document '{doc_type}'")
-                # Add all field IDs for this field to the document type
-                for field_id in valid_field_ids:
-                    if field_id not in doc_to_field_ids[doc_type]:
-                        doc_to_field_ids[doc_type].append(field_id)
-                        logger.debug(f"[CSV] Added field ID '{field_id}' for document '{doc_type}'")
-    
-    return doc_to_field_ids
-
-
-@tool
-def read_document_fields(
-    loan_id: str,
-    document_types: List[str]
+def _poll_until_complete(
+    client,
+    location_path: str,
+    max_attempts: int = 60,
+    poll_interval: int = 5,
+    resource_type: str = "resource"
 ) -> Dict[str, Any]:
-    """Read field values from Encompass for specified document types.
-    
-    This tool:
-    1. Looks up field IDs for each document type from the CSV file
-    2. Reads those field values from Encompass
-    3. Returns all field values (including empty ones) in JSON format with has_value flag
+    """Poll a resource until it completes.
     
     Args:
-        loan_id: The Encompass loan GUID
-        document_types: List of document types (e.g., ["ID", "Title Report"])
+        client: MCP HTTP client
+        location_path: Path to poll (from Location header)
+        max_attempts: Maximum number of polling attempts
+        poll_interval: Seconds between polls
+        resource_type: Type of resource (for logging)
         
     Returns:
-        Dictionary with field_id -> {"value": value, "has_value": bool} mappings for all requested document types
-        
-    Example:
-        >>> read_document_fields("loan-guid", ["ID"])
-        {
-            "4000": {"value": "Jane", "has_value": true},
-            "4001": {"value": "Doe", "has_value": true},
-            "4002": {"value": "", "has_value": false}
-        }
+        Final resource data
     """
-    logger.info(f"[READ_DOC_FIELDS] Starting - Loan: {loan_id[:8]}..., Document types: {document_types}")
+    logger.info(f"[POLL] Polling {resource_type} at: {location_path}")
     
-    # Get field IDs for each document type
-    doc_to_field_ids = get_field_ids_for_document_types(document_types)
-    
-    # Collect all unique field IDs
-    all_field_ids: Set[str] = set()
-    for field_ids in doc_to_field_ids.values():
-        all_field_ids.update(field_ids)
-    
-    if not all_field_ids:
-        logger.warning(f"[READ_DOC_FIELDS] No field IDs found for document types: {document_types}")
-        return {}
-    
-    # Log which fields will be read for each document type
-    for doc_type, field_ids in doc_to_field_ids.items():
-        logger.info(f"[READ_DOC_FIELDS] Document '{doc_type}': {len(field_ids)} fields")
-        if field_ids:
-            logger.debug(f"[READ_DOC_FIELDS] Field IDs for '{doc_type}': {field_ids[:10]}...")  # Show first 10
-    
-    # Read field values from Encompass
-    try:
-        client = _get_encompass_client()
-        field_ids_list = list(all_field_ids)
-        
-        logger.info(f"[READ_DOC_FIELDS] Attempting to read {len(field_ids_list)} field IDs from Encompass")
-        
+    for attempt in range(1, max_attempts + 1):
         try:
-            field_values = client.get_field(loan_id, field_ids_list)
+            # Make GET request
+            response = client.make_request(
+                method="GET",
+                path=location_path,
+                token_source="client_credentials"
+            )
             
-            # Check if all fields were successfully read
-            read_count = len(field_values)
-            logger.info(f"[READ_DOC_FIELDS] Success - Read {read_count} field values")
-            
-            # Return all field values with has_value flag
-            # Format: {field_id: {"value": value, "has_value": bool}}
-            result = {}
-            for field_id in all_field_ids:
-                value = field_values.get(field_id, None)
-                
-                # Determine if value is populated (not None, not empty string)
-                has_value = False
-                if value is not None:
-                    # Check if it's a non-empty string or other truthy value
-                    if isinstance(value, str):
-                        has_value = value.strip() != ""
-                    else:
-                        has_value = bool(value)
-                
-                result[field_id] = {
-                    "value": value,
-                    "has_value": has_value
-                }
-            
-            return result
-            
-        except Exception as api_error:
-            error_str = str(api_error)
-            
-            # Check if it's a 400 error with invalid field IDs
-            if "Invalid field id" in error_str or ("400" in error_str and "Bad Request" in error_str):
-                logger.warning(f"[READ_DOC_FIELDS] Some field IDs are invalid. Parsing error to identify bad IDs...")
-                logger.debug(f"[READ_DOC_FIELDS] Full error: {error_str}")
-                
-                # Try to extract invalid field IDs from error message
-                import re
-                import json
-                invalid_ids = set()
-                
-                # Try to parse JSON from error message
-                try:
-                    # Extract JSON part from error string
-                    json_start = error_str.find('{')
-                    if json_start != -1:
-                        json_str = error_str[json_start:]
-                        error_json = json.loads(json_str)
-                        
-                        # Look for errors array
-                        if 'errors' in error_json:
-                            for error_item in error_json['errors']:
-                                if 'details' in error_item:
-                                    detail = error_item['details']
-                                    # Extract field ID from "Invalid field id: 'FieldID'"
-                                    match = re.search(r"Invalid field id: '([^']+)'", detail)
-                                    if match:
-                                        invalid_ids.add(match.group(1))
-                except Exception as parse_error:
-                    logger.debug(f"[READ_DOC_FIELDS] Could not parse JSON from error: {parse_error}")
-                    # Fallback to regex pattern matching
-                    invalid_matches = re.findall(r"Invalid field id: '([^']+)'", error_str)
-                    invalid_ids.update(invalid_matches)
-                
-                logger.warning(f"[READ_DOC_FIELDS] Found {len(invalid_ids)} invalid field IDs (will skip): {list(invalid_ids)}")
-                
-                # Filter out invalid IDs and retry
-                valid_field_ids = [fid for fid in field_ids_list if fid not in invalid_ids]
-                
-                if not valid_field_ids:
-                    logger.error(f"[READ_DOC_FIELDS] All field IDs were invalid!")
-                    return {}  # Return empty dict if all IDs are invalid
-                
-                logger.info(f"[READ_DOC_FIELDS] Retrying with {len(valid_field_ids)} valid field IDs (skipped {len(invalid_ids)} invalid)")
-                
-                # Retry with only valid field IDs
-                try:
-                    field_values = client.get_field(loan_id, valid_field_ids)
-                    
-                    logger.info(f"[READ_DOC_FIELDS] Success on retry - Read {len(field_values)} field values")
-                    
-                    # Return only valid field values with has_value flag
-                    # Format: {field_id: {"value": value, "has_value": bool}}
-                    result = {}
-                    for field_id in valid_field_ids:
-                        value = field_values.get(field_id, None)
-                        
-                        # Determine if value is populated (not None, not empty string)
-                        has_value = False
-                        if value is not None:
-                            # Check if it's a non-empty string or other truthy value
-                            if isinstance(value, str):
-                                has_value = value.strip() != ""
-                            else:
-                                has_value = bool(value)
-                        
-                        result[field_id] = {
-                            "value": value,
-                            "has_value": has_value
-                        }
-                    
-                    return result
-                    
-                except Exception as retry_error:
-                    logger.error(f"[READ_DOC_FIELDS] Error on retry: {retry_error}")
-                    return {"error": str(retry_error)}
+            # Parse response
+            if isinstance(response, dict) and 'body' in response:
+                data = json.loads(response['body']) if isinstance(response['body'], str) else response['body']
             else:
-                # Other types of errors (401, 500, etc.)
-                logger.error(f"[READ_DOC_FIELDS] Error reading fields: {api_error}")
+                data = response
+            
+            status = data.get('status', 'Unknown')
+            logger.info(f"[POLL] Attempt {attempt}/{max_attempts}: {resource_type} status = {status}")
+            
+            # Check if complete
+            if status in ['Completed', 'Complete', 'Success']:
+                logger.info(f"[POLL] {resource_type} completed successfully!")
+                return data
+            
+            # Check if failed
+            if status in ['Failed', 'Error']:
+                logger.error(f"[POLL] {resource_type} failed!")
+                return data
+            
+            # Wait before next poll
+            if attempt < max_attempts:
+                logger.debug(f"[POLL] Waiting {poll_interval}s before next poll...")
+                time.sleep(poll_interval)
+            
+        except Exception as e:
+            logger.error(f"[POLL] Error polling {resource_type}: {e}")
+            if attempt < max_attempts:
+                time.sleep(poll_interval)
+            else:
                 raise
-        
-    except Exception as e:
-        logger.error(f"[READ_DOC_FIELDS] Unexpected error: {e}")
-        return {"error": str(e)}
+    
+    logger.warning(f"[POLL] {resource_type} did not complete after {max_attempts} attempts")
+    return {"status": "Timeout", "error": "Polling timeout"}
 
 
-def process_orderdocs_request(input_json: Dict[str, Any]) -> Dict[str, Any]:
-    """Process an orderdocs request.
+def run_mavent_check(
+    loan_id: str,
+    application_id: Optional[str] = None,
+    audit_type: str = "closing",
+    dry_run: bool = False
+) -> Dict[str, Any]:
+    """Run Mavent compliance check (Loan Audit).
     
     Args:
-        input_json: Dictionary with loan_id and document_types
+        loan_id: Encompass loan GUID
+        application_id: Borrower application ID (optional, defaults to loan_id)
+        audit_type: "closing" or "opening"
+        dry_run: If True, don't actually make API calls
         
     Returns:
-        Dictionary with field_id -> value mappings
-        
-    Example input:
+        Dictionary with audit results:
         {
-            "loan_id": "387596ee-7090-47ca-8385-206e22c9c9da",
-            "document_types": ["ID", "Title Report"]
-        }
-        
-    Example output:
-        {
-            "4000": "Jane",
-            "4001": "Doe",
-            "1109": "132275.0",
-            "356": "290000"
+            "audit_id": "...",
+            "status": "Completed",
+            "issues": [...],
+            "location": "...",
+            "error": null
         }
     """
-    # Validate input
-    if "loan_id" not in input_json:
+    logger.info(f"[MAVENT] Starting Mavent check for loan {loan_id[:8]}... (type: {audit_type})")
+    
+    if dry_run:
+        logger.warning("[MAVENT] DRY RUN - Not making actual API calls")
         return {
-            "error": "Missing required field: loan_id",
-            "expected_format": {
-                "loan_id": "string (required)",
-                "document_types": "array of strings (required)"
-            }
+            "audit_id": "dry-run-audit-id",
+            "status": "Completed",
+            "issues": [],
+            "location": "/encompassdocs/v1/documentAudits/closing/dry-run-audit-id",
+            "error": None,
+            "dry_run": True
         }
-    
-    if "document_types" not in input_json or not input_json["document_types"]:
-        return {
-            "error": "Missing required field: document_types",
-            "expected_format": {
-                "loan_id": "string (required)",
-                "document_types": "array of strings (required)"
-            }
-        }
-    
-    loan_id = input_json["loan_id"]
-    document_types = input_json["document_types"]
-    
-    if not isinstance(document_types, list):
-        return {
-            "error": "document_types must be a list",
-            "loan_id": loan_id
-        }
-    
-    logger.info(f"[ORDERDOCS] Processing - Loan: {loan_id[:8]}..., Document types: {document_types}")
     
     try:
-        # Read fields for all document types
-        result = read_document_fields.invoke({
-            "loan_id": loan_id,
-            "document_types": document_types
-        })
+        # Get MCP client
+        client = _get_mcp_client()
+        if not client:
+            return {"error": "Failed to initialize MCP client", "status": "Error"}
         
-        return result
+        # Default application_id to loan_id if not provided
+        if not application_id:
+            application_id = loan_id
+        
+        # Step 1: Create Loan Audit
+        audit_endpoint = f"/encompassdocs/v1/documentAudits/{audit_type}"
+        audit_body = {
+            "entity": {
+                "entityId": loan_id,
+                "entityType": "urn:elli:encompass:loan"
+            },
+            "scope": {
+                "entityId": application_id,
+                "entityType": "urn:elli:encompass:loan:borrower"
+            }
+        }
+        
+        logger.info(f"[MAVENT] Creating audit: POST {audit_endpoint}")
+        response = client.make_request(
+            method="POST",
+            path=audit_endpoint,
+            token_source="client_credentials",
+            json_body=audit_body
+        )
+        
+        # Parse response
+        if isinstance(response, dict):
+            location = response.get('headers', {}).get('Location', '')
+            body = response.get('body', {})
+            if isinstance(body, str):
+                body = json.loads(body)
+            audit_id = body.get('id', '')
+        else:
+            location = ''
+            audit_id = ''
+        
+        if not location or not audit_id:
+            logger.error("[MAVENT] Failed to get audit location or ID from response")
+            return {"error": "Failed to create audit", "status": "Error"}
+        
+        logger.info(f"[MAVENT] Audit created: {audit_id}")
+        logger.info(f"[MAVENT] Polling location: {location}")
+        
+        # Step 2: Poll until audit completes
+        audit_data = _poll_until_complete(
+            client=client,
+            location_path=location,
+            max_attempts=60,
+            poll_interval=5,
+            resource_type="Mavent Audit"
+        )
+        
+        # Step 3: Check for issues
+        issues = audit_data.get('issues', [])
+        status = audit_data.get('status', 'Unknown')
+        
+        if issues:
+            logger.warning(f"[MAVENT] Found {len(issues)} compliance issues")
+            for i, issue in enumerate(issues[:5]):  # Show first 5
+                logger.warning(f"[MAVENT] Issue {i+1}: {issue}")
+        else:
+            logger.info("[MAVENT] No compliance issues found")
+        
+        return {
+            "audit_id": audit_id,
+            "status": status,
+            "issues": issues,
+            "location": location,
+            "audit_data": audit_data,
+            "error": None
+        }
         
     except Exception as e:
-        logger.error(f"[ORDERDOCS] Error processing request: {e}")
+        logger.error(f"[MAVENT] Error running Mavent check: {e}")
         return {
             "error": str(e),
-            "loan_id": loan_id
+            "status": "Error"
         }
+
+
+def order_documents(
+    loan_id: str,
+    audit_id: str,
+    order_type: str = "closing",
+    print_mode: str = "LoanData",
+    dry_run: bool = False
+) -> Dict[str, Any]:
+    """Order closing or opening documents.
+    
+    Args:
+        loan_id: Encompass loan GUID
+        audit_id: Audit snapshot ID from Mavent check
+        order_type: "closing" or "opening"
+        print_mode: "LoanData" or other print mode
+        dry_run: If True, don't actually make API calls
+        
+    Returns:
+        Dictionary with order results:
+        {
+            "doc_set_id": "...",
+            "status": "Completed",
+            "documents": [...],
+            "location": "...",
+            "error": null
+        }
+    """
+    logger.info(f"[ORDER_DOCS] Ordering {order_type} documents for loan {loan_id[:8]}...")
+    logger.info(f"[ORDER_DOCS] Using audit ID: {audit_id}")
+    
+    if dry_run:
+        logger.warning("[ORDER_DOCS] DRY RUN - Not making actual API calls")
+        return {
+            "doc_set_id": "dry-run-docset-id",
+            "status": "Completed",
+            "documents": [],
+            "location": f"/encompassdocs/v1/documentOrders/{order_type}/dry-run-docset-id",
+            "error": None,
+            "dry_run": True
+        }
+    
+    try:
+        # Get MCP client
+        client = _get_mcp_client()
+        if not client:
+            return {"error": "Failed to initialize MCP client", "status": "Error"}
+        
+        # Step 1: Create Document Order
+        order_endpoint = f"/encompassdocs/v1/documentOrders/{order_type}"
+        order_body = {
+            "auditId": audit_id,
+            "printMode": print_mode
+        }
+        
+        logger.info(f"[ORDER_DOCS] Creating order: POST {order_endpoint}")
+        response = client.make_request(
+            method="POST",
+            path=order_endpoint,
+            token_source="client_credentials",
+            json_body=order_body
+        )
+        
+        # Parse response
+        if isinstance(response, dict):
+            location = response.get('headers', {}).get('Location', '')
+            body = response.get('body', {})
+            if isinstance(body, str):
+                body = json.loads(body)
+            doc_set_id = body.get('id', '')
+        else:
+            location = ''
+            doc_set_id = ''
+        
+        if not location or not doc_set_id:
+            logger.error("[ORDER_DOCS] Failed to get order location or docSetId from response")
+            return {"error": "Failed to create order", "status": "Error"}
+        
+        logger.info(f"[ORDER_DOCS] Order created: {doc_set_id}")
+        logger.info(f"[ORDER_DOCS] Polling location: {location}")
+        
+        # Step 2: Poll until order completes
+        order_data = _poll_until_complete(
+            client=client,
+            location_path=location,
+            max_attempts=120,  # Document generation can take longer
+            poll_interval=5,
+            resource_type="Document Order"
+        )
+        
+        # Step 3: Get document list
+        documents = order_data.get('documents', [])
+        status = order_data.get('status', 'Unknown')
+        
+        if documents:
+            logger.info(f"[ORDER_DOCS] Order contains {len(documents)} documents")
+            for i, doc in enumerate(documents[:5]):  # Show first 5
+                doc_name = doc.get('name', 'Unknown')
+                logger.info(f"[ORDER_DOCS] Document {i+1}: {doc_name}")
+        else:
+            logger.warning("[ORDER_DOCS] No documents in order")
+        
+        return {
+            "doc_set_id": doc_set_id,
+            "status": status,
+            "documents": documents,
+            "location": location,
+            "order_data": order_data,
+            "error": None
+        }
+        
+    except Exception as e:
+        logger.error(f"[ORDER_DOCS] Error ordering documents: {e}")
+        return {
+            "error": str(e),
+            "status": "Error"
+        }
+
+
+def deliver_documents(
+    doc_set_id: str,
+    order_type: str = "closing",
+    delivery_method: str = "eFolder",
+    recipients: Optional[List[str]] = None,
+    dry_run: bool = False
+) -> Dict[str, Any]:
+    """Request delivery of ordered documents.
+    
+    Args:
+        doc_set_id: Document set ID from order_documents
+        order_type: "closing" or "opening"
+        delivery_method: "eFolder", "Email", "Print", etc.
+        recipients: Optional list of recipient emails
+        dry_run: If True, don't actually make API calls
+        
+    Returns:
+        Dictionary with delivery results
+    """
+    logger.info(f"[DELIVER] Requesting delivery for docSetId {doc_set_id}")
+    logger.info(f"[DELIVER] Method: {delivery_method}")
+    
+    if dry_run:
+        logger.warning("[DELIVER] DRY RUN - Not making actual API calls")
+        return {
+            "status": "Success",
+            "delivery_method": delivery_method,
+            "error": None,
+            "dry_run": True
+        }
+    
+    try:
+        # Get MCP client
+        client = _get_mcp_client()
+        if not client:
+            return {"error": "Failed to initialize MCP client", "status": "Error"}
+        
+        # Create delivery request
+        delivery_endpoint = f"/encompassdocs/v1/documentOrders/{order_type}/{doc_set_id}/delivery"
+        delivery_body = {
+            "deliveryMethod": delivery_method
+        }
+        
+        if recipients:
+            delivery_body["recipients"] = recipients
+        
+        logger.info(f"[DELIVER] Requesting delivery: POST {delivery_endpoint}")
+        response = client.make_request(
+            method="POST",
+            path=delivery_endpoint,
+            token_source="client_credentials",
+            json_body=delivery_body
+        )
+        
+        # Parse response
+        if isinstance(response, dict):
+            body = response.get('body', {})
+            if isinstance(body, str):
+                body = json.loads(body)
+        else:
+            body = response
+        
+        logger.info("[DELIVER] Delivery requested successfully")
+        
+        return {
+            "status": "Success",
+            "delivery_method": delivery_method,
+            "response": body,
+            "error": None
+        }
+        
+    except Exception as e:
+        logger.error(f"[DELIVER] Error requesting delivery: {e}")
+        return {
+            "error": str(e),
+            "status": "Error"
+        }
+
+
+def run_orderdocs_agent(
+    loan_id: str,
+    application_id: Optional[str] = None,
+    audit_type: str = "closing",
+    order_type: str = "closing",
+    delivery_method: str = "eFolder",
+    recipients: Optional[List[str]] = None,
+    dry_run: bool = False
+) -> Dict[str, Any]:
+    """Run the complete Order Docs Agent workflow.
+    
+    This executes:
+    1. Mavent compliance check (Loan Audit)
+    2. Document ordering
+    3. Document delivery
+    
+    Args:
+        loan_id: Encompass loan GUID
+        application_id: Borrower application ID (optional)
+        audit_type: "closing" or "opening"
+        order_type: "closing" or "opening"
+        delivery_method: "eFolder", "Email", "Print", etc.
+        recipients: Optional list of recipient emails
+        dry_run: If True, don't actually make API calls
+        
+    Returns:
+        Dictionary with complete workflow results
+    """
+    logger.info("=" * 80)
+    logger.info("[ORDERDOCS AGENT] Starting Order Docs Agent workflow")
+    logger.info(f"[ORDERDOCS AGENT] Loan ID: {loan_id}")
+    logger.info(f"[ORDERDOCS AGENT] Type: {order_type}")
+    logger.info(f"[ORDERDOCS AGENT] Dry Run: {dry_run}")
+    logger.info("=" * 80)
+    
+    start_time = datetime.now()
+    results = {
+        "loan_id": loan_id,
+        "start_time": start_time.isoformat(),
+        "dry_run": dry_run,
+        "steps": {}
+    }
+    
+    try:
+        # Step 1: Run Mavent Check
+        logger.info("\n[STEP 1/3] Running Mavent compliance check...")
+        mavent_result = run_mavent_check(
+            loan_id=loan_id,
+            application_id=application_id,
+            audit_type=audit_type,
+            dry_run=dry_run
+        )
+        results["steps"]["mavent_check"] = mavent_result
+        
+        if mavent_result.get("error"):
+            logger.error(f"[ORDERDOCS AGENT] Mavent check failed: {mavent_result['error']}")
+            results["status"] = "Failed"
+            results["error"] = f"Mavent check failed: {mavent_result['error']}"
+            return results
+        
+        # Check for critical issues
+        issues = mavent_result.get("issues", [])
+        if issues:
+            logger.warning(f"[ORDERDOCS AGENT] Found {len(issues)} compliance issues")
+            # For now, continue anyway (in production, might want to halt here)
+        
+        audit_id = mavent_result.get("audit_id")
+        if not audit_id:
+            logger.error("[ORDERDOCS AGENT] No audit ID returned from Mavent check")
+            results["status"] = "Failed"
+            results["error"] = "No audit ID returned"
+            return results
+        
+        # Step 2: Order Documents
+        logger.info("\n[STEP 2/3] Ordering documents...")
+        order_result = order_documents(
+            loan_id=loan_id,
+            audit_id=audit_id,
+            order_type=order_type,
+            dry_run=dry_run
+        )
+        results["steps"]["order_documents"] = order_result
+        
+        if order_result.get("error"):
+            logger.error(f"[ORDERDOCS AGENT] Document ordering failed: {order_result['error']}")
+            results["status"] = "Failed"
+            results["error"] = f"Document ordering failed: {order_result['error']}"
+            return results
+        
+        doc_set_id = order_result.get("doc_set_id")
+        if not doc_set_id:
+            logger.error("[ORDERDOCS AGENT] No docSetId returned from order")
+            results["status"] = "Failed"
+            results["error"] = "No docSetId returned"
+            return results
+        
+        # Step 3: Request Delivery
+        logger.info("\n[STEP 3/3] Requesting document delivery...")
+        delivery_result = deliver_documents(
+            doc_set_id=doc_set_id,
+            order_type=order_type,
+            delivery_method=delivery_method,
+            recipients=recipients,
+            dry_run=dry_run
+        )
+        results["steps"]["deliver_documents"] = delivery_result
+        
+        if delivery_result.get("error"):
+            logger.error(f"[ORDERDOCS AGENT] Document delivery failed: {delivery_result['error']}")
+            results["status"] = "PartialSuccess"  # Documents ordered but not delivered
+            results["error"] = f"Document delivery failed: {delivery_result['error']}"
+        else:
+            logger.info("[ORDERDOCS AGENT] ✓ Document delivery requested successfully")
+            results["status"] = "Success"
+        
+        # Summary
+        end_time = datetime.now()
+        duration = (end_time - start_time).total_seconds()
+        
+        results["end_time"] = end_time.isoformat()
+        results["duration_seconds"] = duration
+        results["summary"] = {
+            "audit_id": audit_id,
+            "doc_set_id": doc_set_id,
+            "compliance_issues": len(issues),
+            "documents_ordered": len(order_result.get("documents", [])),
+            "delivery_method": delivery_method
+        }
+        
+        logger.info("\n" + "=" * 80)
+        logger.info("[ORDERDOCS AGENT] Workflow completed!")
+        logger.info(f"[ORDERDOCS AGENT] Status: {results['status']}")
+        logger.info(f"[ORDERDOCS AGENT] Duration: {duration:.1f}s")
+        logger.info(f"[ORDERDOCS AGENT] Audit ID: {audit_id}")
+        logger.info(f"[ORDERDOCS AGENT] Doc Set ID: {doc_set_id}")
+        logger.info(f"[ORDERDOCS AGENT] Documents: {len(order_result.get('documents', []))}")
+        logger.info("=" * 80 + "\n")
+        
+        return results
+        
+    except Exception as e:
+        logger.error(f"[ORDERDOCS AGENT] Unexpected error: {e}")
+        results["status"] = "Error"
+        results["error"] = str(e)
+        return results
 
 
 if __name__ == "__main__":
     import argparse
     
     parser = argparse.ArgumentParser(
-        description="OrderDocs Agent - Read field values from Encompass based on document types"
+        description="OrderDocs Agent - Run Mavent checks and order documents"
     )
-    parser.add_argument("--json", type=str, help="JSON input as string")
-    parser.add_argument("--json-file", type=str, help="Path to JSON input file")
+    parser.add_argument("--loan-id", type=str, required=True, help="Encompass loan GUID")
+    parser.add_argument("--application-id", type=str, help="Borrower application ID")
+    parser.add_argument("--type", type=str, default="closing", choices=["closing", "opening"],
+                       help="Document type (closing or opening)")
+    parser.add_argument("--delivery", type=str, default="eFolder", help="Delivery method")
+    parser.add_argument("--dry-run", action="store_true", help="Dry run mode (no API calls)")
+    parser.add_argument("--output", type=str, help="Output file for results (JSON)")
     
     args = parser.parse_args()
     
-    # Handle JSON input
-    if args.json or args.json_file:
-        if args.json:
-            input_data = json.loads(args.json)
-        else:
-            with open(args.json_file, 'r') as f:
-                input_data = json.load(f)
-        
-        result = process_orderdocs_request(input_data)
-        print(json.dumps(result, indent=2, default=str))
-        sys.exit(0)
+    # Run agent
+    result = run_orderdocs_agent(
+        loan_id=args.loan_id,
+        application_id=args.application_id,
+        audit_type=args.type,
+        order_type=args.type,
+        delivery_method=args.delivery,
+        dry_run=args.dry_run
+    )
     
-    # If no arguments, show usage
-    parser.print_help()
-    sys.exit(1)
-
+    # Output results
+    if args.output:
+        with open(args.output, 'w') as f:
+            json.dump(result, indent=2, default=str, fp=f)
+        print(f"\n✓ Results saved to: {args.output}")
+    else:
+        print("\n" + "=" * 80)
+        print("RESULTS:")
+        print("=" * 80)
+        print(json.dumps(result, indent=2, default=str))

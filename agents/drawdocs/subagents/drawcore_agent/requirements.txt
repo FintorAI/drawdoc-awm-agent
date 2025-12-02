@@ -1,0 +1,11 @@
+# Docs Draw Core Agent Requirements
+
+# Core dependencies (inherited from parent project)
+# - python-dotenv
+# - requests
+
+# All Encompass I/O is handled via primitives (no direct dependencies)
+
+# Note: Ensure parent project dependencies are installed:
+#   pip install -r ../../../../requirements.txt
+
