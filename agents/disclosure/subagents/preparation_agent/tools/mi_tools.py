@@ -69,7 +69,8 @@ def calculate_loan_mi(loan_id: str) -> dict:
         appraised_value = summary.get("appraised_value")
         ltv = summary.get("ltv")
         
-        logger.info(f"[MI_TOOL] Loan type: {loan_type}, Amount: ${loan_amount:,.0f if loan_amount else 0}, LTV: {ltv}%")
+        amount_str = f"${loan_amount:,.0f}" if loan_amount else "$0"
+        logger.info(f"[MI_TOOL] Loan type: {loan_type}, Amount: {amount_str}, LTV: {ltv}%")
         
         # Check if loan type is MVP supported
         if not LoanType.is_mvp_supported(loan_type):

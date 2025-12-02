@@ -140,10 +140,15 @@ class CTCMatcher:
             difference = abs(calculated - displayed)
             matched = difference <= self.MATCH_TOLERANCE
             
+            # Safely format values
+            calc_str = f"${calculated:,.2f}" if isinstance(calculated, (int, float)) else str(calculated)
+            disp_str = f"${displayed:,.2f}" if isinstance(displayed, (int, float)) else str(displayed)
+            diff_str = f"${difference:.2f}" if isinstance(difference, (int, float)) else str(difference)
+            
             if matched:
-                logger.info(f"[CTC] Match verified: ${calculated:,.2f}")
+                logger.info(f"[CTC] Match verified: {calc_str}")
             else:
-                msg = f"CTC mismatch: Calculated=${calculated:,.2f}, Displayed=${displayed:,.2f}, Diff=${difference:.2f}"
+                msg = f"CTC mismatch: Calculated={calc_str}, Displayed={disp_str}, Diff={diff_str}"
                 logger.warning(f"[CTC] {msg}")
                 warnings.append(msg)
         else:

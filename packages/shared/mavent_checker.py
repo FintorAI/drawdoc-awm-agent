@@ -9,8 +9,14 @@ Per Disclosure Desk SOP:
 import logging
 import os
 import requests
+from pathlib import Path
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
+from dotenv import load_dotenv
+
+# Load .env from project root
+env_path = Path(__file__).parent.parent.parent / ".env"
+load_dotenv(env_path)
 
 from .auth import get_access_token
 

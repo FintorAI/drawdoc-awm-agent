@@ -289,7 +289,7 @@ REGZ_LE_FIELDS = {
     
     # Late Charge
     "late_charge_days": "672",
-    "late_charge_percent": "673",
+    "late_charge_percent": "674",  # Fixed: was 673 which doesn't exist
     
     # Assumption
     "assumption_text": "3517",

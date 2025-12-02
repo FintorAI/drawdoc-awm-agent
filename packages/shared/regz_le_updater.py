@@ -37,7 +37,7 @@ class RegZLEFields:
     
     # Late Charge
     LATE_CHARGE_DAYS = "672"  # Late Charge Grace Period
-    LATE_CHARGE_PERCENT = "673"  # Late Charge Percentage
+    LATE_CHARGE_PERCENT = "674"  # Late Charge Percentage (fixed: was 673)
     
     # Assumption
     ASSUMPTION_TEXT = "3517"  # Assumption clause

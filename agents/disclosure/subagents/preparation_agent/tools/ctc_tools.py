@@ -56,10 +56,13 @@ def match_ctc(loan_id: str, dry_run: bool = True) -> dict:
         result = match_cash_to_close(loan_id, dry_run=dry_run)
         
         if result.get("matched"):
-            logger.info(f"[CTC] Match verified: ${result.get('calculated_ctc', 0):,.2f}")
+            calc_ctc = result.get('calculated_ctc') or 0
+            logger.info(f"[CTC] Match verified: ${calc_ctc:,.2f}")
         else:
-            logger.warning(f"[CTC] Mismatch: Calculated=${result.get('calculated_ctc', 0):,.2f}, "
-                          f"Displayed=${result.get('displayed_ctc', 0):,.2f}")
+            calc_ctc = result.get('calculated_ctc') or 0
+            disp_ctc = result.get('displayed_ctc') or 0
+            logger.warning(f"[CTC] Mismatch: Calculated=${calc_ctc:,.2f}, "
+                          f"Displayed=${disp_ctc:,.2f}")
         
         return result
         

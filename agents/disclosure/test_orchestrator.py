@@ -20,6 +20,11 @@ from datetime import datetime
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
+# Load .env BEFORE importing any project modules
+from dotenv import load_dotenv
+env_path = project_root / ".env"
+load_dotenv(env_path)
+
 from agents.disclosure import run_disclosure_orchestrator
 
 
@@ -178,7 +183,7 @@ def test_preparation_agent():
         
         assert result["status"] == "success", "Preparation should succeed"
         assert "fields_populated" in result, "Missing fields_populated"
-        assert "fields_cleaned" in result, "Missing fields_cleaned"
+        # Note: fields_cleaned was removed in v2 - agent now returns fields_failed instead
         
         # v2: Check new results
         regz_le = result.get("regz_le_result", {})
@@ -187,7 +192,7 @@ def test_preparation_agent():
         
         print(f"\n  Results:")
         print(f"  ✓ Fields populated: {len(result['fields_populated'])}")
-        print(f"  ✓ Fields cleaned: {len(result['fields_cleaned'])}")
+        print(f"  ✓ Fields failed: {len(result.get('fields_failed', []))}")
         
         # v2: RegZ-LE
         if regz_le:

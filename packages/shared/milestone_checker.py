@@ -9,9 +9,15 @@ Per SOP:
 import os
 import logging
 import requests
+from pathlib import Path
 from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field
 from datetime import date, datetime
+from dotenv import load_dotenv
+
+# Load .env from project root
+env_path = Path(__file__).parent.parent.parent / ".env"
+load_dotenv(env_path)
 
 from .auth import get_access_token
 from .encompass_io import read_fields

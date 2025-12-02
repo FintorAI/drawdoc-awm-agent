@@ -95,7 +95,7 @@ def search_loan_fields(loan_id: str, search_term: str) -> dict:
         
         # Search for matching fields by name (case-insensitive)
         search_lower = search_term.lower()
-        matching_field_ids = []
+        matching_field_ids_set = set()  # Use set to avoid duplicates
         field_id_to_name = {}
         
         for field in all_fields:
@@ -108,8 +108,11 @@ def search_loan_fields(loan_id: str, search_term: str) -> dict:
             
             # Check if search term appears in field name
             if search_lower in field_name:
-                matching_field_ids.append(field_id)
+                matching_field_ids_set.add(field_id)  # Add to set (auto-deduplicates)
                 field_id_to_name[field_id] = field.get('name', 'Unknown')
+        
+        # Convert set back to list
+        matching_field_ids = list(matching_field_ids_set)
         
         # Read values for matching fields
         matches = {}
@@ -218,8 +221,13 @@ def get_multiple_field_values(loan_id: str, field_ids: List[str]) -> dict:
     encompass = get_encompass_client()
     
     try:
+        # Deduplicate field IDs to avoid API errors
+        unique_field_ids = list(set(field_ids))
+        if len(unique_field_ids) < len(field_ids):
+            logger.warning(f"[GET_MULTIPLE] Removed {len(field_ids) - len(unique_field_ids)} duplicate field IDs")
+        
         # Read all fields at once (more efficient than individual calls)
-        field_values = encompass.get_field(loan_id, field_ids)
+        field_values = encompass.get_field(loan_id, unique_field_ids)
         
         results = {}
         for field_id in field_ids:

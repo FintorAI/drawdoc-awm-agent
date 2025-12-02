@@ -122,7 +122,8 @@ send_agent = create_deep_agent(
 
 def run_disclosure_send(
     loan_id: str,
-    dry_run: bool = True
+    dry_run: bool = True,
+    demo_mode: bool = None  # Alias for dry_run
 ) -> Dict[str, Any]:
     """Run disclosure send workflow.
     
@@ -134,6 +135,7 @@ def run_disclosure_send(
     Args:
         loan_id: Encompass loan GUID
         dry_run: If True, only run checks without ordering
+        demo_mode: Alias for dry_run (for backwards compatibility)
         
     Returns:
         Dictionary with send results:
@@ -146,6 +148,9 @@ def run_disclosure_send(
         - blocking_issues: List of issues that blocked sending
         - summary: Human-readable summary
     """
+    # Handle demo_mode alias
+    if demo_mode is not None:
+        dry_run = demo_mode
     from langchain_core.messages import HumanMessage
     
     logger.info("=" * 80)

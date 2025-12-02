@@ -14,8 +14,13 @@ sys.path.insert(0, str(project_root))
 
 import json
 import requests
+from dotenv import load_dotenv
 from packages.shared import read_field, read_fields
 from packages.shared.auth import get_access_token
+
+# Load .env from project root
+env_path = project_root / ".env"
+load_dotenv(env_path)
 
 
 # Field definitions from encompass_io.py
