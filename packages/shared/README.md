@@ -459,6 +459,6 @@ values = read_fields(loan_id, ["4000", "4002"])
 
 ---
 
-*Last Updated: December 2, 2024*
+*Last Updated: December 2, 2025*
 *Architecture: Disclosure Agent v2 (SOP-Aligned)*
 
