@@ -76,7 +76,7 @@ def get_missing_field_value(
     """
     Fetch field value from Encompass if not in prep output.
     
-    Uses read_loan_fields to retrieve the current value from Encompass.
+    Uses primitives read_fields to retrieve the current value from Encompass via MCP server.
     Only used when field_value is missing from prep output.
     
     Args:
@@ -91,8 +91,9 @@ def get_missing_field_value(
         - error: Error message if retrieval failed
     """
     try:
-        client = _get_encompass_client()
-        result = client.get_field(loan_id, [field_id])
+        # Use primitives for field reading (MCP server)
+        from agents.drawdocs.tools import read_fields
+        result = read_fields(loan_id, [field_id])
         
         if field_id in result:
             value = result[field_id]

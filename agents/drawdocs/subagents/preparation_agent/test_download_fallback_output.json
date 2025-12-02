@@ -1,0 +1,38 @@
+{
+  "loan_id": "387596ee-7090-47ca-8385-206e22c9c9da",
+  "total_tests": 3,
+  "successful": 3,
+  "failed": 0,
+  "download_methods": {
+    "EncompassConnect (fallback)": 3
+  },
+  "test_results": [
+    {
+      "document_title": "HUD-92900-LT FHA Loan Transmittal",
+      "attachment_id": "ae9d5244...",
+      "success": true,
+      "download_method": "EncompassConnect (fallback)",
+      "file_size_kb": 47.97,
+      "cached": false,
+      "error": null
+    },
+    {
+      "document_title": "CAIVRS",
+      "attachment_id": "f7e0a473...",
+      "success": true,
+      "download_method": "EncompassConnect (fallback)",
+      "file_size_kb": 177.05,
+      "cached": false,
+      "error": null
+    },
+    {
+      "document_title": "FHA Government Documents",
+      "attachment_id": "3a427470...",
+      "success": true,
+      "download_method": "EncompassConnect (fallback)",
+      "file_size_kb": 147.73,
+      "cached": false,
+      "error": null
+    }
+  ]
+}

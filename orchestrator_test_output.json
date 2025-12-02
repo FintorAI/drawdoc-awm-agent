@@ -1,0 +1,125 @@
+{
+  "loan_id": "387596ee-7090-47ca-8385-206e22c9c9da",
+  "execution_timestamp": "2025-12-01T17:13:21.439469",
+  "demo_mode": true,
+  "summary": {},
+  "agents": {
+    "preparation": {
+      "status": "success",
+      "attempts": 1,
+      "elapsed_seconds": 4.01,
+      "output": {
+        "loan_id": "387596ee-7090-47ca-8385-206e22c9c9da",
+        "error": "No documents found for this loan",
+        "total_documents": 0
+      },
+      "error": null
+    },
+    "drawcore": {
+      "status": "success",
+      "attempts": 1,
+      "elapsed_seconds": 1.95,
+      "output": {
+        "loan_id": "387596ee-7090-47ca-8385-206e22c9c9da",
+        "execution_timestamp": "2025-12-01T17:13:25.449908",
+        "dry_run": true,
+        "status": "failed",
+        "phases": {
+          "phase_1": {
+            "status": "failed",
+            "fields_processed": 0,
+            "fields_updated": 0,
+            "issues_logged": 0,
+            "updates": [],
+            "issues": [
+              {
+                "type": "warning",
+                "message": "No field mappings found in doc_context"
+              }
+            ]
+          },
+          "phase_2": {
+            "status": "failed",
+            "fields_processed": 0,
+            "fields_updated": 0,
+            "issues_logged": 0,
+            "updates": [],
+            "issues": [
+              {
+                "type": "warning",
+                "message": "No field mappings found in doc_context"
+              }
+            ]
+          },
+          "phase_3": {
+            "status": "failed",
+            "fields_processed": 0,
+            "fields_updated": 0,
+            "issues_logged": 0,
+            "updates": [],
+            "issues": [
+              {
+                "type": "warning",
+                "message": "No field mappings found in doc_context"
+              }
+            ]
+          },
+          "phase_4": {
+            "status": "failed",
+            "fields_processed": 0,
+            "fields_updated": 0,
+            "issues_logged": 0,
+            "updates": [],
+            "issues": [
+              {
+                "type": "warning",
+                "message": "No field mappings found in doc_context"
+              }
+            ]
+          },
+          "phase_5": {
+            "status": "failed",
+            "fields_processed": 0,
+            "fields_updated": 0,
+            "issues_logged": 0,
+            "updates": [],
+            "issues": [
+              {
+                "type": "warning",
+                "message": "No field mappings found in doc_context"
+              }
+            ]
+          }
+        },
+        "summary": {
+          "total_fields_processed": 0,
+          "total_fields_updated": 0,
+          "total_issues_logged": 0,
+          "phases_completed": 0,
+          "phases_failed": 5
+        },
+        "loan_context": {
+          "error": "Field read failed (status 403): {\"summary\":\"Forbidden\",\"details\":\"User does not have access rights to the loan.\"}"
+        },
+        "error": "All phases failed"
+      },
+      "error": null
+    },
+    "verification": {
+      "status": "failed",
+      "attempts": 3,
+      "elapsed_seconds": null,
+      "output": null,
+      "error": "\"Could not resolve authentication method. Expected either api_key or auth_token to be set. Or for one of the `X-Api-Key` or `Authorization` headers to be explicitly omitted\""
+    },
+    "orderdocs": {
+      "status": "success",
+      "attempts": 1,
+      "elapsed_seconds": 2.28,
+      "output": {
+        "error": "Field read failed (status 401): "
+      },
+      "error": null
+    }
+  }
+}

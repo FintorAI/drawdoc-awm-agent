@@ -254,13 +254,51 @@ def run_verification(
                  Default: False (writes to Encompass)
         
     Returns:
-        Dictionary with validation results
+        Dictionary with validation results including:
+        - status: "success" | "failed" | "needs_review"
+        - loan_context: Loan metadata from Encompass
+        - validation_results: Detailed results for each field
+        - corrections_made: List of corrections written
         
     Note:
         ⚠️ DRY RUN MODE: Set dry_run=True or environment variable DRY_RUN=true
         to prevent actual writes to Encompass. Use this for testing on production.
     """
     import json
+    
+    # ==========================================================================
+    # PRECONDITION CHECKS (using primitives)
+    # ==========================================================================
+    print(f"\n{'='*80}")
+    print("VERIFICATION AGENT - Starting")
+    print(f"{'='*80}")
+    print(f"Loan ID: {loan_id}")
+    
+    try:
+        # Import primitives for precondition checks
+        from agents.drawdocs.tools import get_loan_context, log_issue
+        
+        print(f"\nChecking loan preconditions...")
+        loan_context = get_loan_context(loan_id, include_milestones=False)
+        
+        # Verification agent only runs if prep agent completed
+        if prep_output.get("status") == "failed":
+            error_msg = "Prep agent failed - cannot verify"
+            print(f"⚠️  Precondition failed: {error_msg}")
+            log_issue(loan_id, "ERROR", error_msg)
+            return {
+                "status": "failed",
+                "loan_id": loan_id,
+                "error": error_msg,
+                "loan_context": loan_context
+            }
+        
+        print(f"✓ Loan context retrieved - Loan #{loan_context.get('loan_number')}, Type: {loan_context.get('loan_type')}, State: {loan_context.get('state')}")
+        
+    except Exception as e:
+        # Don't fail if precondition check fails
+        print(f"⚠️  Could not check loan preconditions: {e}")
+        loan_context = {"loan_id": loan_id}
     
     # Set dry run mode via environment variable if specified
     if dry_run is not None:
@@ -366,6 +404,13 @@ Start verification now. Process each field systematically."""
         "field_mapping": field_mapping,
         "sop_rules": sop_rules,
     })
+    
+    # Enhance result with loan_context and standardized format
+    if isinstance(result, dict):
+        result["loan_context"] = loan_context
+        # Determine status if not already set
+        if "status" not in result:
+            result["status"] = "success"  # Default to success if agent completed
     
     return result
 

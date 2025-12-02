@@ -1,0 +1,61 @@
+{
+  "timestamp": "2025-12-01T16:08:50.687969",
+  "mode": "READ-ONLY",
+  "examples": [
+    {
+      "id": 1,
+      "name": "Get Loan Context with Milestones",
+      "status": "success",
+      "output": "Loan Context:\n  Loan #: 2211T000002\n  Type: Conventional\n  State: CA\n\nFlags:\n  CTC: None\n  CD Approved: False\n  Docs Ordered Finished: None\n\nMilestone Data:\n  Total milestones: 13\n",
+      "error": null
+    },
+    {
+      "id": 2,
+      "name": "Get All Milestones",
+      "status": "success",
+      "output": "Found 13 milestones:\n\n- Started\n  Status: None\n  Date: N/A\n\n- Qualification\n  Status: None\n  Date: N/A\n\n- Processing\n  Status: None\n  Date: N/A\n\n- Submittal\n  Status: None\n  Date: N/A\n\n- Cond. Approval\n  Status: None\n  Date: N/A\n\n- Resubmittal\n  Status: None\n  Date: N/A\n\n- Approval\n  Status: None\n  Date: N/A\n\n- Doc Preparation\n  Status: None\n  Date: N/A\n\n- Docs Signing\n  Status: None\n  Date: N/A\n\n- Funding\n  Status: None\n  Date: N/A\n\n- Post Closing\n  Status: None\n  Date: N/A\n\n- Shipping\n  Status: None\n  Date: N/A\n\n- Completion\n  Status: None\n  Date: N/A\n\n",
+      "error": null
+    },
+    {
+      "id": 3,
+      "name": "Get Specific Milestone",
+      "status": "success",
+      "output": "\u274c 'Docs Ordered' milestone not found\n",
+      "error": null
+    },
+    {
+      "id": 4,
+      "name": "Update Milestone Demo (Read-Only)",
+      "status": "success",
+      "output": "\ud83d\udcd6 READ-ONLY DEMO: How to update a milestone\n\n\nTo update (code example - NOT executed):\n\n    from agents.drawdocs.tools import update_milestone_api\n    \n    success = update_milestone_api(\n        loan_id=loan_id,\n        milestone_name=\"Docs Ordered\",\n        status=\"Finished\",\n        comment=\"DOCS Out on 12/01/2025\"\n    )\n    \n\u26a0\ufe0f  Actual update NOT performed (read-only mode)\n",
+      "error": null
+    },
+    {
+      "id": 5,
+      "name": "Add Milestone Log Demo (Read-Only)",
+      "status": "success",
+      "output": "\ud83d\udcd6 READ-ONLY DEMO: How to add milestone logs\n\n\nTo add a log (code example - NOT executed):\n\n    from agents.drawdocs.tools import add_milestone_log\n    \n    success = add_milestone_log(\n        loan_id=loan_id,\n        milestone_name=\"Docs Ordered\",\n        comment=\"Documents sent to title company\",\n        done_by=\"AutomationAgent\"\n    )\n    \n\u26a0\ufe0f  Actual log NOT added (read-only mode)\n",
+      "error": null
+    },
+    {
+      "id": 6,
+      "name": "Legacy vs New Comparison",
+      "status": "success",
+      "output": "\ud83d\udcd6 COMPARISON: Legacy vs New Approach (Read-Only)\n============================================================\n\nLEGACY APPROACH (Field-Based):\n------------------------------------------------------------\nCode example:\n\n    update_milestone(\n        loan_id=loan_id,\n        status=\"Finished\",\n        comment=\"DOCS Out on 12/01/2025\"\n    )\n    \nLimitations:\n  \u274c Only updates hardcoded 'Docs Out' fields\n  \u274c No access to milestone history\n  \u274c Can't query milestone status\n  \u274c Can't work with other milestones\n\nNEW APPROACH (API-Based):\n------------------------------------------------------------\nCode example:\n\n    update_milestone_api(\n        loan_id=loan_id,\n        milestone_name=\"Docs Ordered\",  # Any milestone!\n        status=\"Finished\",\n        comment=\"DOCS Out on 12/01/2025\"\n    )\n    \nBenefits:\n  \u2705 Works with ANY milestone name\n  \u2705 Full milestone history available\n  \u2705 Can query status, logs, dates\n  \u2705 Can add logs independently\n\nCurrent Milestone Data (from API):\n------------------------------------------------------------\nMilestone not found\n\n\u26a0\ufe0f  No writes performed (read-only mode)\n",
+      "error": null
+    },
+    {
+      "id": 7,
+      "name": "Complete Workflow Demo (Read-Only)",
+      "status": "success",
+      "output": "\ud83d\udcd6 DOCS ORDERED WORKFLOW DEMO (Read-Only)\n============================================================\n\n1. Checking preconditions...\n  \u274c Loan is not Clear to Close\n     (Would stop here in real workflow)\n\n2. Checking Docs Ordered status...\n  \u274c Docs Ordered milestone not found\n",
+      "error": null
+    }
+  ],
+  "summary": {
+    "total": 7,
+    "successful": 7,
+    "failed": 0
+  },
+  "mcp_client_available": true
+}

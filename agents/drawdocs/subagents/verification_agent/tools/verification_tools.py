@@ -577,11 +577,17 @@ def write_corrected_field(
         success = True  # Simulated success
         message = f"🔍 [DRY RUN] Would correct field {field_id} to '{corrected_value}'. Reason: {reason}"
     else:
-        # PRODUCTION MODE - Actually write to Encompass
+        # PRODUCTION MODE - Actually write to Encompass using primitives (MCP server)
         print(f"\n⚠️  WRITING TO ENCOMPASS: Field {field_id} → '{corrected_value}'")
-        client = _get_encompass_client()
-        success = client.write_field(loan_id, field_id, corrected_value)
-        message = f"✓ Corrected field {field_id} to '{corrected_value}'. Reason: {reason}"
+        try:
+            from agents.drawdocs.tools import write_fields
+            result = write_fields(loan_id, {field_id: corrected_value})
+            success = result.get(field_id, {}).get("success", False)
+            message = f"✓ Corrected field {field_id} to '{corrected_value}'. Reason: {reason}"
+        except Exception as e:
+            success = False
+            message = f"❌ Failed to correct field {field_id}: {e}"
+            print(f"Error writing field: {e}")
     
     # Create correction record
     correction_record = {
