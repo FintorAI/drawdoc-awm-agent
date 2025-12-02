@@ -57,12 +57,8 @@ from .fee_tolerance import (
     SECTION_A_FEES,
     SECTION_B_FEES,
 )
-from .handoff import (
-    DisclosureHandoff,
-    DisclosureType,
-    HandoffStatus,
-    create_handoff_from_results,
-)
+# Note: handoff.py removed - Draw Docs is queue-driven, not handoff-driven
+# Draw Docs monitors Encompass queue for: CTC + CD Approved + CD ACK'd + 3-day wait
 # v2 additions - TRID Checker
 from .trid_checker import (
     TRIDChecker,
@@ -203,11 +199,7 @@ __all__ = [
     "get_all_fee_field_ids",
     "SECTION_A_FEES",
     "SECTION_B_FEES",
-    # Handoff
-    "DisclosureHandoff",
-    "DisclosureType",
-    "HandoffStatus",
-    "create_handoff_from_results",
+    # Note: Handoff removed - Draw Docs is queue-driven
     # v2 - TRID Checker
     "TRIDChecker",
     "TRIDResult",

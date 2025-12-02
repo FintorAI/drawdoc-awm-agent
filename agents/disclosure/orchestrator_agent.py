@@ -36,8 +36,6 @@ from packages.shared import (
     LoanType,
     PropertyState,
     MVPExclusions,
-    DisclosureHandoff,
-    create_handoff_from_results,
     # Pre-check functions
     run_pre_check,
     PreCheckResult,

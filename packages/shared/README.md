@@ -55,7 +55,6 @@ packages/shared/
 ├── mi_calculator.py         # MI calculation (all loan types)
 ├── fee_tolerance.py         # Fee tolerance checking
 ├── mavent_checker.py        # Mavent compliance check
-├── handoff.py               # Disclosure → Draw Docs handoff
 │
 └── ─── TESTING ───
     └── test_auth.py         # Authentication tests
@@ -315,6 +314,9 @@ if tracking.initial_le_sent:
 
 ### Shared Modules (Disclosure + Draw Docs)
 
+> **Note**: `handoff.py` was removed. Draw Docs is **queue-driven**, not handoff-driven.
+> It monitors Encompass for: CTC + CD Approved + CD ACK'd + 3-day wait passed.
+
 #### `mi_calculator.py` - MI Calculation
 ```python
 from packages.shared import (
@@ -353,26 +355,6 @@ if result.has_violations:
     # Section A: 0% tolerance (cannot increase)
     # Section B: 10% aggregate tolerance
     # Section C: No tolerance (borrower shopped)
-```
-
----
-
-#### `handoff.py` - Agent Handoff
-```python
-from packages.shared import DisclosureHandoff, create_handoff_from_results
-
-# Create handoff when disclosure complete
-handoff = create_handoff_from_results(
-    loan_id=loan_id,
-    disclosure_type="initial_le",  # or "coc_le", "cd"
-    verification_results=verification_results,
-    preparation_results=preparation_results,
-)
-
-# Check if ready for Draw Docs
-if handoff.is_ready_for_draw_docs():
-    # Trigger Draw Docs pipeline
-    pass
 ```
 
 ---
