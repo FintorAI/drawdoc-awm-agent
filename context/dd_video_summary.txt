@@ -1,0 +1,40 @@
+The overall process demonstrated for sending initial disclosures is as follows:
+Open the loan and check the status in the tools tab by clicking "show in alpha order". Check the disclosure tracking to ensure the disclosure has not been sent and the initial alert is present.
+Verify compliance dates by checking the application date and the "elitive" date, which should be within three days of compliance. The speaker noted that for this file, the application date was 11/11 (today's date), and the due date was 11/14, meaning disclosures must be sent on or before 11/14.
+Review all updated details, including the subject property address, borrower details (one borrower in this case), loan amount, LTV, DTI, interest rate, loan lock status, and closing date. Review file contacts like the LO and loan processor. Check the loan program, purpose, and type, as well as the mid-credit score.
+Check required forms by going to "forms," selecting "show in all folder," and "show all".
+Denoter Form: Mark to include the lender information page in the borrower package. Verify the loan program, estimated value, appraised value, project type, purpose of the loan, and occupancy (must be updated). The subject property address is verified in the USPS portal.
+Loan Information: For refinance, check that the conventional loan type is marked, the lane type is first, and amortization is fixed. Verify the loan amount, note rate, qualification rate, loan term, and "leterm". If the LTV is above 80% for a conventional loan, the Monthly Mortgage Insurance Premium (MIP) has to be updated, or it will be blank if the LTV is below 80%.
+Credit/Lender Credit: For refinance, check for "other lender credit". For a purchase, check for seller credit and lender credit.
+Supplemental Consumer Information Form: Check that the information section is updated for conventional loans. If no co-borrower is present, the corresponding selection can be removed.
+Borrower Details (Part One): Verify the borrower name, SSN, date of birth, citizenship, marital status, home phone number, and email address, as a missing phone number or email is a hard stop. Ensure the mailing address is marked as "same as current". Update military service information (always "yes" for VA loans) and language preference.
+Borrower's Employment (Part Two): Just check the section.
+Assets and Liabilities Payoffs (Part Three): Check for assets and liabilities payoffs for refinance, or deposits for purchase.
+Section 5 Declaration (Part Four): Ensure all question answers for the borrower (and co-borrower, if applicable) are updated.
+Section 8 Demographic Information: Check if information was provided.
+LO Authorization and Details: Check if the LO is authorized to conduct business in the state via the NMLS portal. Update the LO's office address. Verify the loan originator organization NMLS ID is present and the LO name is correct.
+Affiliate Business Arrangement Form: If blank, click "supply templates" and "AWM affiliates". Check the settlement and purchase/sales refinance boxes.
+Borrower Summary/Origination: Update the application date, channel (must be bank), and current status (has to be active loan). Verify the SSN verification statement and consent validity (60 days).
+Company's Agent Information: For the company's agent information, it should be "Core Logic Inc".
+Dates: If the loan is not locked, the last rate set date is the same as the application date. The closing date should be at least 15 days after the application date or the last rate set date. If the loan is locked, the lock desk updates all dates, including the rate lock disclosure date.
+Review the Disclosure Summary tab for any notes or additional information. Instructions like "get LO approval for this" are checked, as well as if any fees or lender credit are mentioned.
+Update the FACT Disclosure form: This form is updated based on the credit report. Manually update the credit score, key factors, and the order date. Copy the key factors from the credit report. Mark the two boxes: "Material terms for credit by select" and "Credit score for the disclosure notice" to ensure the credit score disclosure document prints for the borrower (and co-borrower).
+Home Counseling Providers: If blank, click "get agencies". The first three services starting with "F" (Fair Housing, Financial Management, and Financing) and the first three starting with "P" (Budgeting and Credit Repair Workshops) must be marked. Ensure there are at least 10 agencies listed; if not, increase the distance setting.
+Complete the Loan Estimate (LE) form: For conventional loans, skip the HUD form. The LE issue date is the current date. The first payment date will automatically update based on the closing date in the borrower summary/origination form. Check the ARM table and adjustable payment table only for ARM loans. Buy down details are checked if the loan has one, including marking the box, selecting the contributor, type, rate/term, and disbursement. Check if the interest rate per days in the year is 365. Click "get late fee" to ensure the conventional late fee (15 days, 5%) is updated. Check if the loan has a prepayment penalty.
+Update the transcript forms (all four forms):
+Request for Transcript of Tax Classic Form: Select the borrower (or both) and click "copy from borrower summary". Ensure that 5A information, 5D information, and the years (e.g., 12/31/2024) are updated.
+Request for Transcript of Tax: Select the 8821 form template, select the borrower, and click "copy from borrower summary".
+4506 Form: Select and click "copy data" to copy data from the 8821 form. The sequence should be 8821, then 4506.
+Request for Copy of Tax Return: Click "copy from borrower summary".
+Review the Itemization of Fees:
+Origination Charges: Check for processing and underwriting fees. Confirm with the branch if any fees are waived. Mark the "itemized fees when printing" box. Mark the "bonafide" box for all loans.
+Mandatory Fees: Ensure the appraisal fee and credit report fee are present. The branch will update all amounts.
+Impounds: Check if impounds are waived (often for conventional loans). For FHA/VA loans, property taxes may be waived, but HOA fees must be impounded.
+Title Section (1100): Check for three mandatory fees: settlement, closing, or escrow fee; lender title insurance fee; and for purchase, owner title insurance. Recording fee is mandatory for refinance transactions. Transfer tax will not be there for refinance.
+Check LE Page 2: Match the information updated on the itemization. Ensure all title fees are in Section C.
+Update the Settlement Service Provider form: Take a snippet of the LE to get the fees. If the template is not applied, click "apply templates" and select "default template settlement service provider template". Delete any services not applicable, such as pest inspection. Update the fees in all caps.
+Run Compliance: Go to tools, compliance review, and click "preview". All checks (ATRQm, enterprise rule) must pass. Check the ATRQ management form's qualification tab to ensure the points and fees limit does not exceed 3% and all flags are green (except DTI can be red).
+Prepare for Printing: Make sure the printer is set up to Encompass and a Word document is open.
+Order Disclosures: Click on the e-folder. Ensure the audit is clear, except for the 26.4 audit, which is acceptable to proceed with. Click on "order disclosure" and click "yes" on the popup.
+Check the Blend Integration Form: Ensure the organization ID is updated.
+Review Generated Disclosures: Check that impounds are correctly printed and all fees are reflected. The credit score disclosure must print if the two boxes on the FACT disclosure were marked.

@@ -220,24 +220,418 @@
 
 # Step 1: Audit loan before ordering
 POST /encompassdocs/v1/documentAudits/opening
-Body: { "loanId": "{{loanId}}" }
 → Returns audit issues (if any) - BLOCKING if issues exist
+{
+									"name": "04-02 - Generate Loan Audit (user selects package)",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"",
+													"",
+													"var locationHeader = postman.getResponseHeader(\"Location\");",
+													"var res = locationHeader.split(\"/documentAudits/opening/\");",
+													"pm.environment.set(\"locationHeaderAudit\",locationHeader);",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{ACCESS_TOKEN}}",
+												"type": "text"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											},
+											{
+												"key": "",
+												"value": "",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"entity\": {\r\n        \"entityId\": \"{{loanId}}\",\r\n        \"entityType\": \"urn:elli:encompass:loan\"\r\n    },\r\n    \"scope\": {\r\n        \"entityId\": \"{{applicationId}}\",\r\n        \"entityType\": \"urn:elli:encompass:loan:borrower\"\r\n    },\r\n    \"packageTypes\": [\r\n        \"AtApp\"\r\n    ]\r\n}\r\n}"
+										},
+										"url": {
+											"raw": "{{API_SERVER}}/encompassdocs/v1/documentAudits/opening",
+											"host": [
+												"{{API_SERVER}}"
+											],
+											"path": [
+												"encompassdocs",
+												"v1",
+												"documentAudits",
+												"opening"
+											]
+										}
+									},
+									"response": []
+								}
 
 # Step 2: Generate opening (Initial Disclosure) doc set
 POST /encompassdocs/v1/documentOrders/opening
-Body: { 
-  "loanId": "{{loanId}}",
-  "consumerConnectSiteId": "{{siteId}}"
-}
 → Returns docSetId
+{
+									"name": "06 - Create Document Order",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"var locationHeader = postman.getResponseHeader(\"Location\");",
+													"pm.environment.set(\"locationHeaderOpening\",locationHeader);",
+													""
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{ACCESS_TOKEN}}",
+												"type": "text"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"auditId\": \"{{auditSnapshotId}}\",\r\n    \"printMode\": \"LoanData\"\r\n}"
+										},
+										"url": {
+											"raw": "{{API_SERVER}}/encompassdocs/v1/documentOrders/opening",
+											"host": [
+												"{{API_SERVER}}"
+											],
+											"path": [
+												"encompassdocs",
+												"v1",
+												"documentOrders",
+												"opening"
+											]
+										}
+									},
+									"response": []
+								}
 
 # Step 3: Send package to borrower
 POST /encompassdocs/v1/documentOrders/opening/{docSetId}/delivery
 → Sends to borrower via Consumer Connect
 → Creates Disclosure Tracking entry
+Note: I'm not sure which to use? without or without fulfillment
+{
+									"name": "09a - Send Opening Package(Without fulfillment)",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"\r",
+													"var locationHeader = postman.getResponseHeader(\"Location\");\r",
+													"pm.environment.set(\"locationHeaderOpening\",locationHeader);\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer {{ACCESS_TOKEN}}",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"documents\": [\n        {\n            \"id\": \"9d5c7728-c2fb-4cbb-a2d5-96bce3e07fc4\"\n        }\n    ],\n    \"package\": {\n        \"from\": {\n            \"fullName\": \"DM\",\n            \"emailAddress\": \"{{emailAddress}}\",\n            \"entityId\": \"{{userName}}\",\n            \"entityType\": \"urn:elli:encompass:user\"\n        },\n        \"to\": [\n            {\n                \"id\": \"Borrower-Harry Potter\",\n                \"fullName\": \"Harry Potter\",\n                \"emailAddress\": \"{{emailAddress}}\",\n                \"phoneNumber\": \"+11111115223\"\n            }\n        ]\n    }\n}"
+										},
+										"url": {
+											"raw": "{{API_SERVER}}/encompassdocs/v1/documentOrders/opening/{{docSetId}}/delivery",
+											"host": [
+												"{{API_SERVER}}"
+											],
+											"path": [
+												"encompassdocs",
+												"v1",
+												"documentOrders",
+												"opening",
+												"{{docSetId}}",
+												"delivery"
+											],
+											"query": [
+												{
+													"key": "",
+													"value": "",
+													"disabled": true
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "09b - Send Opening Package (With fulfillment)",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"\r",
+													"var locationHeader = postman.getResponseHeader(\"Location\");\r",
+													"pm.environment.set(\"locationHeaderOpening\",locationHeader);\r",
+													"\r",
+													""
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"var moment = require('moment');\r",
+													"pm.environment.set('Tomorrows_Date', moment.utc().utcOffset(\"+08:00\").add(1, 'day'));"
+												],
+												"type": "text/javascript",
+												"packages": {}
+											}
+										}
+									],
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											},
+											{
+												"key": "Authorization",
+												"value": "Bearer {{ACCESS_TOKEN}}",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"documents\": [\n        {\n            \"id\": \"4c715510-e44b-4898-8e9f-97384bb2ab60\"\n        }\n    ],\n    \"fulfillments\": [\n        {\n            \"toIds\": [\n                \"Borrower-Harry Potter\"\n            ],\n            \"scheduledDate\": \"{{Tomorrows_Date}}\",\n            \"from\": {\n                \"name\": \"Ellie Mae - Encompass Platform\",\n                \"street\": \"4140 Dublin Blvd. # 301\",\n                \"city\": \"Dublin\",\n                \"state\": \"CA\",\n                \"zipCode\": \"94568\",\n                \"phoneNumber\": \"+1111111111\"\n            },\n            \"to\": {\n                \"name\": \"AdityaFN EDSQABorrower\",\n                \"street\": \"26980 Iris Sample Ct\",\n                \"city\": \"Dixie\",\n                \"state\": \"WA\",\n                \"zipCode\": \"99329\",\n                \"phoneNumber\": \"+1111112481\"\n            }\n        }\n    ],\n    \"package\": {\n        \"from\": {\n            \"fullName\": \"DM\",\n            \"emailAddress\": \"{{emailAddress}}\",\n            \"entityId\": \"{{userName}}\",\n            \"entityType\": \"urn:elli:encompass:user\"\n        },\n        \"to\": [\n            {\n                \"id\": \"Borrower-Harry Potter\",\n                \"fullName\": \"Harry Potter\",\n                \"emailAddress\": \"{{emailAddress}}\",\n                \"phoneNumber\": \"+11111115223\"\n            },\n            {\n                \"id\": \"Ginny Weasley\",\n                \"fullName\": \"Ginny Weasley\",\n                \"emailAddress\": \"{{emailAddress}}\",\n                \"phoneNumber\": \"+11111115223\"\n            }\n        ],\n        \"options\": {\n            \"notifyOnReceipt\": true,\n            \"notifyOnNoReceiptDate\": \"{{Tomorrows_Date}}\"\n        }\n    }\n}"
+										},
+										"url": {
+											"raw": "{{API_SERVER}}/encompassdocs/v1/documentOrders/opening/{{docSetId}}/delivery",
+											"host": [
+												"{{API_SERVER}}"
+											],
+											"path": [
+												"encompassdocs",
+												"v1",
+												"documentOrders",
+												"opening",
+												"{{docSetId}}",
+												"delivery"
+											],
+											"query": [
+												{
+													"key": "",
+													"value": "",
+													"disabled": true
+												}
+											]
+										}
+									},
+									"response": []
+								},
 
 # Optional: Get status
 GET /encompassdocs/v1/documentOrders/opening/{docSetId}/status
+Not sure if this is the endpoint?
+{
+									"name": "05 - Get Document Order Status",
+									"event": [
+										{
+											"listen": "test",
+											"script": {
+												"exec": [
+													"//Author: Aditya Shrivastava\r",
+													"//Date: 22 Sept 22\r",
+													"\r",
+													"var jsonData = JSON.parse(responseBody);\r",
+													"postman.setEnvironmentVariable(\"docSetId\", jsonData.id); \r",
+													"\r",
+													"tests[\"status code is 200\"]=responseCode.code==200;\r",
+													"\r",
+													"const docData = _.map(pm.response.json().documents, data => ({\r",
+													"  id: data.id,\r",
+													"  type: data.type,\r",
+													"  reviewers: data.reviewers,\r",
+													"  signers: data.signers,\r",
+													"  signatureType: data.signatureType\r",
+													"}));\r",
+													"\r",
+													"var currentParties = [];\r",
+													"for(var i = 0; i < docData.length; i++){\r",
+													"    //if(docData[i].type === \"Standard Form\"){\r",
+													"        pm.environment.set(\"sendDocId\",jsonData.documents[i].id);\r",
+													"        if(docData[i].reviewers){\r",
+													"            for(var j = 0; j < docData[i].reviewers.length; j++){\r",
+													"                currentParties.push(docData[i].reviewers[j].partyId);\r",
+													"            }\r",
+													"        }\r",
+													"        if(docData[i].signers){\r",
+													"            for(var j = 0; j < docData[i].signers.length; j++){\r",
+													"                currentParties.push(docData[i].signers[j].partyId);\r",
+													"            }            \r",
+													"        }\r",
+													"    //}\r",
+													"}\r",
+													"\r",
+													"\r",
+													"const parties = jsonData.parties;\r",
+													"var par = [];\r",
+													"for (var i = 0; i < parties.length; i++)\r",
+													"{\r",
+													"    var id = parties[i].id;\r",
+													"\r",
+													"    if(currentParties.includes(id)){\r",
+													"\r",
+													"        var fullName = parties[i].fullName;\r",
+													"        var emailAddr = parties[i].contact.email;\r",
+													"        var obj = {\r",
+													"            \"fullName\":fullName,\r",
+													"            \"emailAddress\":emailAddr,\r",
+													"            \"phoneNumber\":\"+11111112481\"\r",
+													"        };\r",
+													"        par.push(JSON.stringify(obj));\r",
+													"        postman.setEnvironmentVariable(\"toPartyId\", JSON.stringify(id));\r",
+													"\r",
+													"    }\r",
+													"}\r",
+													"\r",
+													"tests[\"parties -> \" + JSON.stringify(par)] = true;\r",
+													"\r",
+													"postman.setEnvironmentVariable(\"parties_list\", par);\r",
+													"\r",
+													"\r",
+													"const resultSkyDriveURLs = _.map(pm.response.json().documents, data => ({\r",
+													"  url: data.url\r",
+													"}));\r",
+													"\r",
+													"const resultSkyDriveellieSignature = _.map(pm.response.json().documents, data => ({\r",
+													"  ellieSignature: data.authorizationHeader\r",
+													"}));\r",
+													"\r",
+													"const resultSkyDriveDocID = _.map(pm.response.json().documents, data => ({\r",
+													"  docId: data.id\r",
+													"}));\r",
+													"\r",
+													"// Creating Array variables to store values\r",
+													"var arrURLS = [];\r",
+													"var arrEllieSing = [];\r",
+													"var arrDocId = [];\r",
+													"\r",
+													"// Creating variable to Stringify values stored\r",
+													"var objURL = JSON.stringify(resultSkyDriveURLs);\r",
+													"var objeSignatures = JSON.stringify(resultSkyDriveellieSignature);\r",
+													"var objDocID = JSON.stringify(resultSkyDriveDocID);\r",
+													"\r",
+													"// Replacing tags\r",
+													"arrURLS = objURL.split('},{').map(function(i){\r",
+													"    return i.replace('\"url\":', '').replace('[{', '').replace('}]', '').replace(/\"/gi, '');\r",
+													"});\r",
+													"\r",
+													"arrEllieSing = objeSignatures.split('},{').map(function(i){\r",
+													"    return i.replace('\"ellieSignature\":', '').replace('[{', '').replace('}]', '').replace(/\"/gi, '');\r",
+													"});\r",
+													"\r",
+													"arrDocId = objDocID.split('},{').map(function(i){\r",
+													"    return i.replace('\"docId\":', '').replace('[{', '').replace('}]', '').replace(/\"/gi, '');\r",
+													"});\r",
+													"\r",
+													"// setting values in environemnt varibles for later use\r",
+													"pm.environment.set(\"URLs\", arrURLS);\r",
+													"pm.environment.set(\"ellieSignatures\", arrEllieSing);\r",
+													"pm.environment.set(\"documentId\", arrDocId);\r",
+													"\r",
+													"pm.environment.set(\"orderId\",jsonData.id);\r",
+													"// To render values in the Test Result screen\r",
+													"tests[\"URLs -> \" + arrURLS] = true;\r",
+													"tests[\"ellieSignatures -> \" + arrEllieSing] = true;\r",
+													"tests[\"documentId -> \" + arrDocId] = true;\r",
+													"\r",
+													"const documents = jsonData.documents;\r",
+													"var docs = [];\r",
+													"for (var i = 0; i < documents.length; i++)\r",
+													"{\r",
+													"    var id = documents[i].id;\r",
+													"    var obj = {\"id\":id};\r",
+													"    docs.push(JSON.stringify(obj))\r",
+													"}\r",
+													"postman.setEnvironmentVariable(\"document_list\", docs);\r",
+													""
+												],
+												"type": "text/javascript"
+											}
+										},
+										{
+											"listen": "prerequest",
+											"script": {
+												"exec": [
+													"pm.environment.set(\"objectIDs\", \"NoData\");",
+													"pm.environment.set(\"URLs\", \"NoData\");",
+													"pm.environment.set(\"ellieSignatures\", \"NoData\");"
+												],
+												"type": "text/javascript"
+											}
+										}
+									],
+									"request": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{ACCESS_TOKEN}}",
+												"type": "text"
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "{{API_SERVER}}{{locationHeaderClosing}}",
+											"host": [
+												"{{API_SERVER}}{{locationHeaderClosing}}"
+											]
+										},
+										"description": "{\r\n  \"elli_idt\": \"Enterprise\",\r\n  \"user_name\": \"admin\",\r\n  \"realm_name\": \"encompass:BE11205531\",\r\n  \"sub\": \"urn:elli:encompass:BE11205531:user:admin\",\r\n  \"aud\": [\r\n    \"urn:elli:service:eds\",\r\n    \"urn:elli:service:edis\",\r\n    \"urn:elli:service:edelivery\",\r\n    \"urn:elli:service:ebs\"\r\n  ],\r\n  \"roles\": [\r\n    \"urn:elli:eds:role:eds_opening_documents\",\r\n    \"urn:elli:eds:role:eds_closing_documents\",\r\n    \"urn:elli:eds:role:eds_print_standard_documents\",\r\n    \"urn:elli:eds:role:eds_print_custom_documents\",\r\n    \"urn:elli:eds:role:eds_print_preview_documents\"\r\n  ],\r\n  \"scope\": \"apiplatform\",\r\n  \"elli_sid\": \"BE11205531_305f9b64-3043-4dda-9b42-6aea2851e26c\",\r\n  \"elli_uid\": \"Encompass\\\\BE11205531\\\\admin\",\r\n  \"elli_iid\": \"BE11205531\",\r\n  \"elli_cid\": \"3010000024\",\r\n  \"elli_uri\": \"https://encplat-pod201main.int.dco.elmae\",\r\n  \"iss\": \"urn:elli:service:ids\",\r\n  \"jti\": \"e3f62229-aa0c-4fd3-b0ae-f6ebc3d4dc71\",\r\n  \"iat\": 1575995785,\r\n  \"exp\": 1577989385\r\n}"
+									},
+									"response": []
+								}
 
 
 (5) ATR/QM
@@ -324,3 +718,114 @@ GET /v3/loans/{loanId}/documents/{documentId}
 				}
 			]
 		}
+
+================================================================================
+(6) LOAN SCHEMA / FIELD VERIFICATION ENDPOINTS
+================================================================================
+
+These endpoints verify field IDs exist and get their metadata.
+
+# Get ALL standard fields (paginated)
+GET /encompass/v3/schemas/loan/standardFields?start=0&limit=10000
+→ Returns array of field definitions with id, description, format, type, etc.
+
+# Verify specific field IDs
+GET /encompass/v3/schemas/loan/standardFields?ids=4000,4002,LE1.X1,745
+→ Returns metadata for only the specified field IDs
+→ If a field doesn't exist, it won't be in the response
+
+# Get virtual fields (calculated fields)
+GET /encompass/v3/schemas/loan/virtualFields
+→ Returns list of calculated/virtual fields
+
+# Get full loan schema
+GET /encompass/v3/schemas/loan
+→ Returns complete loan object structure
+
+# V1 API - Get specific field schema
+GET /encompass/v1/schema/loan/{{fieldId}}
+→ Returns detailed info for one field
+
+# V1 API - Get JSON path for field IDs
+POST /encompass/v1/schema/loan/pathGenerator
+Body: ["4000", "4002", "LE1.X1"]
+→ Returns the JSON paths in the loan object for each field ID
+
+Usage: Test with --verify or --all-fields flags in test_all_fields.py:
+  python test_all_fields.py --verify                    # Verify all disclosure fields
+  python test_all_fields.py --verify --fields LE1.X1,745,3152  # Verify specific fields
+  python test_all_fields.py --all-fields               # Download all field definitions
+
+================================================================================
+(7) DISCLOSURE TRACKING ENDPOINTS
+================================================================================
+
+Check if disclosures have been sent and their status.
+
+# Get list of all disclosure tracking logs
+GET /encompass/v3/loans/{loanId}/disclosureTracking2015Logs
+→ Returns array of disclosure tracking entries
+→ Each entry has "contents" array: ["LE"], ["CD"], etc.
+→ If empty array returned: NO disclosures sent yet → eligible for Initial LE
+
+# Get specific disclosure tracking log
+GET /encompass/v3/loans/{loanId}/disclosureTracking2015Logs/{disclosureTrackingId}
+→ Returns full details including recipients, eConsent status, etc.
+
+# Get disclosure tracking snapshot (loan state at time of disclosure)
+GET /encompass/v3/loans/{loanId}/disclosureTracking2015Logs/{disclosureTrackingId}/snapshot
+→ Returns the loan data snapshot at the time disclosure was sent
+
+# Create manual disclosure tracking entry (for LE)
+POST /encompass/v3/loans/{loanId}/disclosureTracking2015Logs?applicationId={applicationId}
+Body: { "disclosedMethod": "InPerson", "contents": ["LE", "ServiceProviderListNoFee"] }
+
+# Update disclosure tracking (add Intent to Proceed)
+PATCH /encompass/v3/loans/{loanId}/disclosureTracking2015Logs/{disclosureTrackingId}
+Body: { "intentToProceed": { "intent": true, "date": "2024-12-02" } }
+
+Usage: Test with --disclosure-tracking flag:
+  python test_all_fields.py --disclosure-tracking      # Check if LE/CD already sent
+
+================================================================================
+(8) MILESTONES ENDPOINTS
+================================================================================
+
+Check loan stage/milestone status.
+
+# Get all milestones for loan
+GET /encompass/v3/loans/{loanId}/milestones
+→ Returns array of milestones with:
+   - name: "Started", "Qualification", "Processing", "Approval", "Funding", etc.
+   - doneIndicator: true/false (is milestone completed?)
+   - startDate, doneDate, expectedDate
+   - loanAssociate: user/role assigned
+
+# Key milestones for disclosure eligibility:
+   - "Started" or "Qualification" done = loan active, may need Initial LE
+   - "Funding" or later done = loan closed, not eligible for disclosure
+
+Usage: Test with --milestones flag:
+  python test_all_fields.py --milestones               # Get all milestones
+  python test_all_fields.py --pre-check                # Full eligibility check
+
+================================================================================
+(9) FULL PRE-CHECK FOR DISCLOSURE ELIGIBILITY
+================================================================================
+
+The --pre-check flag runs a comprehensive eligibility check:
+
+1. MILESTONES: Is loan at appropriate stage?
+   - Must have "Started" completed
+   - Must NOT have "Funding"/"Completion" completed
+
+2. DISCLOSURE TRACKING: Has Initial LE been sent?
+   - If no "LE" in contents → eligible for Initial LE
+   - If "LE" exists → would be COC/Revised LE (not MVP)
+
+3. TRID DATES: Is loan within compliance window?
+   - Application Date (745) must be set
+   - LE Due Date (3152) should not be passed
+
+Usage:
+  python test_all_fields.py --pre-check                # Run full pre-check

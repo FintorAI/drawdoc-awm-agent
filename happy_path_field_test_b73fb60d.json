@@ -1,0 +1,291 @@
+{
+  "loan_id": "b73fb60d-8f5d-4cbb-a05d-f1f2d1217af6",
+  "total_fields": 47,
+  "fields_found": 27,
+  "fields_empty": 20,
+  "fields_error": 0,
+  "details": {
+    "1172": {
+      "name": "Loan Type",
+      "value": "Conventional",
+      "exists": true,
+      "has_value": true
+    },
+    "14": {
+      "name": "Property State",
+      "value": "CA",
+      "exists": true,
+      "has_value": true
+    },
+    "19": {
+      "name": "Loan Purpose",
+      "value": "Purchase",
+      "exists": true,
+      "has_value": true
+    },
+    "745": {
+      "name": "Application Date",
+      "value": "11/15/2022",
+      "exists": true,
+      "has_value": true
+    },
+    "LE1.X1": {
+      "name": "LE Date Issued",
+      "value": "//",
+      "exists": true,
+      "has_value": false
+    },
+    "3152": {
+      "name": "LE Due Date / Disclosure Sent Date",
+      "value": "//",
+      "exists": true,
+      "has_value": false
+    },
+    "761": {
+      "name": "Lock Date",
+      "value": "11/16/2022",
+      "exists": true,
+      "has_value": true
+    },
+    "432": {
+      "name": "Lock Expiration Date",
+      "value": "15",
+      "exists": true,
+      "has_value": true
+    },
+    "2400": {
+      "name": "Rate Locked Indicator",
+      "value": null,
+      "exists": true,
+      "has_value": false
+    },
+    "4000": {
+      "name": "Borrower First Name",
+      "value": "ATHENA",
+      "exists": true,
+      "has_value": true
+    },
+    "4002": {
+      "name": "Borrower Last Name",
+      "value": "WHITE",
+      "exists": true,
+      "has_value": true
+    },
+    "65": {
+      "name": "Borrower SSN",
+      "value": "900-88-7799",
+      "exists": true,
+      "has_value": true
+    },
+    "1402": {
+      "name": "Borrower Email",
+      "value": "08/08/1978",
+      "exists": true,
+      "has_value": true
+    },
+    "11": {
+      "name": "Property Street Address",
+      "value": "8080 BALLER ST",
+      "exists": true,
+      "has_value": true
+    },
+    "12": {
+      "name": "Property City",
+      "value": "Garden Grove",
+      "exists": true,
+      "has_value": true
+    },
+    "15": {
+      "name": "Property Zip",
+      "value": "92840",
+      "exists": true,
+      "has_value": true
+    },
+    "1041": {
+      "name": "Property Type",
+      "value": "Detached",
+      "exists": true,
+      "has_value": true
+    },
+    "1811": {
+      "name": "Occupancy Type",
+      "value": "PrimaryResidence",
+      "exists": true,
+      "has_value": true
+    },
+    "1109": {
+      "name": "Loan Amount",
+      "value": "968,877.00",
+      "exists": true,
+      "has_value": true
+    },
+    "3": {
+      "name": "Interest Rate",
+      "value": "6.000",
+      "exists": true,
+      "has_value": true
+    },
+    "4": {
+      "name": "Loan Term (months)",
+      "value": "360",
+      "exists": true,
+      "has_value": true
+    },
+    "353": {
+      "name": "LTV",
+      "value": "98.865",
+      "exists": true,
+      "has_value": true
+    },
+    "976": {
+      "name": "CLTV",
+      "value": "98.865",
+      "exists": true,
+      "has_value": true
+    },
+    "356": {
+      "name": "Appraised Value",
+      "value": "980,000",
+      "exists": true,
+      "has_value": true
+    },
+    "136": {
+      "name": "Purchase Price",
+      "value": "980,000.00",
+      "exists": true,
+      "has_value": true
+    },
+    "1176": {
+      "name": "Interest Days Per Year",
+      "value": null,
+      "exists": true,
+      "has_value": false
+    },
+    "3514": {
+      "name": "0% Payment Option",
+      "value": "//",
+      "exists": true,
+      "has_value": false
+    },
+    "3515": {
+      "name": "Use Simple Interest Accrual",
+      "value": "Y",
+      "exists": true,
+      "has_value": true
+    },
+    "3516": {
+      "name": "Biweekly/Interim Interest Days",
+      "value": null,
+      "exists": true,
+      "has_value": false
+    },
+    "672": {
+      "name": "Late Charge Days",
+      "value": "10",
+      "exists": true,
+      "has_value": true
+    },
+    "673": {
+      "name": "Late Charge Percent",
+      "value": null,
+      "exists": true,
+      "has_value": false
+    },
+    "3517": {
+      "name": "Assumption Text",
+      "value": null,
+      "exists": true,
+      "has_value": false
+    },
+    "1751": {
+      "name": "Buydown Marked",
+      "value": null,
+      "exists": true,
+      "has_value": false
+    },
+    "664": {
+      "name": "Prepayment Indicator",
+      "value": null,
+      "exists": true,
+      "has_value": false
+    },
+    "NEWHUD2.X55": {
+      "name": "Use Actual Down Payment",
+      "value": null,
+      "exists": true,
+      "has_value": false
+    },
+    "NEWHUD2.X56": {
+      "name": "Closing Costs Financed",
+      "value": null,
+      "exists": true,
+      "has_value": false
+    },
+    "NEWHUD2.X57": {
+      "name": "Include Payoffs in Adjustments",
+      "value": null,
+      "exists": true,
+      "has_value": false
+    },
+    "NEWHUD2.X58": {
+      "name": "Alternative Form Checkbox (Refi)",
+      "value": null,
+      "exists": true,
+      "has_value": false
+    },
+    "LE1.X77": {
+      "name": "Displayed CTC (LE Page 2)",
+      "value": "N",
+      "exists": true,
+      "has_value": true
+    },
+    "ATRQM.X1": {
+      "name": "ATR/QM Loan Features Flag",
+      "value": null,
+      "exists": true,
+      "has_value": false
+    },
+    "ATRQM.X2": {
+      "name": "ATR/QM Points and Fees Flag",
+      "value": null,
+      "exists": true,
+      "has_value": false
+    },
+    "ATRQM.X3": {
+      "name": "ATR/QM Price Limit Flag",
+      "value": null,
+      "exists": true,
+      "has_value": false
+    },
+    "317": {
+      "name": "LO Name",
+      "value": "Loan  Officer 1",
+      "exists": true,
+      "has_value": true
+    },
+    "3238": {
+      "name": "LO NMLS ID",
+      "value": null,
+      "exists": true,
+      "has_value": false
+    },
+    "3330": {
+      "name": "Company NMLS",
+      "value": null,
+      "exists": true,
+      "has_value": false
+    },
+    "2626": {
+      "name": "Channel",
+      "value": null,
+      "exists": true,
+      "has_value": false
+    },
+    "1393": {
+      "name": "Current Status",
+      "value": "Loan Originated",
+      "exists": true,
+      "has_value": true
+    }
+  }
+}
