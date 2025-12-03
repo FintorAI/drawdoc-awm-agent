@@ -1,6 +1,10 @@
 # Disclosure Agent v2 - Implementation Gaps
 
-This document tracks gaps between the Disclosure Desk SOP (video summary) and the current implementation.
+**Last Updated**: December 3 2025  
+**Version**: 2.0 (LE-focused)  
+**Related Documents**: [Main README](./README.md) | [Architecture v2](../../discovery/disclosure_architecture_v2.md)
+
+This document tracks gaps between the Disclosure Desk SOP (video summary) and the current v2 implementation.
 
 ## Status Key
 
@@ -330,6 +334,6 @@ The SOP mentions "DD Queue" but Encompass uses milestones. Current implementatio
 
 ---
 
-*Last Updated: December 2025*
+*Last Updated: December 3 2025*
 *Version: 2.0*
 

@@ -1,8 +1,28 @@
-# Disclosure Agent Implementation Summary
+# Disclosure Agent Implementation Summary (v1)
 
-## Overview
+**Version**: 1.0 (CD-focused architecture)  
+**Status**: ⚠️ Archived - Superseded by v2  
+**Superseded By**: [v2 Main README](./README.md)  
+**Date**: November 2024
 
-The Disclosure Agent has been successfully implemented following the plan. It consists of three sub-agents orchestrated to verify, prepare, and request disclosures for loans.
+---
+
+## ⚠️ ARCHIVED DOCUMENT
+
+This document describes the **v1 implementation** of the Disclosure Agent, which was CD-focused. 
+
+**For current v2 (LE-focused) documentation, see**: [Main README](./README.md)
+
+**Key v1 → v2 Changes**:
+- Primary document: CD → **LE**
+- Send method: Email to LO → **eDisclosures API**
+- Compliance: None → **Mavent + ATR/QM mandatory**
+- TRID: Not implemented → **3-day LE rule**
+- Hard stops: Generic → **Phone/Email (G1)**
+
+---
+
+## v1 Overview (Archived)
 
 ## Components Implemented
 
