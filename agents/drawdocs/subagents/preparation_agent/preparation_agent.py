@@ -19,10 +19,18 @@ from typing import Any, Dict, List, Optional
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dotenv import load_dotenv
 
-# Load environment variables
+# Load environment variables (project root first for working credentials)
+# Load project root .env first (has working Encompass credentials)
+project_root_env = Path(__file__).parent.parent.parent.parent / ".env"
+if project_root_env.exists():
+    load_dotenv(project_root_env)
+    print(f"Loaded project root environment from: {project_root_env}")
+
+# Then load local .env without overriding (for any agent-specific settings)
 env_file_path = Path(__file__).parent / ".env"
-print(f"Loading environment from: {env_file_path}")
-load_dotenv(env_file_path)
+if env_file_path.exists():
+    load_dotenv(env_file_path, override=False)
+    print(f"Loaded local environment from: {env_file_path}")
 
 # Configure logging
 logging.basicConfig(
@@ -42,9 +50,8 @@ logging.getLogger('watchfiles').setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
-from copilotagent import create_deep_agent
+from copilotagent import create_deep_agent, EncompassConnect
 from langchain_core.tools import tool
-from packages.shared import get_encompass_client
 
 # Handle imports from both standalone and orchestrator contexts
 try:
@@ -78,12 +85,86 @@ ENABLE_WRITES = False  # Always disabled - agent returns data, doesn't write
 
 
 # =============================================================================
+# PROGRESS CALLBACK
+# =============================================================================
+# Module-level callbacks for live updates during document processing
+# Set via set_progress_callback() and set_log_callback() before calling process_loan_documents()
+_progress_callback = None
+_log_callback = None
+
+def set_progress_callback(callback):
+    """Set the progress callback for live metric updates.
+    
+    The callback signature should be:
+        callback(documents_found, documents_processed, fields_extracted, current_document)
+    
+    Args:
+        callback: Callable or None to clear
+    """
+    global _progress_callback
+    _progress_callback = callback
+
+def set_log_callback(callback):
+    """Set the log callback for detailed activity logging.
+    
+    The callback signature should be:
+        callback(message, level, event_type, details)
+    
+    Args:
+        callback: Callable or None to clear
+    """
+    global _log_callback
+    _log_callback = callback
+
+def _notify_progress(documents_found=None, documents_processed=None, fields_extracted=None, current_document=None):
+    """Notify progress if callback is set."""
+    if _progress_callback:
+        try:
+            _progress_callback(
+                documents_found=documents_found,
+                documents_processed=documents_processed,
+                fields_extracted=fields_extracted,
+                current_document=current_document,
+            )
+        except Exception as e:
+            logger.warning(f"Progress callback failed: {e}")
+
+def _log_activity(message: str, level: str = "info", event_type: str = None, details: dict = None):
+    """Log activity if callback is set."""
+    if _log_callback:
+        try:
+            _log_callback(
+                message=message,
+                level=level,
+                event_type=event_type,
+                details=details,
+            )
+        except Exception as e:
+            logger.warning(f"Log callback failed: {e}")
+
+
+# =============================================================================
 # ENCOMPASS CLIENT
 # =============================================================================
 
-def _get_encompass_client():
-    """Get an initialized Encompass client. Wrapper for shared utility."""
-    return get_encompass_client()
+def _get_encompass_client() -> EncompassConnect:
+    """Get an initialized Encompass client with credentials from environment variables.
+    
+    Uses the SAME env var names as drawdoc_agent_test.py for consistency.
+    """
+    return EncompassConnect(
+        access_token=os.getenv("ENCOMPASS_ACCESS_TOKEN", ""),
+        api_base_url=os.getenv("ENCOMPASS_API_BASE_URL", "https://api.elliemae.com"),
+        credentials={
+            "username": os.getenv("ENCOMPASS_USERNAME", ""),
+            "password": os.getenv("ENCOMPASS_PASSWORD", ""),
+            "client_id": os.getenv("ENCOMPASS_CLIENT_ID", ""),
+            "client_secret": os.getenv("ENCOMPASS_CLIENT_SECRET", ""),
+            "instance_id": os.getenv("ENCOMPASS_INSTANCE_ID", ""),
+            "subject_user_id": os.getenv("ENCOMPASS_SUBJECT_USER_ID", ""),
+        },
+        landingai_api_key=os.getenv("LANDINGAI_API_KEY", ""),
+    )
 
 
 def _sanitize_loan_id_for_folder(loan_id: str) -> str:
@@ -142,7 +223,7 @@ def _get_output_directory(loan_id: Optional[str] = None) -> Path:
 
 @tool
 def get_loan_documents(loan_id: str) -> Dict[str, Any]:
-    """Get all documents for a loan.
+    """Get all documents for a loan using MCP server.
     
     Args:
         loan_id: The Encompass loan GUID
@@ -154,10 +235,62 @@ def get_loan_documents(loan_id: str) -> Dict[str, Any]:
     
     logger.info(f"[GET_DOCS] Starting - Loan: {loan_id[:8]}...")
     
-    client = _get_encompass_client()
-    documents = client.get_loan_documents(loan_id)
+    # Add project root to sys.path if not already there (for imports)
+    import sys
+    from pathlib import Path
+    project_root = Path(__file__).parent.parent.parent.parent
+    if str(project_root) not in sys.path:
+        sys.path.insert(0, str(project_root))
     
-    logger.info(f"[GET_DOCS] Found {len(documents)} documents")
+    # Try MCP server via primitives
+    documents = []
+    
+    try:
+        # Method 1: Try MCP server via primitives
+        logger.debug("[GET_DOCS] Attempting to use MCP server via primitives...")
+        from agents.drawdocs.tools import list_loan_documents
+        documents = list_loan_documents(loan_id)
+        logger.debug(f"[GET_DOCS] ✓ MCP server success - found {len(documents)} documents")
+        
+    except Exception as e:
+        # Method 2: Fallback to EncompassConnect
+        logger.warning(f"[GET_DOCS] MCP server failed ({str(e)}), trying EncompassConnect fallback...")
+        
+        try:
+            client = _get_encompass_client()
+            logger.info(f"[GET_DOCS] Attempting EncompassConnect listing...")
+            raw_documents = client.get_loan_documents(loan_id)
+            
+            # DEBUG: Show structure of first document
+            if raw_documents:
+                logger.debug(f"[GET_DOCS] Sample document structure: {list(raw_documents[0].keys())}")
+                if 'attachments' in raw_documents[0] and raw_documents[0]['attachments']:
+                    logger.debug(f"[GET_DOCS] Sample attachment structure: {list(raw_documents[0]['attachments'][0].keys())}")
+            
+            # Convert EncompassConnect format to our standard format
+            documents = []
+            for doc in raw_documents:
+                # Extract attachments from the document
+                attachments = doc.get('attachments', [])
+                for attachment in attachments:
+                    documents.append({
+                        'id': attachment.get('entityId'),  # FIXED: EncompassConnect uses 'entityId', not 'attachmentId'
+                        'title': doc.get('title', 'Unknown'),
+                        'type': 'Cloud',  # EncompassConnect doesn't provide detailed type
+                        'documentId': doc.get('id'),  # FIXED: Document ID is in 'id', not 'documentId'
+                        'createdDate': doc.get('createdDate'),
+                        'fileSize': attachment.get('fileSize', 0)
+                    })
+            
+            logger.info(f"[GET_DOCS] ✓ EncompassConnect fallback success - found {len(documents)} documents")
+            
+        except Exception as fallback_error:
+            logger.error(f"[GET_DOCS] ✗ Both methods failed!")
+            logger.error(f"[GET_DOCS]   - MCP server: {str(e)}")
+            logger.error(f"[GET_DOCS]   - EncompassConnect: {str(fallback_error)}")
+            documents = []
+    
+    logger.info(f"[GET_DOCS] Total documents found: {len(documents)}")
     
     return {
         "documents": documents,
@@ -258,29 +391,67 @@ def download_document(
             "attachment_id": attachment_id,
             "loan_id": loan_id,
             "cached": True,  # Indicate this was a cached file
+            "download_method": "cached",  # File was already downloaded
         }
     
     # If file doesn't exist, we'll download it below
     # Note: Since files are organized by loan_id folder, duplicates are handled by folder structure
     
-    # Download the document
-    client = _get_encompass_client()
-    document_bytes = client.download_attachment(loan_id, attachment_id)
+    # Try MCP server first, fall back to EncompassConnect if it fails
+    file_size = 0
+    download_method = "unknown"
     
-    # Save to file
-    with open(file_path, 'wb') as f:
-        f.write(document_bytes)
-    
-    size_kb = len(document_bytes) / 1024
-    logger.info(f"[DOWNLOAD] Success - {len(document_bytes):,} bytes ({size_kb:.2f} KB) saved to {attachment_id}.pdf")
+    try:
+        # Method 1: Try MCP server download
+        logger.info(f"[DOWNLOAD] Attempting MCP server download...")
+        from agents.drawdocs.tools import download_document_from_efolder
+        downloaded_path = download_document_from_efolder(loan_id, attachment_id, save_path=file_path)
+        
+        if not downloaded_path or not file_path.exists():
+            raise Exception(f"MCP download failed - file not created")
+        
+        file_size = file_path.stat().st_size
+        if file_size == 0:
+            raise Exception(f"MCP download failed - file is empty")
+            
+        size_kb = file_size / 1024
+        download_method = "MCP server"
+        logger.info(f"[DOWNLOAD] ✓ MCP server success - {file_size:,} bytes ({size_kb:.2f} KB)")
+        
+    except Exception as e:
+        # Method 2: Fallback to EncompassConnect
+        logger.warning(f"[DOWNLOAD] MCP server failed ({str(e)}), trying EncompassConnect fallback...")
+        
+        try:
+            client = _get_encompass_client()
+            logger.info(f"[DOWNLOAD] Attempting EncompassConnect download...")
+            document_bytes = client.download_attachment(loan_id, attachment_id)
+            
+            if not document_bytes:
+                raise Exception("EncompassConnect returned empty document")
+            
+            with open(file_path, 'wb') as f:
+                f.write(document_bytes)
+            
+            file_size = len(document_bytes)
+            size_kb = file_size / 1024
+            download_method = "EncompassConnect (fallback)"
+            logger.info(f"[DOWNLOAD] ✓ EncompassConnect fallback success - {file_size:,} bytes ({size_kb:.2f} KB)")
+            
+        except Exception as fallback_error:
+            logger.error(f"[DOWNLOAD] ✗ Both methods failed!")
+            logger.error(f"[DOWNLOAD]   - MCP server: {str(e)}")
+            logger.error(f"[DOWNLOAD]   - EncompassConnect: {str(fallback_error)}")
+            raise Exception(f"Document download failed for {attachment_id}. MCP: {str(e)}, Fallback: {str(fallback_error)}")
     
     return {
         "file_path": str(file_path),
-        "file_size_bytes": len(document_bytes),
-        "file_size_kb": round(size_kb, 2),
+        "file_size_bytes": file_size,
+        "file_size_kb": round(file_size / 1024, 2),
         "attachment_id": attachment_id,
         "loan_id": loan_id,
         "cached": False,  # Indicate this was newly downloaded
+        "download_method": download_method,  # Track which method was used
     }
 
 
@@ -564,14 +735,33 @@ def _process_single_document(
 ) -> Optional[Dict[str, Any]]:
     """Process a single document: download, extract, and map fields.
     
+    Supports both old format (with attachments array) and new MCP format (with id directly).
+    
     Returns:
         Processing result dictionary or None if document should be skipped
     """
     doc_title = doc.get("title", "Unknown")
     doc_type = doc.get("documentType") or doc.get("type", "Unknown")
-    attachments = doc.get("attachments", [])
+    
+    # Get attachment ID - supports both old and new formats
+    # New MCP format: document has "id" directly
+    # Old format: document has "attachments" array
+    attachment_id = doc.get("id")  # MCP server format
+    if not attachment_id:
+        # Try old format with attachments array
+        attachments = doc.get("attachments", [])
+        if not attachments:
+            logger.warning(f"[PROCESS] Document '{doc_title}' has no ID or attachments")
+            return None
+        attachment = attachments[0]
+        attachment_id = attachment.get("attachmentId") or attachment.get("entityId")
+    
+    if not attachment_id:
+        logger.warning(f"[PROCESS] Attachment has no ID for document '{doc_title}'")
+        return None
     
     # Filter by document type if specified
+    # Use TITLE-BASED matching since API returns "type: Cloud" for all documents
     if document_types:
         matches = False
         doc_title_lower = doc_title.lower()
@@ -579,30 +769,34 @@ def _process_single_document(
         
         for requested_type in document_types:
             requested_lower = requested_type.lower().strip()
+            # PRIMARY: Match by title (most reliable for MCP API)
             if (requested_lower in doc_title_lower or 
-                requested_lower in doc_type_lower or
-                doc_title_lower.startswith(requested_lower) or
-                doc_type_lower.startswith(requested_lower) or
-                (requested_lower in ["title report", "appraisal report"] and 
-                 (requested_lower in doc_title_lower or requested_lower in doc_type_lower)) or
-                (requested_lower == "id" and ("id" in doc_title_lower or "license" in doc_title_lower or "driver" in doc_title_lower))):
+                doc_title_lower.startswith(requested_lower)):
+                matches = True
+                break
+            # SECONDARY: Match by type (for backward compatibility)
+            elif (requested_lower in doc_type_lower or 
+                  doc_type_lower.startswith(requested_lower)):
+                matches = True
+                break
+            # SPECIAL CASES: Common document types with variations
+            elif requested_lower in ["title report", "appraisal report"] and (
+                requested_lower in doc_title_lower or requested_lower in doc_type_lower):
+                matches = True
+                break
+            elif requested_lower in ["id", "identification"] and (
+                "id" in doc_title_lower or "license" in doc_title_lower or 
+                "driver" in doc_title_lower or "identification" in doc_title_lower):
+                matches = True
+                break
+            elif requested_lower in ["w-2", "w2"] and (
+                "w2" in doc_title_lower or "w-2" in doc_title_lower or "w 2" in doc_title_lower):
                 matches = True
                 break
         
         if not matches:
-            logger.info(f"[PROCESS] Skipping {doc_title} (type: {doc_type}) - not in filter")
+            logger.info(f"[PROCESS] Skipping {doc_title} (type: {doc_type}) - doesn't match requested types")
             return None
-    
-    if not attachments:
-        logger.warning(f"[PROCESS] Document '{doc_title}' has no attachments")
-        return None
-    
-    attachment = attachments[0]
-    attachment_id = attachment.get("attachmentId") or attachment.get("entityId")
-    
-    if not attachment_id:
-        logger.warning(f"[PROCESS] Attachment has no ID for document '{doc_title}'")
-        return None
     
     logger.info(f"[PROCESS] Processing document: {doc_title} (type: {doc_type})")
     
@@ -626,8 +820,9 @@ def _process_single_document(
             }
         
         # Normalize document type
+        # If doc_type is generic (Unknown, empty, or Cloud), infer from title
         normalized_doc_type = doc_type
-        if doc_type == "Unknown" or doc_type == "":
+        if doc_type in ["Unknown", "", "Cloud", "cloud"]:
             try:
                 from tools.extraction_schemas import list_supported_document_types
             except ImportError:
@@ -814,7 +1009,10 @@ def process_loan_documents(
     Returns:
         Dictionary with processing results for all documents:
         {
+            "status": "success" | "failed" | "needs_review",
             "loan_id": "...",
+            "loan_context": {...},  # Loan metadata from Encompass
+            "doc_context": {...},   # Extracted document data (standardized)
             "total_documents_found": 167,
             "documents_processed": 3,
             "results": {
@@ -831,6 +1029,36 @@ def process_loan_documents(
     logger.info(f"[PROCESS] Document types filter: {document_types or 'ALL (with schemas)'}")
     logger.info(f"[PROCESS] Dry run: {dry_run}")
     
+    # ==========================================================================
+    # PRECONDITION CHECKS (using primitives)
+    # ==========================================================================
+    try:
+        # Import primitives for precondition checks
+        from agents.drawdocs.tools import get_loan_context, log_issue
+        
+        logger.info(f"[PROCESS] Checking loan preconditions...")
+        loan_context = get_loan_context(loan_id, include_milestones=False)
+        
+        # Check if loan is Clear to Close
+        if not loan_context['flags'].get('is_ctc'):
+            error_msg = "Loan is not Clear to Close"
+            logger.warning(f"[PROCESS] Precondition warning: {error_msg}")
+            log_issue(loan_id, "WARNING", error_msg)
+            # Don't fail - just warn (agent can still process for review)
+        
+        # Check if CD is approved
+        if not loan_context['flags'].get('cd_approved'):
+            warning_msg = "CD not approved - proceeding with caution"
+            logger.warning(f"[PROCESS] Precondition warning: {warning_msg}")
+            log_issue(loan_id, "WARNING", warning_msg)
+        
+        logger.info(f"[PROCESS] Loan context retrieved - Loan #{loan_context.get('loan_number')}, Type: {loan_context.get('loan_type')}, State: {loan_context.get('state')}")
+        
+    except Exception as e:
+        # Don't fail the agent if precondition check fails - it's not critical
+        logger.warning(f"[PROCESS] Could not check loan preconditions: {e}")
+        loan_context = {"loan_id": loan_id}  # Minimal context
+    
     # Step 1: Get all documents
     step1_start = time.time()
     docs_result = get_loan_documents.invoke({"loan_id": loan_id})
@@ -846,6 +1074,9 @@ def process_loan_documents(
         }
     
     logger.info(f"[PROCESS] Found {len(all_documents)} total documents in loan")
+    
+    # Notify progress: documents found
+    _notify_progress(documents_found=len(all_documents), documents_processed=0, fields_extracted=0)
     
     # Step 2: Filter documents to only those matching requested types
     try:
@@ -1097,30 +1328,103 @@ def process_loan_documents(
     # Use prioritized list instead of original
     documents_to_process = prioritized_matching_documents
     
+    # Track progress for live updates
+    docs_processed_count = 0
+    fields_extracted_count = 0
+    
     if len(documents_to_process) > 1:
         logger.info(f"[PROCESS] Processing {len(documents_to_process)} best-matched documents in parallel (max {max_workers} concurrent)")
+        _log_activity(
+            f"Processing {len(documents_to_process)} documents in parallel",
+            level="info",
+            event_type="prep_summary",
+            details={"document_count": len(documents_to_process)}
+        )
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             future_to_doc = {executor.submit(process_document, doc): doc for doc in documents_to_process}
             for future in as_completed(future_to_doc):
                 doc = future_to_doc[future]
+                doc_title = doc.get("title", "Unknown")
+                doc_type = doc.get("documentType") or doc.get("type", "Unknown")
                 try:
                     result = future.result()
                     if result:
                         processing_results.append(result)
+                        # Count fields extracted from this document
+                        mapped_fields = result.get("mapped_fields", {})
+                        doc_field_count = 0
+                        for doc_data in mapped_fields.values():
+                            if isinstance(doc_data, dict):
+                                doc_field_count += len([k for k in doc_data.keys() if k != "extracted_entities"])
+                        fields_extracted_count += doc_field_count
+                        
+                        # Log successful extraction
+                        if doc_field_count > 0:
+                            _log_activity(
+                                f"Extracted {doc_field_count} fields from {doc_title}",
+                                level="info",
+                                event_type="fields_extracted",
+                                details={"document_name": doc_title, "field_count": doc_field_count}
+                            )
                 except Exception as e:
-                    logger.error(f"[PROCESS] Exception processing document '{doc.get('title', 'Unknown')}': {e}")
+                    logger.error(f"[PROCESS] Exception processing document '{doc_title}': {e}")
                     processing_results.append({
-                        "document_title": doc.get("title", "Unknown"),
-                        "document_type": doc.get("documentType", "Unknown"),
+                        "document_title": doc_title,
+                        "document_type": doc_type,
                         "status": "error",
                         "error": str(e),
                     })
+                    # Log error
+                    _log_activity(
+                        f"Failed: {doc_title} - {str(e)[:80]}",
+                        level="error",
+                        event_type="document",
+                        details={"document_name": doc_title, "error": str(e)}
+                    )
+                
+                # Update progress after each document
+                docs_processed_count += 1
+                _notify_progress(
+                    documents_processed=docs_processed_count,
+                    fields_extracted=fields_extracted_count,
+                    current_document=doc_title[:30] if doc_title else None,
+                )
     else:
         # Sequential processing for single document
         for doc in documents_to_process:
+            doc_title = doc.get("title", "Unknown")
+            _notify_progress(current_document=doc_title[:30] if doc_title else None)
+            _log_activity(
+                f"Processing: {doc_title[:30]}",
+                level="info",
+                event_type="document",
+                details={"document_name": doc_title}
+            )
+            
             result = _process_single_document(doc, loan_id, document_types, dry_run)
             if result:
                 processing_results.append(result)
+                # Count fields extracted
+                mapped_fields = result.get("mapped_fields", {})
+                doc_field_count = 0
+                for doc_data in mapped_fields.values():
+                    if isinstance(doc_data, dict):
+                        doc_field_count += len([k for k in doc_data.keys() if k != "extracted_entities"])
+                fields_extracted_count += doc_field_count
+                
+                if doc_field_count > 0:
+                    _log_activity(
+                        f"Extracted {doc_field_count} fields from {doc_title}",
+                        level="info",
+                        event_type="fields_extracted",
+                        details={"document_name": doc_title, "field_count": doc_field_count}
+                    )
+            
+            docs_processed_count += 1
+            _notify_progress(
+                documents_processed=docs_processed_count,
+                fields_extracted=fields_extracted_count,
+            )
     
     step3_time = time.time() - step3_start
     logger.info(f"[PROCESS] Step 3 (Process documents) took {step3_time:.2f}s")
@@ -1272,8 +1576,65 @@ def process_loan_documents(
         logger.info(f"[PROCESS]   Average per document: {step3_time/len(processing_results):.2f}s")
     logger.info(f"[PROCESS] ========================================")
     
+    # ==========================================================================
+    # BUILD STANDARDIZED OUTPUT
+    # ==========================================================================
+    
+    # Determine overall status
+    if processing_results:
+        # Check if any critical errors
+        has_errors = any(r.get("status") == "error" for r in processing_results)
+        status = "failed" if has_errors else "success"
+    else:
+        status = "failed"  # No documents processed
+    
+    # Build standardized doc_context from extraction results
+    doc_context = {
+        "borrowers": [],
+        "property": {},
+        "loan": {},
+        "contacts": {},
+        "fees": {},
+        "documents_used": [],
+        "raw_extractions": final_results  # Keep original format for reference
+    }
+    
+    # Extract borrower info from results (if available)
+    for doc_type, doc_data in final_results.items():
+        doc_context["documents_used"].append(doc_type)
+        
+        # Map common fields to doc_context structure
+        # Note: This is a simplified mapping - full mapping would be more complex
+        if "4000" in doc_data:  # Borrower First Name
+            if not doc_context["borrowers"]:
+                doc_context["borrowers"].append({})
+            doc_context["borrowers"][0]["first_name"] = doc_data.get("4000")
+        if "4002" in doc_data:  # Borrower Last Name
+            if not doc_context["borrowers"]:
+                doc_context["borrowers"].append({})
+            doc_context["borrowers"][0]["last_name"] = doc_data.get("4002")
+        if "65" in doc_data:  # Borrower SSN
+            if not doc_context["borrowers"]:
+                doc_context["borrowers"].append({})
+            doc_context["borrowers"][0]["ssn"] = doc_data.get("65")
+        
+        # Property info
+        if "11" in doc_data:  # Subject Property Address
+            doc_context["property"]["address"] = doc_data.get("11")
+        if "14" in doc_data:  # Subject Property State
+            doc_context["property"]["state"] = doc_data.get("14")
+        
+        # Loan info
+        if "1109" in doc_data:  # Loan Amount
+            doc_context["loan"]["amount"] = doc_data.get("1109")
+        if "1172" in doc_data:  # Loan Type
+            doc_context["loan"]["type"] = doc_data.get("1172")
+    
     return {
+        "status": status,
         "loan_id": loan_id,
+        "loan_context": loan_context,  # From primitives
+        "doc_context": doc_context,    # Standardized extraction results
         "total_documents_found": len(all_documents),
         "documents_processed": len(processing_results),
         "results": final_results,

@@ -1,0 +1,267 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DocContext",
+  "description": "Standardized data format for agent-to-agent communication in the docs draw pipeline. This is the output from Prep Agent and input to Drawcore, Verification, and Orderdocs agents.",
+  "type": "object",
+  "required": ["loan_id", "results"],
+  "properties": {
+    "loan_id": {
+      "type": "string",
+      "description": "Encompass loan GUID",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+      "example": "b73fb60d-8f5d-4cbb-a05d-f1f2d1217af6"
+    },
+    "total_documents_found": {
+      "type": "integer",
+      "description": "Total number of documents found in the loan eFolder",
+      "minimum": 0
+    },
+    "documents_processed": {
+      "type": "integer",
+      "description": "Number of documents successfully processed and extracted",
+      "minimum": 0
+    },
+    "status": {
+      "type": "string",
+      "description": "Overall status of the prep agent execution",
+      "enum": ["success", "partial_success", "failed"],
+      "default": "success"
+    },
+    "results": {
+      "type": "object",
+      "description": "Core extraction results containing field mappings and raw entities",
+      "required": ["field_mappings", "extracted_entities"],
+      "properties": {
+        "field_mappings": {
+          "type": "object",
+          "description": "Direct mapping of Encompass field IDs to extracted values. This is the primary data structure used by Drawcore Agent to update fields.",
+          "additionalProperties": {
+            "oneOf": [
+              {"type": "string"},
+              {"type": "number"},
+              {"type": "boolean"},
+              {"type": "null"}
+            ]
+          },
+          "example": {
+            "4008": "Christopher Berger and Alva Scott Sorensen",
+            "610": "Truly Title, Inc.",
+            "356": 290000,
+            "CD1.X69": "$168,259.37"
+          }
+        },
+        "extracted_entities": {
+          "type": "object",
+          "description": "Raw extracted data organized by document type. Contains the semantic field names before mapping to Encompass IDs.",
+          "additionalProperties": {
+            "type": "object",
+            "description": "Extracted fields from a specific document type",
+            "additionalProperties": true
+          },
+          "example": {
+            "ID": {
+              "borrower_first_name": "Alva",
+              "borrower_last_name": "Sorensen"
+            },
+            "Title Report": {
+              "escrow_company_name": "Truly Title, Inc.",
+              "loan_amount": 152625
+            }
+          }
+        }
+      }
+    },
+    "loan_context": {
+      "type": "object",
+      "description": "Loan precondition information retrieved from Encompass",
+      "properties": {
+        "loan_number": {"type": "string"},
+        "loan_type": {"type": "string"},
+        "loan_program": {"type": "string"},
+        "state": {"type": "string"},
+        "flags": {
+          "type": "object",
+          "properties": {
+            "is_ctc": {"type": "boolean"},
+            "cd_approved": {"type": "boolean"},
+            "cd_acknowledged": {"type": "boolean"},
+            "in_docs_ordered_queue": {"type": "boolean"}
+          }
+        }
+      }
+    },
+    "borrowers": {
+      "type": "array",
+      "description": "Normalized borrower information (future enhancement for semantic access)",
+      "items": {
+        "type": "object",
+        "properties": {
+          "first_name": {"type": "string"},
+          "middle_name": {"type": "string"},
+          "last_name": {"type": "string"},
+          "full_name": {"type": "string"},
+          "vesting_type": {"type": "string"},
+          "ssn": {"type": "string"},
+          "dob": {"type": "string"},
+          "email": {"type": "string"},
+          "phone": {"type": "string"}
+        }
+      },
+      "default": []
+    },
+    "property": {
+      "type": "object",
+      "description": "Normalized property information (future enhancement for semantic access)",
+      "properties": {
+        "address": {"type": "string"},
+        "city": {"type": "string"},
+        "state": {"type": "string"},
+        "zip": {"type": "string"},
+        "appraised_value": {"type": "number"},
+        "property_type": {"type": "string"}
+      },
+      "default": {}
+    },
+    "loan": {
+      "type": "object",
+      "description": "Normalized loan information (future enhancement for semantic access)",
+      "properties": {
+        "amount": {"type": "number"},
+        "program": {"type": "string"},
+        "purpose": {"type": "string"},
+        "amortization_type": {"type": "string"},
+        "interest_rate": {"type": "number"},
+        "term_months": {"type": "integer"},
+        "agency_case_number": {"type": "string"}
+      },
+      "default": {}
+    },
+    "contacts": {
+      "type": "object",
+      "description": "Normalized contact information (future enhancement for semantic access)",
+      "properties": {
+        "title_company": {"type": "string"},
+        "escrow_company": {"type": "string"},
+        "title_insurance_company": {"type": "string"},
+        "loan_officer": {"type": "string"},
+        "processor": {"type": "string"}
+      },
+      "default": {}
+    },
+    "fees": {
+      "type": "object",
+      "description": "Normalized fee information (future enhancement for semantic access)",
+      "additionalProperties": {"type": "number"},
+      "default": {}
+    },
+    "documents_used": {
+      "type": "array",
+      "description": "List of document types that were successfully processed",
+      "items": {"type": "string"},
+      "example": ["ID", "Title Report", "LE", "1003", "Closing Disclosure"]
+    },
+    "timing": {
+      "type": "object",
+      "description": "Execution timing metrics",
+      "properties": {
+        "total_time_seconds": {"type": "number"},
+        "total_time_minutes": {"type": "number"},
+        "average_time_per_document_seconds": {"type": "number"},
+        "get_documents_time_seconds": {"type": "number"},
+        "preload_schemas_time_seconds": {"type": "number"},
+        "processing_time_seconds": {"type": "number"},
+        "aggregation_time_seconds": {"type": "number"}
+      }
+    },
+    "errors": {
+      "type": "array",
+      "description": "List of errors encountered during processing",
+      "items": {
+        "type": "object",
+        "properties": {
+          "document_type": {"type": "string"},
+          "document_id": {"type": "string"},
+          "error_message": {"type": "string"},
+          "error_type": {"type": "string"}
+        }
+      },
+      "default": []
+    },
+    "warnings": {
+      "type": "array",
+      "description": "List of warnings encountered during processing",
+      "items": {
+        "type": "object",
+        "properties": {
+          "message": {"type": "string"},
+          "type": {"type": "string"}
+        }
+      },
+      "default": []
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "loan_id": "387596ee-7090-47ca-8385-206e22c9c9da",
+      "total_documents_found": 172,
+      "documents_processed": 17,
+      "status": "success",
+      "results": {
+        "field_mappings": {
+          "4008": "Christopher Berger and Alva Scott Sorensen",
+          "610": "Truly Title, Inc.",
+          "1109": 152625,
+          "411": "Old Republic National Title Insurance Company",
+          "2294": "YES",
+          "356": 290000,
+          "CD3.X82": 11517.98,
+          "CD1.X69": "$168,259.37"
+        },
+        "extracted_entities": {
+          "Title Report": {
+            "borrower_vesting_type": "Christopher Berger and Alva Scott Sorensen",
+            "escrow_company_name": "Truly Title, Inc.",
+            "loan_amount": 152625,
+            "title_insurance_company_name": "Old Republic National Title Insurance Company"
+          },
+          "ID": {
+            "borrower_first_name": "Alva",
+            "borrower_first_middle_name": "Alva Scott",
+            "borrower_last_name": "Sorensen"
+          },
+          "Appraisal": {
+            "appraised_value": 290000
+          },
+          "Closing Disclosure": {
+            "cd3_total_closing_cost_j": 11517.98,
+            "closing_disclosure_total_cash_to_close": "$168,259.37"
+          }
+        }
+      },
+      "loan_context": {
+        "loan_number": "2211T000002",
+        "loan_type": "Conventional",
+        "state": "CA",
+        "flags": {
+          "is_ctc": false,
+          "cd_approved": false
+        }
+      },
+      "borrowers": [],
+      "property": {},
+      "loan": {},
+      "contacts": {},
+      "fees": {},
+      "documents_used": ["ID", "Title Report", "Appraisal", "Closing Disclosure"],
+      "timing": {
+        "total_time_seconds": 379.87,
+        "total_time_minutes": 6.33,
+        "average_time_per_document_seconds": 22.03
+      },
+      "errors": [],
+      "warnings": []
+    }
+  ]
+}
+

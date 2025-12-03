@@ -1,10 +1,11 @@
 """
-Orchestrator Agent - Manages execution of Preparation, Verification, and Orderdocs agents.
+Orchestrator Agent - Manages execution of Preparation, Drawcore, Verification, and Orderdocs agents.
 
-This orchestrator coordinates the sequential execution of three sub-agents:
+This orchestrator coordinates the sequential execution of four sub-agents:
 1. Preparation Agent: Extracts field values from loan documents
-2. Verification Agent: Verifies extracted values against Encompass, corrects mismatches
-3. Orderdocs Agent: Checks all required fields are present (with corrections overlaid in demo mode)
+2. Drawcore Agent: Updates Encompass fields based on extracted data
+3. Verification Agent: Verifies field values against SOP rules, corrects violations
+4. Orderdocs Agent: Runs Mavent compliance check, orders documents, and delivers closing package
 
 Features:
 - Automatic demo mode (DRY_RUN environment variable)
@@ -32,13 +33,15 @@ sys.path.insert(0, str(project_root))
 
 # Add agent directories to path (for their internal imports)
 sys.path.insert(0, str(project_root / "agents" / "drawdocs" / "subagents" / "preparation_agent"))
+sys.path.insert(0, str(project_root / "agents" / "drawdocs" / "subagents" / "drawcore_agent"))
 sys.path.insert(0, str(project_root / "agents" / "drawdocs" / "subagents" / "verification_agent"))
 sys.path.insert(0, str(project_root / "agents" / "drawdocs" / "subagents" / "orderdocs_agent"))
 
 # Import sub-agents
 from agents.drawdocs.subagents.preparation_agent.preparation_agent import process_loan_documents
+from agents.drawdocs.subagents.drawcore_agent.drawcore_agent import run_drawcore_agent
 from agents.drawdocs.subagents.verification_agent.verification_agent import run_verification
-from agents.drawdocs.subagents.orderdocs_agent.orderdocs_agent import process_orderdocs_request
+from agents.drawdocs.subagents.orderdocs_agent.orderdocs_agent import run_orderdocs_agent
 
 # Configure logging
 logging.basicConfig(
@@ -131,7 +134,11 @@ class OrchestratorAgent:
         
         # Agent selection keywords
         if "only prep" in prompt_lower:
+            instructions["skip_agents"] = ["drawcore", "verification", "orderdocs"]
+        elif "only drawcore" in prompt_lower:
             instructions["skip_agents"] = ["verification", "orderdocs"]
+        elif "skip drawcore" in prompt_lower:
+            instructions["skip_agents"] = ["drawcore"]
         elif "skip verification" in prompt_lower:
             instructions["skip_agents"] = ["verification"]
         elif "skip orderdocs" in prompt_lower:
@@ -218,6 +225,31 @@ class OrchestratorAgent:
         
         return result
     
+    def _run_drawcore_agent(self, prep_output: Dict[str, Any]) -> Dict[str, Any]:
+        """Execute drawcore agent.
+        
+        Args:
+            prep_output: Output from preparation agent
+            
+        Returns:
+            Drawcore agent output
+        """
+        logger.info(f"[DRAWCORE] Starting with prep output")
+        
+        # Extract prep output from wrapper if needed
+        if "output" in prep_output:
+            prep_data = prep_output["output"]
+        else:
+            prep_data = prep_output
+        
+        result = run_drawcore_agent(
+            loan_id=self.config.loan_id,
+            doc_context=prep_data,
+            dry_run=self.config.demo_mode
+        )
+        
+        return result
+    
     def _run_verification_agent(self, prep_output: Dict[str, Any]) -> Dict[str, Any]:
         """Execute verification agent.
         
@@ -248,39 +280,31 @@ class OrchestratorAgent:
         prep_output: Dict[str, Any],
         verification_output: Dict[str, Any]
     ) -> Dict[str, Any]:
-        """Execute orderdocs agent.
+        """Execute orderdocs agent - Mavent check + Order docs + Delivery.
         
-        In demo mode, overlays verification corrections to simulate post-correction state.
+        Runs the complete workflow:
+        1. Mavent compliance check (Loan Audit)
+        2. Document ordering (generates closing package)
+        3. Document delivery (to eFolder)
         
         Args:
             prep_output: Output from preparation agent
             verification_output: Output from verification agent
             
         Returns:
-            Orderdocs agent output (with corrections overlaid in demo mode)
+            Orderdocs agent output with workflow results
         """
-        logger.info(f"[ORDERDOCS] Starting")
+        logger.info(f"[ORDERDOCS] Starting Mavent check and document ordering workflow")
         
-        # Extract document types from prep output
-        document_types = self._extract_document_types(prep_output)
-        
-        # Run orderdocs to get current Encompass values
-        orderdocs_input = {
-            "loan_id": self.config.loan_id,
-            "document_types": document_types
-        }
-        
-        orderdocs_result = process_orderdocs_request(orderdocs_input)
-        
-        # In demo mode: overlay verification corrections
-        if self.config.demo_mode:
-            corrections = self._extract_corrections(verification_output)
-            if corrections:
-                logger.info(f"[ORDERDOCS] Applying {len(corrections)} corrections from verification")
-                orderdocs_result = self._apply_demo_corrections(
-                    orderdocs_result,
-                    corrections
-                )
+        # Run complete Order Docs workflow
+        # This includes: Mavent → Order → Deliver
+        orderdocs_result = run_orderdocs_agent(
+            loan_id=self.config.loan_id,
+            audit_type="closing",
+            order_type="closing",
+            delivery_method="eFolder",
+            dry_run=self.config.demo_mode
+        )
         
         return orderdocs_result
     
@@ -468,6 +492,32 @@ class OrchestratorAgent:
                 lines.append(f"- Error: {prep_result.get('error', 'Unknown')}")
             lines.append("")
         
+        # Drawcore Agent
+        drawcore_result = self.results["agents"].get("drawcore", {})
+        if drawcore_result:
+            status = drawcore_result.get("status", "unknown")
+            symbol = "✓" if status == "success" else "⚠" if status == "partial_success" else "✗"
+            lines.append(f"[DRAWCORE AGENT]")
+            lines.append(f"{symbol} {status.title()} ({drawcore_result.get('attempts', 0)} attempt(s))")
+            
+            if status in ["success", "partial_success"]:
+                drawcore_output = drawcore_result.get("output", {})
+                summary = drawcore_output.get("summary", {})
+                fields_processed = summary.get("total_fields_processed", 0)
+                fields_updated = summary.get("total_fields_updated", 0)
+                issues = summary.get("total_issues_logged", 0)
+                phases_done = summary.get("phases_completed", 0)
+                phases_failed = summary.get("phases_failed", 0)
+                
+                lines.append(f"- Fields processed: {fields_processed}")
+                lines.append(f"- Fields updated: {fields_updated}")
+                lines.append(f"- Phases completed: {phases_done}/{phases_done + phases_failed}")
+                if issues > 0:
+                    lines.append(f"- Issues logged: {issues}")
+            elif status == "failed":
+                lines.append(f"- Error: {drawcore_result.get('error', 'Unknown')}")
+            lines.append("")
+        
         # Verification Agent
         ver_result = self.results["agents"].get("verification", {})
         if ver_result:
@@ -506,20 +556,39 @@ class OrchestratorAgent:
         ord_result = self.results["agents"].get("orderdocs", {})
         if ord_result:
             status = ord_result.get("status", "unknown")
-            symbol = "✓" if status == "success" else "✗"
+            symbol = "✓" if status == "success" else "⚠" if status == "partial_success" else "✗"
             lines.append(f"[ORDERDOCS AGENT]")
             lines.append(f"{symbol} {status.title()} ({ord_result.get('attempts', 0)} attempt(s))")
             
-            if status == "success":
+            if status in ["success", "partial_success"]:
                 ord_output = ord_result.get("output", {})
-                total_fields = len(ord_output)
-                fields_with_value = sum(1 for f in ord_output.values() if isinstance(f, dict) and f.get("has_value"))
-                corrected = sum(1 for f in ord_output.values() if isinstance(f, dict) and f.get("correction_applied"))
+                summary = ord_output.get("summary", {})
                 
-                lines.append(f"- Total fields checked: {total_fields}")
-                lines.append(f"- Fields with values: {fields_with_value}")
-                if corrected > 0:
-                    lines.append(f"- Corrections applied (demo): {corrected}")
+                # Display workflow results
+                audit_id = summary.get("audit_id", "N/A")
+                doc_set_id = summary.get("doc_set_id", "N/A")
+                compliance_issues = summary.get("compliance_issues", 0)
+                docs_ordered = summary.get("documents_ordered", 0)
+                delivery_method = summary.get("delivery_method", "N/A")
+                duration = ord_output.get("duration_seconds", 0)
+                
+                lines.append(f"- Audit ID: {audit_id}")
+                lines.append(f"- Doc Set ID: {doc_set_id}")
+                lines.append(f"- Compliance issues: {compliance_issues}")
+                lines.append(f"- Documents ordered: {docs_ordered}")
+                lines.append(f"- Delivery method: {delivery_method}")
+                lines.append(f"- Duration: {duration:.1f}s")
+                
+                # Show workflow steps
+                steps = ord_output.get("steps", {})
+                if steps:
+                    mavent_status = steps.get("mavent_check", {}).get("status", "Unknown")
+                    order_status = steps.get("order_documents", {}).get("status", "Unknown")
+                    delivery_status = steps.get("deliver_documents", {}).get("status", "Unknown")
+                    lines.append(f"- Mavent check: {mavent_status}")
+                    lines.append(f"- Document order: {order_status}")
+                    lines.append(f"- Delivery: {delivery_status}")
+                    
             elif status == "failed":
                 lines.append(f"- Error: {ord_result.get('error', 'Unknown')}")
             lines.append("")
@@ -565,7 +634,28 @@ class OrchestratorAgent:
         else:
             logger.info("[PREPARATION] Skipped per user request")
         
-        # Step 2: Verification Agent
+        # Step 2: Drawcore Agent
+        if "drawcore" not in self.instructions.get("skip_agents", []):
+            if "preparation" in self.results["agents"]:
+                drawcore_result = self._run_with_retry(
+                    self._run_drawcore_agent,
+                    "drawcore",
+                    prep_output=self.results["agents"]["preparation"]
+                )
+                self.results["agents"]["drawcore"] = drawcore_result
+                
+                # Call progress callback
+                if self.progress_callback:
+                    self.progress_callback("drawcore", drawcore_result, self)
+                
+                if drawcore_result["status"] not in ["success", "partial_success"]:
+                    logger.error("[DRAWCORE] Failed - continuing to verification")
+            else:
+                logger.warning("[DRAWCORE] Skipped - no preparation output")
+        else:
+            logger.info("[DRAWCORE] Skipped per user request")
+        
+        # Step 3: Verification Agent
         if "verification" not in self.instructions.get("skip_agents", []):
             if "preparation" in self.results["agents"]:
                 ver_result = self._run_with_retry(
@@ -586,7 +676,7 @@ class OrchestratorAgent:
         else:
             logger.info("[VERIFICATION] Skipped per user request")
         
-        # Step 3: Orderdocs Agent
+        # Step 4: Orderdocs Agent
         if "orderdocs" not in self.instructions.get("skip_agents", []):
             if "preparation" in self.results["agents"]:
                 ord_result = self._run_with_retry(
@@ -642,6 +732,8 @@ def run_orchestrator(
         output_file: Optional file path to save results
         progress_callback: Optional callback function called after each agent completes.
                           Signature: callback(agent_name: str, result: dict, orchestrator: OrchestratorAgent)
+                          When provided, file writes are delegated to the callback system
+                          (typically StatusWriter) instead of being done here.
         
     Returns:
         Dictionary with complete execution results
@@ -668,8 +760,12 @@ def run_orchestrator(
     # Print summary
     print("\n" + results["summary_text"])
     
-    # Save to file if requested
-    if output_file:
+    # Save to file only if:
+    # 1. output_file is specified AND
+    # 2. No progress_callback is provided (callback system handles file writes)
+    # When progress_callback is used, the calling code (agent_runner.py) manages
+    # the status file through StatusWriter for live updates
+    if output_file and not progress_callback:
         output_path = Path(output_file)
         
         # Save JSON output

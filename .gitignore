@@ -46,6 +46,9 @@ Thumbs.db
 # Logs
 *.log
 
+# Backend output directory (run results)
+backend/output/
+
 #local files
 local_*
 
@@ -56,3 +59,4 @@ assets/
 assets-*/
 preparation_agent/assets/
 preparation_agent/assets-*/
+env2.txt

@@ -1,0 +1,54 @@
+{
+  "status": "failed",
+  "loan_id": "b73fb60d-8f5d-4cbb-a05d-f1f2d1217af6",
+  "loan_context": {
+    "loan_id": "b73fb60d-8f5d-4cbb-a05d-f1f2d1217af6",
+    "loan_number": "2211T000002",
+    "loan_type": "Conventional",
+    "loan_program": "30 Year Fixed",
+    "loan_purpose": "",
+    "occupancy": "OwnerOccupied",
+    "state": "CA",
+    "closing_date": "//",
+    "application_date": "11/15/2022",
+    "loan_amount": "968,877.00",
+    "ltv": "98.865",
+    "amortization_type": "Fixed",
+    "flags": {
+      "is_ctc": false,
+      "cd_approved": false,
+      "cd_acknowledged": false,
+      "in_docs_ordered_queue": false
+    }
+  },
+  "doc_context": {
+    "borrowers": [],
+    "property": {},
+    "loan": {},
+    "contacts": {},
+    "fees": {},
+    "documents_used": [
+      "extracted_entities",
+      "field_mappings"
+    ],
+    "raw_extractions": {
+      "extracted_entities": {},
+      "field_mappings": {}
+    }
+  },
+  "total_documents_found": 28,
+  "documents_processed": 1,
+  "results": {
+    "extracted_entities": {},
+    "field_mappings": {}
+  },
+  "timing": {
+    "total_time_seconds": 24.39,
+    "total_time_minutes": 0.41,
+    "average_time_per_document_seconds": 16.99,
+    "get_documents_time_seconds": 3.36,
+    "preload_schemas_time_seconds": 0.0,
+    "processing_time_seconds": 16.99,
+    "aggregation_time_seconds": 0.0
+  }
+}

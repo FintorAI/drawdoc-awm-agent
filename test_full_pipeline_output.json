@@ -1,0 +1,13 @@
+{
+  "loan_id": "387596ee-7090-47ca-8385-206e22c9c9da",
+  "execution_timestamp": "2025-12-03T08:58:26.831502",
+  "demo_mode": true,
+  "agents": {
+    "preparation": {
+      "status": "failed",
+      "error": "400 Client Error: Bad Request for url: https://api.elliemae.com/oauth2/v1/token",
+      "attempts": 2
+    }
+  },
+  "summary_text": "================================================================================\nORCHESTRATOR EXECUTION SUMMARY\n================================================================================\nLoan ID: 387596ee-7090-47ca-8385-206e22c9c9da\nTimestamp: 2025-12-03T08:58:26.831502\nMode: DEMO (no actual writes)\n\n[PREPARATION AGENT]\n\u2717 Failed (2 attempt(s))\n- Error: 400 Client Error: Bad Request for url: https://api.elliemae.com/oauth2/v1/token\n\nOVERALL STATUS: PARTIAL FAILURE\n================================================================================"
+}

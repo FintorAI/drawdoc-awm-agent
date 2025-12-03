@@ -1,0 +1,429 @@
+[
+  {
+    "id": "1f855344-bb09-4577-a9f3-73856357548c",
+    "title": "Test PDF.pdf",
+    "type": "Cloud",
+    "objectId": "1f855344-bb09-4577-a9f3-73856357548c",
+    "fileSize": 1735463,
+    "isRemoved": false,
+    "createdBy": {
+      "entityId": "admin",
+      "entityName": "Admin User",
+      "entityType": "User"
+    },
+    "createdDate": "2022-11-15T12:48:39Z"
+  },
+  {
+    "id": "e4499e89-c9be-49c5-8e55-59bedf56fc21",
+    "title": "Rate locks doc",
+    "type": "Cloud",
+    "objectId": "e4499e89-c9be-49c5-8e55-59bedf56fc21",
+    "fileSize": 5879,
+    "isRemoved": false,
+    "createdBy": {
+      "entityId": "admin",
+      "entityName": "Admin User",
+      "entityType": "User"
+    },
+    "createdDate": "2022-12-13T09:06:26Z"
+  },
+  {
+    "id": "f85582f0-bf03-4675-81c0-8884ed049a2d",
+    "title": "W2 - Page-01",
+    "type": "Cloud",
+    "objectId": "f85582f0-bf03-4675-81c0-8884ed049a2d",
+    "fileSize": 5964,
+    "isRemoved": false,
+    "createdBy": {
+      "entityId": "admin",
+      "entityName": "Admin User",
+      "entityType": "User"
+    },
+    "createdDate": "2022-12-13T09:35:15Z"
+  },
+  {
+    "id": "cdbf33c3-8016-4911-b31e-6b0fa66fe9bc",
+    "title": "Bank Statement - Page-02",
+    "type": "Cloud",
+    "objectId": "cdbf33c3-8016-4911-b31e-6b0fa66fe9bc",
+    "fileSize": 5964,
+    "isRemoved": false,
+    "createdBy": {
+      "entityId": "admin",
+      "entityName": "Admin User",
+      "entityType": "User"
+    },
+    "createdDate": "2022-12-13T15:50:24Z"
+  },
+  {
+    "id": "a63a5499-537b-41be-95b0-66e668cef539",
+    "title": "Award Letter - SOCIAL SECURITY ADMINISTRATION KATHY ANN FLORENCE 2021 12 01.pdf",
+    "type": "Cloud",
+    "objectId": "a63a5499-537b-41be-95b0-66e668cef539",
+    "fileSize": 383856,
+    "isRemoved": false,
+    "createdBy": {
+      "entityId": "admin",
+      "entityName": "Admin User",
+      "entityType": "User"
+    },
+    "createdDate": "2022-12-15T07:51:58Z"
+  },
+  {
+    "id": "c41982e3-38ad-4f5f-b1ad-3e1bd400ced7",
+    "title": "Award Letter - SOCIAL SECURITY ADMINISTRATION KATHY ANN FLORENCE 2021 12 01.pdf",
+    "type": "Cloud",
+    "objectId": "c41982e3-38ad-4f5f-b1ad-3e1bd400ced7",
+    "fileSize": 383856,
+    "isRemoved": false,
+    "createdBy": {
+      "entityId": "admin",
+      "entityName": "Admin User",
+      "entityType": "User"
+    },
+    "createdDate": "2022-12-15T08:20:38Z"
+  },
+  {
+    "id": "b887899b-6fa8-49e9-acd4-39b404054c7a",
+    "title": "Award Letter - SOCIAL SECURITY ADMINISTRATION KATHY ANN FLORENCE 2021 12 01.pdf",
+    "type": "Cloud",
+    "objectId": "b887899b-6fa8-49e9-acd4-39b404054c7a",
+    "fileSize": 383856,
+    "isRemoved": false,
+    "createdBy": {
+      "entityId": "admin",
+      "entityName": "Admin User",
+      "entityType": "User"
+    },
+    "createdDate": "2022-12-15T08:33:57Z"
+  },
+  {
+    "id": "f4706f64-2a96-4065-9be9-0f7ed57b044b",
+    "title": "Bank Statement - Page-03.pdf",
+    "type": "Cloud",
+    "objectId": "f4706f64-2a96-4065-9be9-0f7ed57b044b",
+    "fileSize": 6092,
+    "isRemoved": false,
+    "createdBy": {
+      "entityId": "admin",
+      "entityName": "Admin User",
+      "entityType": "User"
+    },
+    "createdDate": "2022-12-15T15:01:17Z"
+  },
+  {
+    "id": "dd7ab178-3bec-4671-ab88-84926ea36056",
+    "title": "Bank Statement - Page-03.pdf",
+    "type": "Cloud",
+    "objectId": "dd7ab178-3bec-4671-ab88-84926ea36056",
+    "fileSize": 6092,
+    "isRemoved": false,
+    "createdBy": {
+      "entityId": "admin",
+      "entityName": "Admin User",
+      "entityType": "User"
+    },
+    "createdDate": "2022-12-15T15:02:40Z"
+  },
+  {
+    "id": "481f1032-4875-47c7-b333-647e720dbc19",
+    "title": "Bank Statement - Page-03.pdf",
+    "type": "Cloud",
+    "objectId": "481f1032-4875-47c7-b333-647e720dbc19",
+    "fileSize": 6092,
+    "isRemoved": false,
+    "createdBy": {
+      "entityId": "admin",
+      "entityName": "Admin User",
+      "entityType": "User"
+    },
+    "createdDate": "2022-12-15T15:03:44Z"
+  },
+  {
+    "id": "9b73e1f6-2603-4b08-a260-9e6832fef37f",
+    "title": "Page-50.pdf",
+    "type": "Cloud",
+    "objectId": "9b73e1f6-2603-4b08-a260-9e6832fef37f",
+    "fileSize": 38356,
+    "isRemoved": false,
+    "createdBy": {
+      "entityId": "admin",
+      "entityName": "Admin User",
+      "entityType": "User"
+    },
+    "createdDate": "2022-12-20T03:23:18Z"
+  },
+  {
+    "id": "fdac2d5a-e07b-4610-b24c-6203ba4ac6da",
+    "title": "Page-50.pdf",
+    "type": "Cloud",
+    "objectId": "fdac2d5a-e07b-4610-b24c-6203ba4ac6da",
+    "fileSize": 38356,
+    "isRemoved": false,
+    "createdBy": {
+      "entityId": "admin",
+      "entityName": "Admin User",
+      "entityType": "User"
+    },
+    "createdDate": "2022-12-20T03:45:36Z"
+  },
+  {
+    "id": "8fde8749-74f8-4f6e-a875-976e8ce095c5",
+    "title": "Page-50.pdf",
+    "type": "Cloud",
+    "objectId": "8fde8749-74f8-4f6e-a875-976e8ce095c5",
+    "isActive": true,
+    "assignedTo": {
+      "entityId": "5fda6f74-0d54-4b2f-aade-e6a28c9a109c",
+      "entityName": "Testing Folder",
+      "entityType": "Document",
+      "isActive": true
+    },
+    "fileSize": 38356,
+    "isRemoved": false,
+    "createdBy": {
+      "entityId": "admin",
+      "entityName": "Admin User",
+      "entityType": "User"
+    },
+    "createdDate": "2022-12-20T03:47:21Z"
+  },
+  {
+    "id": "f9ef57ec-c388-4ca3-8581-54a56d329d88",
+    "title": "Page-50.pdf",
+    "type": "Cloud",
+    "objectId": "f9ef57ec-c388-4ca3-8581-54a56d329d88",
+    "isActive": true,
+    "assignedTo": {
+      "entityId": "5fda6f74-0d54-4b2f-aade-e6a28c9a109c",
+      "entityName": "Testing Folder",
+      "entityType": "Document",
+      "isActive": true
+    },
+    "fileSize": 38356,
+    "isRemoved": false,
+    "createdBy": {
+      "entityId": "admin",
+      "entityName": "Admin User",
+      "entityType": "User"
+    },
+    "createdDate": "2022-12-20T03:51:37Z"
+  },
+  {
+    "id": "21c96891-4e9d-4805-850c-3ee2a1d03f64",
+    "title": "K1 Form 1065 - JOHN DOE.pdf",
+    "type": "Cloud",
+    "objectId": "21c96891-4e9d-4805-850c-3ee2a1d03f64",
+    "fileSize": 29432,
+    "isRemoved": false,
+    "createdBy": {
+      "entityId": "admin",
+      "entityName": "Admin User",
+      "entityType": "User"
+    },
+    "createdDate": "2022-12-20T10:25:49Z"
+  },
+  {
+    "id": "0e0c3d7e-4cac-404d-9dc8-3a6071c766d4",
+    "title": "K1 Form 1065 - JOHN DOE.pdf",
+    "type": "Cloud",
+    "objectId": "0e0c3d7e-4cac-404d-9dc8-3a6071c766d4",
+    "fileSize": 29432,
+    "isRemoved": false,
+    "createdBy": {
+      "entityId": "admin",
+      "entityName": "Admin User",
+      "entityType": "User"
+    },
+    "createdDate": "2022-12-20T11:05:14Z"
+  },
+  {
+    "id": "b9ed3635-3d9e-4ab9-9ace-bfd78da68453",
+    "title": "Page-50.pdf",
+    "type": "Cloud",
+    "objectId": "b9ed3635-3d9e-4ab9-9ace-bfd78da68453",
+    "fileSize": 38356,
+    "isRemoved": false,
+    "createdBy": {
+      "entityId": "admin",
+      "entityName": "Admin User",
+      "entityType": "User"
+    },
+    "createdDate": "2022-12-21T04:18:49Z"
+  },
+  {
+    "id": "a79cbc2b-a451-4250-9feb-a780e9e72e7d",
+    "title": "Page-50.pdf",
+    "type": "Cloud",
+    "objectId": "a79cbc2b-a451-4250-9feb-a780e9e72e7d",
+    "fileSize": 38356,
+    "isRemoved": false,
+    "createdBy": {
+      "entityId": "admin",
+      "entityName": "Admin User",
+      "entityType": "User"
+    },
+    "createdDate": "2022-12-21T04:20:11Z"
+  },
+  {
+    "id": "ae14af2d-bd79-49eb-bf98-aa80c0a2c6f1",
+    "title": "Credit Report - Page-01.pdf",
+    "type": "Cloud",
+    "objectId": "ae14af2d-bd79-49eb-bf98-aa80c0a2c6f1",
+    "isActive": true,
+    "assignedTo": {
+      "entityId": "9204a2ba-84b9-4f84-97f7-72c9273d0ba7",
+      "entityName": "Some value",
+      "entityType": "Document",
+      "isActive": true
+    },
+    "fileSize": 5879,
+    "isRemoved": false,
+    "createdBy": {
+      "entityId": "admin",
+      "entityName": "Admin User",
+      "entityType": "User"
+    },
+    "createdDate": "2022-12-21T13:37:03Z"
+  },
+  {
+    "id": "0f7b496f-6d1e-4659-ac40-71d9e38dc02a",
+    "title": "Credit Report - Page-01.pdf",
+    "type": "Cloud",
+    "objectId": "0f7b496f-6d1e-4659-ac40-71d9e38dc02a",
+    "fileSize": 5879,
+    "isRemoved": false,
+    "createdBy": {
+      "entityId": "admin",
+      "entityName": "Admin User",
+      "entityType": "User"
+    },
+    "createdDate": "2022-12-21T13:37:27Z"
+  },
+  {
+    "id": "48414202-ab52-473f-ba03-5a2310835f3b",
+    "title": "Credit Report - Page-01.pdf",
+    "type": "Cloud",
+    "objectId": "48414202-ab52-473f-ba03-5a2310835f3b",
+    "fileSize": 5879,
+    "isRemoved": false,
+    "createdBy": {
+      "entityId": "admin",
+      "entityName": "Admin User",
+      "entityType": "User"
+    },
+    "createdDate": "2022-12-21T13:37:56Z"
+  },
+  {
+    "id": "99a299c3-dbd2-4d72-8f9d-3f5493b3af30",
+    "title": "Credit Report - Page-01.pdf",
+    "type": "Cloud",
+    "objectId": "99a299c3-dbd2-4d72-8f9d-3f5493b3af30",
+    "fileSize": 5879,
+    "isRemoved": false,
+    "createdBy": {
+      "entityId": "admin",
+      "entityName": "Admin User",
+      "entityType": "User"
+    },
+    "createdDate": "2022-12-21T13:38:56Z"
+  },
+  {
+    "id": "4fd67a98-506f-4b8e-be26-d5c33d23117d",
+    "title": "Credit Report - Page-01.pdf",
+    "type": "Cloud",
+    "objectId": "4fd67a98-506f-4b8e-be26-d5c33d23117d",
+    "fileSize": 5879,
+    "isRemoved": false,
+    "createdBy": {
+      "entityId": "admin",
+      "entityName": "Admin User",
+      "entityType": "User"
+    },
+    "createdDate": "2022-12-21T13:41:10Z"
+  },
+  {
+    "id": "2e7d430f-eeed-4676-901f-bcfad44b7526",
+    "title": "Credit Report - Page-01.pdf",
+    "type": "Cloud",
+    "objectId": "2e7d430f-eeed-4676-901f-bcfad44b7526",
+    "fileSize": 5879,
+    "isRemoved": false,
+    "createdBy": {
+      "entityId": "admin",
+      "entityName": "Admin User",
+      "entityType": "User"
+    },
+    "createdDate": "2022-12-22T05:58:55Z"
+  },
+  {
+    "id": "da5b0add-458a-40c9-8d56-0ff10efe3fbf",
+    "title": "Credit Report - Page-01.pdf",
+    "type": "Cloud",
+    "objectId": "da5b0add-458a-40c9-8d56-0ff10efe3fbf",
+    "fileSize": 5879,
+    "isRemoved": false,
+    "createdBy": {
+      "entityId": "admin",
+      "entityName": "Admin User",
+      "entityType": "User"
+    },
+    "createdDate": "2022-12-22T05:59:56Z"
+  },
+  {
+    "id": "177d606e-589d-4aa2-a681-24199eb52c9b",
+    "title": "Credit Report - Page-01.pdf",
+    "type": "Cloud",
+    "objectId": "177d606e-589d-4aa2-a681-24199eb52c9b",
+    "isActive": true,
+    "assignedTo": {
+      "entityId": "9204a2ba-84b9-4f84-97f7-72c9273d0ba7",
+      "entityName": "Some value",
+      "entityType": "Document",
+      "isActive": true
+    },
+    "fileSize": 5879,
+    "isRemoved": false,
+    "createdBy": {
+      "entityId": "admin",
+      "entityName": "Admin User",
+      "entityType": "User"
+    },
+    "createdDate": "2022-12-22T06:25:29Z"
+  },
+  {
+    "id": "93363ccb-bc56-4d10-bba1-67babf26eac1",
+    "title": "Signed 1003 - Page-02.pdf",
+    "type": "Cloud",
+    "objectId": "93363ccb-bc56-4d10-bba1-67babf26eac1",
+    "isActive": true,
+    "assignedTo": {
+      "entityId": "9204a2ba-84b9-4f84-97f7-72c9273d0ba7",
+      "entityName": "Some value",
+      "entityType": "Document",
+      "isActive": true
+    },
+    "fileSize": 5964,
+    "isRemoved": false,
+    "createdBy": {
+      "entityId": "admin",
+      "entityName": "Admin User",
+      "entityType": "User"
+    },
+    "createdDate": "2022-12-22T07:55:32Z"
+  },
+  {
+    "id": "67085fa5-9201-4d43-b50e-d5ab6780706e",
+    "title": "Award Letter.pdf",
+    "type": "Cloud",
+    "objectId": "67085fa5-9201-4d43-b50e-d5ab6780706e",
+    "fileSize": 386310,
+    "isRemoved": false,
+    "createdBy": {
+      "entityId": "admin",
+      "entityName": "Admin User",
+      "entityType": "User"
+    },
+    "createdDate": "2023-01-14T12:29:44Z"
+  }
+]
