@@ -5,7 +5,7 @@
  * for DrawDocs, Disclosure, and LOA agent pipelines.
  */
 
-import { FileSearch, Zap, CheckCircle, FileText, Shield, FileEdit, Send, Mail } from "lucide-react";
+import { FileSearch, Zap, CheckCircle, FileText, Shield, FilePen, Send, Mail } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 // =============================================================================
@@ -96,7 +96,7 @@ export const DISCLOSURE_SUB_AGENTS: SubAgentConfig[] = [
     id: "preparation",
     name: "Preparation",
     description: "RegZ-LE, MI, CTC",
-    icon: FileEdit,
+    icon: FilePen,
     color: "emerald",
   },
   {
@@ -123,7 +123,7 @@ export const LOA_SUB_AGENTS: SubAgentConfig[] = [
     id: "generation",
     name: "Generation",
     description: "Lorem ipsum dolor",
-    icon: FileEdit,
+    icon: FilePen,
     color: "emerald",
   },
   {

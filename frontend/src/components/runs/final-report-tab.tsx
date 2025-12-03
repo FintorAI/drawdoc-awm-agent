@@ -28,6 +28,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { RunDetail, AgentResultDetail } from "@/lib/api";
+import type { AgentType } from "@/types/agents";
+import { getSubAgents } from "@/types/agents";
 
 // =============================================================================
 // TYPES
@@ -259,9 +261,10 @@ function SummaryCard({ runDetail, flaggedItems, fieldChanges }: SummaryCardProps
 
 interface FlaggedItemsCardProps {
   items: FlaggedItem[];
+  agentType?: AgentType;
 }
 
-function FlaggedItemsCard({ items }: FlaggedItemsCardProps) {
+function FlaggedItemsCard({ items, agentType }: FlaggedItemsCardProps) {
   if (items.length === 0) {
     return (
       <Card>
@@ -314,7 +317,7 @@ function FlaggedItemsCard({ items }: FlaggedItemsCardProps) {
                         className={cn("p-3 rounded-lg border", colors.bg, colors.border)}
                       >
                         <div className="flex items-start gap-2">
-                          <AgentIcon type={item.agent} size="sm" />
+                          <AgentIcon type={item.agent} size="sm" pipelineType={agentType} />
                           <div className="flex-1 min-w-0">
                             <p className={cn("text-sm font-medium", colors.text)}>
                               {item.message}
@@ -347,7 +350,7 @@ function FlaggedItemsCard({ items }: FlaggedItemsCardProps) {
                         className={cn("p-3 rounded-lg border", colors.bg, colors.border)}
                       >
                         <div className="flex items-start gap-2">
-                          <AgentIcon type={item.agent} size="sm" />
+                          <AgentIcon type={item.agent} size="sm" pipelineType={agentType} />
                           <div className="flex-1 min-w-0">
                             <p className={cn("text-sm font-medium", colors.text)}>
                               {item.message}
@@ -380,7 +383,7 @@ function FlaggedItemsCard({ items }: FlaggedItemsCardProps) {
                         className={cn("p-3 rounded-lg border", colors.bg, colors.border)}
                       >
                         <div className="flex items-start gap-2">
-                          <AgentIcon type={item.agent} size="sm" />
+                          <AgentIcon type={item.agent} size="sm" pipelineType={agentType} />
                           <div className="flex-1 min-w-0">
                             <p className={cn("text-sm font-medium", colors.text)}>
                               {item.message}
@@ -416,9 +419,10 @@ function FlaggedItemsCard({ items }: FlaggedItemsCardProps) {
 
 interface FieldChangesCardProps {
   changes: FieldChange[];
+  agentType?: AgentType;
 }
 
-function FieldChangesCard({ changes }: FieldChangesCardProps) {
+function FieldChangesCard({ changes, agentType }: FieldChangesCardProps) {
   const [copied, setCopied] = React.useState(false);
 
   const copyToClipboard = () => {
@@ -484,7 +488,7 @@ function FieldChangesCard({ changes }: FieldChangesCardProps) {
             {Object.entries(byAgent).map(([agent, agentChanges]) => (
               <div key={agent}>
                 <div className="flex items-center gap-2 mb-2">
-                  <AgentIcon type={agent as FieldChange["agent"]} size="sm" />
+                  <AgentIcon type={agent as FieldChange["agent"]} size="sm" pipelineType={agentType} />
                   <h4 className="text-xs font-semibold capitalize">
                     {agent} Agent ({agentChanges.length})
                   </h4>
@@ -525,18 +529,11 @@ function FieldChangesCard({ changes }: FieldChangesCardProps) {
 
 interface AgentStatusSummaryProps {
   runDetail: RunDetail;
+  agentType?: AgentType;
 }
 
-function AgentStatusSummary({ runDetail }: AgentStatusSummaryProps) {
-  const agents: Array<{
-    key: "preparation" | "drawcore" | "verification" | "orderdocs";
-    name: string;
-  }> = [
-    { key: "preparation", name: "Preparation" },
-    { key: "drawcore", name: "Drawcore" },
-    { key: "verification", name: "Verification" },
-    { key: "orderdocs", name: "OrderDocs" },
-  ];
+function AgentStatusSummary({ runDetail, agentType = "drawdocs" }: AgentStatusSummaryProps) {
+  const subAgents = getSubAgents(agentType);
 
   return (
     <Card>
@@ -544,35 +541,41 @@ function AgentStatusSummary({ runDetail }: AgentStatusSummaryProps) {
         <CardTitle className="text-sm font-medium">Agent Status</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {agents.map(({ key, name }) => {
-            const agent = runDetail.agents[key];
+        <div className={cn(
+          "grid gap-3",
+          subAgents.length === 3 ? "grid-cols-3" : "grid-cols-2 md:grid-cols-4"
+        )}>
+          {subAgents.map((subAgent) => {
+            const agent = runDetail.agents[subAgent.id];
             const status = agent?.status || "pending";
             const time = agent?.elapsed_seconds || 0;
 
             return (
               <div
-                key={key}
+                key={subAgent.id}
                 className={cn(
                   "p-3 rounded-lg border text-center",
                   status === "success" && "bg-emerald-50 border-emerald-200",
                   status === "failed" && "bg-red-50 border-red-200",
                   status === "running" && "bg-blue-50 border-blue-200",
+                  status === "blocked" && "bg-amber-50 border-amber-200",
                   status === "pending" && "bg-slate-50 border-slate-200"
                 )}
               >
-                <AgentIcon type={key} size="sm" className="mx-auto mb-1" />
-                <p className="text-xs font-medium">{name}</p>
+                <AgentIcon type={subAgent.id} size="sm" className="mx-auto mb-1" pipelineType={agentType} />
+                <p className="text-xs font-medium">{subAgent.name}</p>
                 <p className={cn(
                   "text-xs mt-1",
                   status === "success" && "text-emerald-600",
                   status === "failed" && "text-red-600",
                   status === "running" && "text-blue-600",
+                  status === "blocked" && "text-amber-600",
                   status === "pending" && "text-slate-400"
                 )}>
                   {status === "success" && `✓ ${time.toFixed(1)}s`}
                   {status === "failed" && "✗ Failed"}
                   {status === "running" && "Running..."}
+                  {status === "blocked" && "⚠ Blocked"}
                   {status === "pending" && "Pending"}
                 </p>
               </div>
@@ -1026,6 +1029,7 @@ export function FinalReportTab({ runDetail, isLoading, className }: FinalReportT
 
   const flaggedItems = extractFlaggedItems(runDetail);
   const fieldChanges = extractFieldChanges(runDetail);
+  const agentType = runDetail.agent_type || "drawdocs";
 
   return (
     <div className={cn("space-y-4", className)}>
@@ -1048,7 +1052,7 @@ export function FinalReportTab({ runDetail, isLoading, className }: FinalReportT
       />
 
       {/* Agent Status */}
-      <AgentStatusSummary runDetail={runDetail} />
+      <AgentStatusSummary runDetail={runDetail} agentType={agentType} />
 
       {/* Agent-Specific Details - 3 column grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -1059,8 +1063,8 @@ export function FinalReportTab({ runDetail, isLoading, className }: FinalReportT
 
       {/* Two Column Layout for Flagged Items and Field Changes */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <FlaggedItemsCard items={flaggedItems} />
-        <FieldChangesCard changes={fieldChanges} />
+        <FlaggedItemsCard items={flaggedItems} agentType={agentType} />
+        <FieldChangesCard changes={fieldChanges} agentType={agentType} />
       </div>
 
       {/* Summary Text */}

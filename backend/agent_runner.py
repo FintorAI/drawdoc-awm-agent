@@ -257,6 +257,7 @@ def run_agent(
     demo_mode: bool = True,
     max_retries: int = 2,
     document_types: Optional[list[str]] = None,
+    lo_email: Optional[str] = None,
 ) -> None:
     """
     Run the orchestrator agent with live status updates.
@@ -270,7 +271,8 @@ def run_agent(
         output_file: Path to the output JSON file
         demo_mode: Whether to run in demo mode
         max_retries: Number of retry attempts per agent
-        document_types: Optional list of document types to process
+        document_types: Optional list of document types to process (DrawDocs only)
+        lo_email: Loan officer email (Disclosure/LOA only)
     """
     # Extract run_id and output directory
     run_id = extract_run_id_from_output_file(output_file)
@@ -351,6 +353,7 @@ def run_agent(
             # Run Disclosure orchestrator
             results = run_disclosure_orchestrator(
                 loan_id=loan_id,
+                lo_email=lo_email or "",  # Default to empty string if not provided
                 demo_mode=demo_mode,
                 max_retries=max_retries,
                 progress_callback=progress_callback,
@@ -449,6 +452,10 @@ def main():
         "--document-types",
         help="Comma-separated list of document types to process (DrawDocs only)"
     )
+    parser.add_argument(
+        "--lo-email",
+        help="Loan officer email address (required for Disclosure and LOA agents)"
+    )
     
     args = parser.parse_args()
     
@@ -465,6 +472,7 @@ def main():
         demo_mode=not args.production,
         max_retries=args.max_retries,
         document_types=document_types,
+        lo_email=args.lo_email,
     )
 
 

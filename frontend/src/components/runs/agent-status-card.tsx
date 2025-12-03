@@ -223,7 +223,7 @@ function AgentStatusCardSkeleton({ className }: { className?: string }) {
       >
         {/* Top Row: Icon + Name */}
         <div className="flex items-center gap-3">
-          <AgentIcon type={agent} showBackground size="lg" />
+          <AgentIcon type={agent} showBackground size="lg" pipelineType={pipelineType} />
           <div className="flex-1 min-w-0">
             <h3 className="font-medium text-sm text-foreground">
               {getAgentName(agent, pipelineType)}
