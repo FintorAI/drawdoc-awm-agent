@@ -1,0 +1,158 @@
+================================================================================
+HAPPY PATH TEST FIELDS - Disclosure Agent v2
+================================================================================
+
+For a successful happy path test, modify these fields in your test loan.
+
+--------------------------------------------------------------------------------
+CRITICAL: Must Modify for Happy Path
+--------------------------------------------------------------------------------
+
+• 745 (Application Date)
+  - Required: Today or yesterday
+  - Why: TRID requires LE due within 3 business days
+
+• 748 (Closing Date)
+  - Required: Today + 20 days (or more)
+  - Why: G8 rule - must be ≥15 days from app date
+
+• LE1.X1 (LE Date Issued)
+  - Required: (Set automatically by Preparation Agent)
+  - Why: Agent sets to current date when preparing LE
+
+• 1172 (Loan Type)
+  - Required: "Conventional"
+  - Why: MVP only supports Conventional loans
+
+• 14 (Property State)
+  - Required: "CA" or "NV"
+  - Why: Texas excluded from MVP
+
+• 2400 (Rate Lock Indicator)
+  - Required: "Y" or "N"
+  - Why: Determines locked vs unlocked processing flow
+
+--------------------------------------------------------------------------------
+HARD STOP Fields (G1) - Blocks if Missing
+--------------------------------------------------------------------------------
+
+• FE0117 (Borrower Phone)
+  - Required: Any valid phone number
+  - Why: HARD STOP - disclosure cannot proceed without phone
+
+• 1240 (Borrower Email)
+  - Required: Any valid email address
+  - Why: HARD STOP - disclosure cannot proceed without email
+
+--------------------------------------------------------------------------------
+Form Validation Fields (1003 URLA & Basic Info)
+--------------------------------------------------------------------------------
+
+• 4000 (Borrower First Name)
+  - Required: Any value
+  - Why: 1003 URLA required field
+
+• 4002 (Borrower Last Name)
+  - Required: Any value
+  - Why: 1003 URLA required field
+
+• 65 (Borrower SSN)
+  - Required: Any value
+  - Why: 1003 URLA required field
+
+• 11 (Property Address)
+  - Required: Any value
+  - Why: Disclosure required field
+
+• 1109 (Loan Amount)
+  - Required: Any amount
+  - Why: Loan terms required field
+
+• 3 (Interest Rate)
+  - Required: Any rate
+  - Why: Loan terms required field
+
+• 317 (LO Name)
+  - Required: Any value
+  - Why: Loan Originator info required
+
+• 3238 (LO NMLS ID)
+  - Required: Any value
+  - Why: Loan Originator info required
+
+• 1393 (Loan Status)
+  - Required: "Active"
+  - Why: Must not be Funded/Closed/Cancelled
+
+--------------------------------------------------------------------------------
+RegZ-LE Fields (Set by Preparation Agent)
+--------------------------------------------------------------------------------
+
+• 672 (Late Charge Days)
+  - Set to: 15
+  - Rule: Conventional loans = 15 days
+
+• 673 (Late Charge Percent)
+  - Set to: 5.0
+  - Rule: Conventional loans = 5%
+
+• 3517 (Assumption)
+  - Set to: "may not"
+  - Rule: Conventional loans = "may not" be assumed
+
+• 1176 (Interest Days/Year)
+  - Set to: 360
+  - Rule: 360/360 interest accrual
+
+--------------------------------------------------------------------------------
+ATR/QM Fields (Must Be GREEN)
+--------------------------------------------------------------------------------
+
+• ATRQM.X1 (Loan Features Flag)
+  - Required: GREEN
+  - Why: Blocks disclosure if RED
+
+• ATRQM.X2 (Points & Fees Flag)
+  - Required: GREEN
+  - Why: Blocks disclosure if RED
+
+• ATRQM.X3 (Price Limit Flag)
+  - Required: GREEN
+  - Why: Blocks disclosure if RED
+
+--------------------------------------------------------------------------------
+Cash to Close Fields
+--------------------------------------------------------------------------------
+
+• LE1.X77 (Displayed CTC)
+  - Purpose: Must match calculated Cash to Close
+
+• NEWHUD2.X55 (Use Actual Down Payment)
+  - Purpose: CTC checkbox for Purchase
+
+• NEWHUD2.X56 (Closing Costs Financed)
+  - Purpose: CTC checkbox for Purchase
+
+• NEWHUD2.X57 (Include Payoffs in Adjustments)
+  - Purpose: CTC checkbox for Purchase
+
+• NEWHUD2.X58 (Alternative Form Checkbox)
+  - Purpose: CTC checkbox for Refinance
+
+================================================================================
+QUICK REFERENCE: Minimum Fields to Update for Happy Path
+================================================================================
+
+1. 745  = Today's date (Application Date)
+2. 748  = Today + 20 days (Closing Date)
+3. 1172 = "Conventional" (Loan Type)
+4. 14   = "CA" (Property State)
+5. FE0117 = Valid phone (Borrower Phone)
+6. 1240 = Valid email (Borrower Email)
+7. 1393 = "Active" (Loan Status)
+
+================================================================================
+Last Updated: December 2, 2025
+================================================================================
+
+

@@ -1,0 +1,272 @@
+{
+  "verified": 18,
+  "not_found": 0,
+  "fields": {
+    "1172": {
+      "id": "1172",
+      "description": "Trans Details Loan Type",
+      "format": "STRING",
+      "type": "",
+      "readOnly": false,
+      "options": [
+        {
+          "value": "Conventional",
+          "text": "Conventional"
+        },
+        {
+          "value": "VA",
+          "text": "VA"
+        },
+        {
+          "value": "FHA",
+          "text": "FHA"
+        },
+        {
+          "value": "Other",
+          "text": "Other"
+        },
+        {
+          "value": "FarmersHomeAdministration",
+          "text": "USDA-RHS"
+        },
+        {
+          "value": "HELOC",
+          "text": "HELOC"
+        }
+      ]
+    },
+    "19": {
+      "id": "19",
+      "description": "Trans Details Loan Purpose",
+      "format": "STRING",
+      "type": "",
+      "readOnly": false,
+      "options": [
+        {
+          "value": "ConstructionToPermanent",
+          "text": "Construction - Perm"
+        },
+        {
+          "value": "NoCash-Out Refinance",
+          "text": "No Cash-Out Refi"
+        },
+        {
+          "value": "Purchase",
+          "text": "Purchase"
+        },
+        {
+          "value": "ConstructionOnly",
+          "text": "Construction"
+        },
+        {
+          "value": "Cash-Out Refinance",
+          "text": "Cash-Out Refi"
+        },
+        {
+          "value": "Other",
+          "text": "Other"
+        }
+      ]
+    },
+    "1109": {
+      "id": "1109",
+      "description": "Trans Details Loan Amt",
+      "format": "DECIMAL_2",
+      "type": "",
+      "readOnly": false,
+      "options": []
+    },
+    "356": {
+      "id": "356",
+      "description": "Subject Property Appraised Value",
+      "format": "INTEGER",
+      "type": "",
+      "readOnly": false,
+      "options": []
+    },
+    "136": {
+      "id": "136",
+      "description": "Trans Details Purchase Price",
+      "format": "DECIMAL_2",
+      "type": "",
+      "readOnly": false,
+      "options": []
+    },
+    "1041": {
+      "id": "1041",
+      "description": "Subject Property Type Fannie Mae",
+      "format": "STRING",
+      "type": "",
+      "readOnly": false,
+      "options": [
+        {
+          "value": "Attached",
+          "text": "Attached"
+        },
+        {
+          "value": "Condominium",
+          "text": "Condominium"
+        },
+        {
+          "value": "Cooperative",
+          "text": "Co-Operative"
+        },
+        {
+          "value": "Detached",
+          "text": "Detached"
+        },
+        {
+          "value": "HighRiseCondominium",
+          "text": "High Rise Condominium"
+        },
+        {
+          "value": "ManufacturedHousing",
+          "text": "Manufactured Housing"
+        },
+        {
+          "value": "PUD",
+          "text": "PUD"
+        },
+        {
+          "value": "DetachedCondo",
+          "text": "Detached Condo"
+        },
+        {
+          "value": "ManufacturedHomeCondoPUDCoOp",
+          "text": "Mfd Home/Condo/PUD/Co-Op"
+        },
+        {
+          "value": "MH HomeChoice",
+          "text": "MH CHOICEHome"
+        },
+        {
+          "value": "MHSelect",
+          "text": "MH Select"
+        },
+        {
+          "value": "MHAdvantage",
+          "text": "MH Advantage"
+        }
+      ]
+    },
+    "1811": {
+      "id": "1811",
+      "description": "Subject Property Occupancy Status",
+      "format": "STRING",
+      "type": "",
+      "readOnly": false,
+      "options": [
+        {
+          "value": "PrimaryResidence",
+          "text": "Primary"
+        },
+        {
+          "value": "SecondHome",
+          "text": "Secondary"
+        },
+        {
+          "value": "Investor",
+          "text": "Investment"
+        }
+      ]
+    },
+    "14": {
+      "id": "14",
+      "description": "Subject Property State",
+      "format": "STATE",
+      "type": "",
+      "readOnly": false,
+      "options": []
+    },
+    "353": {
+      "id": "353",
+      "description": "Freddie Mac Loan To Value (LTV)",
+      "format": "DECIMAL_3",
+      "type": "",
+      "readOnly": false,
+      "options": []
+    },
+    "976": {
+      "id": "976",
+      "description": "Trans Details Comb Loan to Value (CLTV)",
+      "format": "DECIMAL_3",
+      "type": "",
+      "readOnly": false,
+      "options": []
+    },
+    "3": {
+      "id": "3",
+      "description": "Trans Details Interest Rate",
+      "format": "DECIMAL_3",
+      "type": "",
+      "readOnly": false,
+      "options": []
+    },
+    "4": {
+      "id": "4",
+      "description": "Trans Details Term (Mos)",
+      "format": "INTEGER",
+      "type": "",
+      "readOnly": false,
+      "options": []
+    },
+    "LE1.X1": {
+      "id": "LE1.X1",
+      "description": "Loan Estimate - LE Date Issued",
+      "format": "DATE",
+      "type": "",
+      "readOnly": false,
+      "options": []
+    },
+    "745": {
+      "id": "745",
+      "description": "Trans Details Application Date",
+      "format": "DATE",
+      "type": "",
+      "readOnly": false,
+      "options": []
+    },
+    "DISCLOSURE.X1": {
+      "id": "DISCLOSURE.X1",
+      "description": "Disclosure Cred Bureau 1 Co Name",
+      "format": "STRING",
+      "type": "",
+      "readOnly": false,
+      "options": []
+    },
+    "3152": {
+      "id": "3152",
+      "description": "TIL Intl Disclosure Provided Date",
+      "format": "DATE",
+      "type": "",
+      "readOnly": true,
+      "options": []
+    },
+    "762": {
+      "id": "762",
+      "description": "Trans Details Rate Lock Expires",
+      "format": "DATE",
+      "type": "",
+      "readOnly": false,
+      "options": []
+    },
+    "3168": {
+      "id": "3168",
+      "description": "Changed Circumstance Chkbx",
+      "format": "YN",
+      "type": "",
+      "readOnly": false,
+      "options": [
+        {
+          "value": "Y",
+          "text": "Yes"
+        },
+        {
+          "value": "N",
+          "text": "No"
+        }
+      ]
+    }
+  },
+  "missing": []
+}

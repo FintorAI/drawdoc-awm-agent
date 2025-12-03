@@ -7,7 +7,13 @@ as well as utility functions for getting loan metadata.
 import os
 import logging
 import requests
+from pathlib import Path
 from typing import Any, Dict, List, Optional
+from dotenv import load_dotenv
+
+# Load .env from project root
+env_path = Path(__file__).parent.parent.parent / ".env"
+load_dotenv(env_path)
 
 from .auth import get_access_token
 
@@ -37,6 +43,12 @@ def read_fields(loan_id: str, field_ids: List[str]) -> Dict[str, Any]:
     """
     if not field_ids:
         return {}
+    
+    # Deduplicate field IDs to avoid API errors
+    original_count = len(field_ids)
+    field_ids = list(set(field_ids))
+    if len(field_ids) < original_count:
+        logger.warning(f"[READ] Removed {original_count - len(field_ids)} duplicate field IDs")
     
     # Get OAuth2 token
     access_token = get_access_token()

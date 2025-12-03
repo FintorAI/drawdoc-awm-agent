@@ -1,10 +1,10 @@
-"""Preparation Sub-Agent for disclosure field population, MI calculation, and tolerance checking.
+"""Preparation Sub-Agent for disclosure field population, MI calculation, and LE preparation.
 
-MVP: 
+v2:
 - Calculate Conventional MI only
-- Populate basic CD fields
-- Flag fee tolerance violations (no auto-cure)
-- Use AI for field derivation when needed
+- Update RegZ-LE form fields per SOP
+- Match Cash to Close (Purchase vs Refinance logic)
+- Populate basic LE fields
 """
 
 import os
@@ -35,11 +35,25 @@ from agents.disclosure.subagents.preparation_agent.tools.field_normalization_too
     normalize_address
 )
 
-# Import new MI tools
+# Import MI tools
 from agents.disclosure.subagents.preparation_agent.tools.mi_tools import (
     calculate_loan_mi,
     populate_mi_fields,
     check_mi_required,
+)
+
+# v2: Import RegZ-LE tools
+from agents.disclosure.subagents.preparation_agent.tools.regz_le_tools import (
+    update_regz_le_fields,
+    get_late_charge_values,
+    get_assumption_clause,
+)
+
+# v2: Import CTC tools
+from agents.disclosure.subagents.preparation_agent.tools.ctc_tools import (
+    match_ctc,
+    get_ctc_checkbox_settings,
+    verify_ctc_match,
 )
 
 # Import shared utilities
@@ -137,22 +151,22 @@ def check_loan_fee_tolerance(loan_id: str) -> dict:
 
 
 @tool
-def get_cd_field_status(loan_id: str) -> dict:
-    """Get status of CD-related fields for pages 1-3.
+def get_le_field_status(loan_id: str) -> dict:
+    """Get status of LE-related fields for pages 1-3.
     
-    Checks if basic CD fields are populated for disclosure.
+    Checks if basic LE fields are populated for disclosure.
     
     Args:
         loan_id: Encompass loan GUID
         
     Returns:
-        Dictionary with CD field status
+        Dictionary with LE field status
     """
-    logger.info(f"[CD_STATUS] Getting CD field status for loan {loan_id[:8]}...")
+    logger.info(f"[LE_STATUS] Getting LE field status for loan {loan_id[:8]}...")
     
-    # Key CD fields for pages 1-3
-    cd_field_ids = [
-        "CD1.X1",    # CD Date Issued
+    # Key LE fields for pages 1-3 (v2)
+    le_field_ids = [
+        "LE1.X1",    # LE Date Issued
         "1109",      # Loan Amount
         "3",         # Interest Rate
         "4",         # Loan Term
@@ -162,16 +176,19 @@ def get_cd_field_status(loan_id: str) -> dict:
         "4000",      # Borrower First Name
         "4002",      # Borrower Last Name
         "232",       # Monthly MI
+        "672",       # Late Charge Days
+        "673",       # Late Charge Percent
+        "LE1.X77",   # Displayed CTC
     ]
     
     try:
-        values = read_fields(loan_id, cd_field_ids)
+        values = read_fields(loan_id, le_field_ids)
         
         field_status = {}
         populated = []
         missing = []
         
-        for field_id in cd_field_ids:
+        for field_id in le_field_ids:
             value = values.get(field_id)
             has_value = value is not None
             field_status[field_id] = {
@@ -186,7 +203,7 @@ def get_cd_field_status(loan_id: str) -> dict:
         return {
             "loan_id": loan_id,
             "success": True,
-            "fields_checked": len(cd_field_ids),
+            "fields_checked": len(le_field_ids),
             "populated_count": len(populated),
             "missing_count": len(missing),
             "populated_fields": populated,
@@ -195,7 +212,7 @@ def get_cd_field_status(loan_id: str) -> dict:
         }
         
     except Exception as e:
-        logger.error(f"[CD_STATUS] Error getting CD field status: {e}")
+        logger.error(f"[LE_STATUS] Error getting LE field status: {e}")
         return {
             "loan_id": loan_id,
             "success": False,
@@ -204,62 +221,73 @@ def get_cd_field_status(loan_id: str) -> dict:
 
 
 # =============================================================================
-# AGENT CONFIGURATION
+# AGENT CONFIGURATION (v2)
 # =============================================================================
 
-preparation_instructions = """You are a Disclosure Preparation Sub-Agent.
+preparation_instructions = """You are the Disclosure Preparation Agent.
 
-Your job is to:
-1. Calculate MI (Mortgage Insurance) for Conventional loans
-2. Check fee tolerance violations (flag only, no auto-cure)
-3. Populate missing CD fields using AI-based derivation
+Your job is to prepare the Loan Estimate (LE) for disclosure.
 
-MVP SCOPE:
+MVP SCOPE (v2):
 - Only Conventional MI is fully calculated
-- Fee tolerance violations are flagged (not auto-cured)
-- Focus on CD pages 1-3 fields
+- Focus on LE (Loan Estimate), not CD (Closing Disclosure)
+- Update RegZ-LE form fields per SOP
+- Match Cash to Close for Purchase vs Refinance
 
 WORKFLOW:
 
-1. MORTGAGE INSURANCE:
+1. REGZ-LE FORM UPDATES (NEW in v2):
+   - Use update_regz_le_fields(loan_id, dry_run=True) to apply SOP updates
+   - This sets: LE Date, Interest Accrual, Late Charge, Assumption
+   - Use get_late_charge_values() to check specific values
+   - Use get_assumption_clause() to check assumption text
+
+2. MORTGAGE INSURANCE:
    - Use check_mi_required(loan_id) to see if MI is needed
-   - If needed, use calculate_loan_mi(loan_id) to calculate MI
+   - If needed (LTV > 80%), use calculate_loan_mi(loan_id)
    - Use populate_mi_fields() to write MI values (dry_run=True for safety)
 
-2. FEE TOLERANCE:
-   - Use check_loan_fee_tolerance(loan_id) to check for violations
-   - Report any violations found (do not attempt to cure)
+3. CASH TO CLOSE (NEW in v2):
+   - Use match_ctc(loan_id, dry_run=True) to apply CTC settings
+   - Purchase: Checks specific boxes
+   - Refinance: Checks Alternative form checkbox
+   - Verify CTC match with verify_ctc_match()
 
-3. CD FIELD POPULATION:
-   - Use get_cd_field_status(loan_id) to see what's missing
+4. LE FIELD POPULATION:
+   - Use get_le_field_status(loan_id) to see what's missing
    - For missing fields, use AI derivation tools:
      - search_loan_fields() to find related fields
      - get_loan_field_value() to read candidate values
      - write_field_value() to populate (dry_run=True)
 
-4. FIELD NORMALIZATION:
-   - Use clean_field_value() to normalize formats
-   - Use normalize_phone_number(), normalize_date(), etc.
-
 Report your findings clearly, including:
+- RegZ-LE updates made
 - MI calculation result
-- Fee tolerance violations (if any)
+- Cash to Close match status
 - Fields populated
-- Fields that still need attention
+- Any issues requiring attention
 """
 
 # Create the preparation agent
 preparation_agent = create_deep_agent(
-    agent_type="Disclosure-Preparation-SubAgent",
+    agent_type="Disclosure-Preparation-SubAgent-v2",
     system_prompt=preparation_instructions,
     tools=[
+        # v2: RegZ-LE Tools
+        update_regz_le_fields,
+        get_late_charge_values,
+        get_assumption_clause,
+        # v2: CTC Tools
+        match_ctc,
+        get_ctc_checkbox_settings,
+        verify_ctc_match,
         # MI Tools
         calculate_loan_mi,
         populate_mi_fields,
         check_mi_required,
         # Tolerance Tools
         check_loan_fee_tolerance,
-        get_cd_field_status,
+        get_le_field_status,  # v2: renamed from get_cd_field_status
         # Field Derivation Tools
         get_loan_field_value,
         search_loan_fields,
@@ -286,13 +314,13 @@ def run_disclosure_preparation(
     fields_to_clean: List[Dict[str, Any]] = None,
     demo_mode: bool = True
 ) -> Dict[str, Any]:
-    """Run disclosure preparation for a loan.
+    """Run disclosure preparation for a loan (v2).
     
-    MVP workflow:
-    1. Calculate MI (Conventional only)
-    2. Check fee tolerance (flag only)
-    3. Populate missing CD fields
-    4. Normalize existing fields
+    v2 workflow:
+    1. Update RegZ-LE form fields per SOP
+    2. Calculate MI (Conventional only)
+    3. Match Cash to Close
+    4. Populate missing LE fields
     
     Args:
         loan_id: Encompass loan GUID
@@ -304,41 +332,50 @@ def run_disclosure_preparation(
         Dictionary with preparation results:
         - loan_id: Loan GUID
         - status: "success" or "failed"
+        - regz_le_result: RegZ-LE update result (v2)
         - mi_result: MI calculation result
-        - tolerance_result: Fee tolerance check result
+        - ctc_result: CTC match result (v2)
         - fields_populated: List of field IDs populated
-        - fields_cleaned: List of field IDs cleaned
         - summary: Human-readable summary
     """
     from langchain_core.messages import HumanMessage
     
     logger.info("=" * 80)
-    logger.info("DISCLOSURE PREPARATION STARTING (MVP)")
+    logger.info("DISCLOSURE PREPARATION STARTING (v2 - LE Focus)")
     logger.info("=" * 80)
     logger.info(f"Loan ID: {loan_id}")
     logger.info(f"Missing fields: {len(missing_fields)}")
-    logger.info(f"Fields to clean: {len(fields_to_clean or [])}")
     logger.info(f"Demo mode: {demo_mode}")
     
     try:
-        # Build task description
-        task_parts = [f"Prepare disclosure for loan {loan_id}."]
+        # Build task description (v2 workflow)
+        task_parts = [f"Prepare Loan Estimate (LE) disclosure for loan {loan_id}."]
         task_parts.append(f"\nDemo mode: {demo_mode} (dry_run={demo_mode})")
         
-        # Step 1: MI Calculation
-        task_parts.append("\n\n=== STEP 1: MORTGAGE INSURANCE ===")
+        # Step 1: RegZ-LE Updates (NEW in v2)
+        task_parts.append("\n\n=== STEP 1: REGZ-LE FORM UPDATES ===")
+        task_parts.append(f"1. Update RegZ-LE fields using update_regz_le_fields() with dry_run={demo_mode}")
+        task_parts.append("   - LE Date Issued = Current Date")
+        task_parts.append("   - Interest Accrual = 360/360")
+        task_parts.append("   - Late Charge per loan type")
+        task_parts.append("   - Assumption text per loan type")
+        
+        # Step 2: MI Calculation
+        task_parts.append("\n\n=== STEP 2: MORTGAGE INSURANCE ===")
         task_parts.append("1. Check if MI is required using check_mi_required()")
-        task_parts.append("2. If required, calculate MI using calculate_loan_mi()")
+        task_parts.append("2. If required (LTV > 80%), calculate MI using calculate_loan_mi()")
         task_parts.append(f"3. Populate MI fields using populate_mi_fields() with dry_run={demo_mode}")
         
-        # Step 2: Fee Tolerance
-        task_parts.append("\n\n=== STEP 2: FEE TOLERANCE ===")
-        task_parts.append("1. Check fee tolerance using check_loan_fee_tolerance()")
-        task_parts.append("2. Report any violations found (do NOT attempt to cure)")
+        # Step 3: Cash to Close (NEW in v2)
+        task_parts.append("\n\n=== STEP 3: CASH TO CLOSE ===")
+        task_parts.append(f"1. Match CTC using match_ctc() with dry_run={demo_mode}")
+        task_parts.append("   - Purchase: Check specific boxes")
+        task_parts.append("   - Refinance: Check Alternative form checkbox")
+        task_parts.append("2. Verify CTC match with verify_ctc_match()")
         
-        # Step 3: CD Fields
-        task_parts.append("\n\n=== STEP 3: CD FIELD POPULATION ===")
-        task_parts.append("1. Check CD field status using get_cd_field_status()")
+        # Step 4: LE Fields
+        task_parts.append("\n\n=== STEP 4: LE FIELD POPULATION ===")
+        task_parts.append("1. Check LE field status using get_le_field_status()")
         
         if missing_fields:
             task_parts.append(f"\nMissing fields to address ({len(missing_fields)}):")
@@ -346,42 +383,41 @@ def run_disclosure_preparation(
                 task_parts.append(f"  {i}. {field_id}")
             if len(missing_fields) > 5:
                 task_parts.append(f"  ... and {len(missing_fields) - 5} more")
-            task_parts.append(f"\nUse write_field_value() with dry_run={demo_mode}")
-        
-        if fields_to_clean:
-            task_parts.append(f"\nFields to normalize ({len(fields_to_clean)}):")
-            for i, field_info in enumerate(fields_to_clean[:5], 1):
-                task_parts.append(f"  {i}. {field_info.get('id')}")
         
         task_parts.append("\n\nProvide a clear summary of all actions taken.")
         
         task = "\n".join(task_parts)
         
         # Invoke agent
-        logger.info("Invoking AI agent for disclosure preparation...")
+        logger.info("Invoking AI agent for LE preparation...")
         result = preparation_agent.invoke({"messages": [HumanMessage(content=task)]})
         
         # Parse results from agent actions
+        import json
+        
+        regz_le_result = None
         mi_result = None
-        tolerance_result = None
+        ctc_result = None
         fields_populated = []
-        fields_cleaned = []
         fields_failed = []
         actions = []
         
         for message in result["messages"]:
             if hasattr(message, "name"):
                 try:
-                    import json
                     content = json.loads(message.content) if message.content else {}
                     
-                    if message.name == "calculate_loan_mi":
+                    if message.name == "update_regz_le_fields":
+                        regz_le_result = content
+                        actions.append({"action": "regz_le_update", "result": content})
+                        
+                    elif message.name == "calculate_loan_mi":
                         mi_result = content
                         actions.append({"action": "mi_calculation", "result": content})
                         
-                    elif message.name == "check_loan_fee_tolerance":
-                        tolerance_result = content
-                        actions.append({"action": "tolerance_check", "result": content})
+                    elif message.name == "match_ctc":
+                        ctc_result = content
+                        actions.append({"action": "ctc_match", "result": content})
                         
                     elif message.name == "write_field_value":
                         if content.get("success"):
@@ -390,7 +426,6 @@ def run_disclosure_preparation(
                             actions.append({
                                 "action": "populate",
                                 "field_id": field_id,
-                                "value": content.get("value"),
                                 "dry_run": content.get("dry_run", True)
                             })
                         else:
@@ -403,37 +438,38 @@ def run_disclosure_preparation(
                                 "fields": content.get("fields_written", []),
                                 "dry_run": content.get("dry_run", True)
                             })
-                            
-                    elif message.name == "clean_field_value":
-                        field_id = content.get("field_id", "unknown")
-                        fields_cleaned.append(field_id)
-                        actions.append({"action": "clean", "field_id": field_id})
                         
                 except Exception as e:
                     logger.debug(f"Could not parse message: {e}")
         
-        # Generate summary
-        summary_lines = ["Preparation Complete (MVP):"]
+        # Generate summary (v2)
+        summary_lines = ["Preparation Complete (v2 - LE Focus):"]
+        
+        # RegZ-LE Summary
+        if regz_le_result:
+            if regz_le_result.get("success"):
+                summary_lines.append(f"✓ RegZ-LE: Updated {len(regz_le_result.get('updates_made', {}))} fields")
+            else:
+                summary_lines.append(f"✗ RegZ-LE: {regz_le_result.get('errors', 'Error')}")
         
         # MI Summary
         if mi_result:
             if mi_result.get("requires_mi"):
-                summary_lines.append(f"\n✓ MI Calculated: ${mi_result.get('monthly_amount', 0):.2f}/month")
+                summary_lines.append(f"✓ MI: ${mi_result.get('monthly_amount', 0):.2f}/month")
             else:
-                summary_lines.append("\n✓ MI: Not required (LTV ≤ 80%)")
+                summary_lines.append("✓ MI: Not required (LTV ≤ 80%)")
         
-        # Tolerance Summary
-        if tolerance_result:
-            if tolerance_result.get("has_violations"):
-                summary_lines.append(f"\n⚠️ Fee Tolerance: {tolerance_result.get('summary', 'Violations found')}")
+        # CTC Summary
+        if ctc_result:
+            if ctc_result.get("matched"):
+                summary_lines.append(f"✓ CTC: Matched ${ctc_result.get('calculated_ctc', 0):,.2f}")
             else:
-                summary_lines.append("\n✓ Fee Tolerance: No violations")
+                summary_lines.append(f"⚠️ CTC: Mismatch detected")
         
         # Fields Summary
-        summary_lines.append(f"\n- Fields populated: {len(fields_populated)}")
-        summary_lines.append(f"- Fields cleaned: {len(fields_cleaned)}")
-        summary_lines.append(f"- Fields failed: {len(fields_failed)}")
-        summary_lines.append(f"\nTotal actions: {len(actions)}")
+        summary_lines.append(f"\n• Fields populated: {len(fields_populated)}")
+        summary_lines.append(f"• Fields failed: {len(fields_failed)}")
+        summary_lines.append(f"• Total actions: {len(actions)}")
         
         if demo_mode:
             summary_lines.append("\n[DRY RUN - No actual writes performed]")
@@ -441,16 +477,18 @@ def run_disclosure_preparation(
         summary = "\n".join(summary_lines)
         
         logger.info("=" * 80)
-        logger.info("DISCLOSURE PREPARATION COMPLETE")
+        logger.info("DISCLOSURE PREPARATION COMPLETE (v2)")
         logger.info("=" * 80)
         
         return {
             "loan_id": loan_id,
             "status": "success",
+            # v2 additions
+            "regz_le_result": regz_le_result,
+            "ctc_result": ctc_result,
+            # Original
             "mi_result": mi_result,
-            "tolerance_result": tolerance_result,
             "fields_populated": fields_populated,
-            "fields_cleaned": fields_cleaned,
             "fields_failed": fields_failed,
             "actions": actions,
             "summary": summary,
@@ -464,10 +502,10 @@ def run_disclosure_preparation(
             "loan_id": loan_id,
             "status": "failed",
             "error": str(e),
+            "regz_le_result": None,
             "mi_result": None,
-            "tolerance_result": None,
+            "ctc_result": None,
             "fields_populated": [],
-            "fields_cleaned": [],
             "fields_failed": []
         }
 

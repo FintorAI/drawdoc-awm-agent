@@ -7,8 +7,14 @@ Supports multiple authentication flows including client credentials and password
 import os
 import time
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Dict, Any, Optional
 import requests
+from dotenv import load_dotenv
+
+# Load .env from project root
+env_path = Path(__file__).parent.parent.parent / ".env"
+load_dotenv(env_path)
 
 
 @dataclass
@@ -222,17 +228,26 @@ class EncompassAuthManager:
 _auth_manager: Optional[EncompassAuthManager] = None
 
 
-def get_auth_manager() -> EncompassAuthManager:
+def get_auth_manager(force_new: bool = False) -> EncompassAuthManager:
     """Get the global authentication manager instance.
+    
+    Args:
+        force_new: If True, create a new manager even if one exists (re-reads .env)
     
     Returns:
         Singleton EncompassAuthManager instance
     """
     global _auth_manager
-    if _auth_manager is None:
+    if _auth_manager is None or force_new:
         api_base_url = os.getenv("ENCOMPASS_API_BASE_URL", "https://api.elliemae.com")
         _auth_manager = EncompassAuthManager(api_base_url=api_base_url)
     return _auth_manager
+
+
+def reset_auth_manager():
+    """Reset the global auth manager (re-reads .env on next call)."""
+    global _auth_manager
+    _auth_manager = None
 
 
 def get_access_token(force_refresh: bool = False, use_password: bool = False) -> str:

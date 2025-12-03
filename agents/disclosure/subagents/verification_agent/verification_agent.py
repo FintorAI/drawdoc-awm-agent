@@ -1,7 +1,7 @@
 """Verification Sub-Agent for disclosure field checks.
 
-MVP: Checks only ~20 critical fields (not all CSV fields).
-This agent checks if required disclosure fields have values in Encompass.
+v2: Adds TRID compliance checking and expanded form validation for LE.
+This agent validates prerequisites for Initial Loan Estimate (LE) disclosure.
 """
 
 import os
@@ -22,9 +22,16 @@ from packages.shared import (
     get_loan_summary,
     LoanType,
     PropertyState,
+    MVPExclusions,
     DISCLOSURE_CRITICAL_FIELDS,
     get_all_critical_field_ids,
     get_field_name,
+    # v2 additions
+    check_trid_compliance,
+    check_lock_status,
+    check_closing_date,  # G8: 15-day closing date rule
+    validate_disclosure_forms,
+    check_hard_stop_fields,  # G1: Phone/Email hard stop
 )
 
 # Load environment variables
@@ -175,9 +182,10 @@ def check_field_value(loan_id: str, field_id: str) -> dict:
 def check_mvp_eligibility(loan_id: str) -> dict:
     """Check if a loan is eligible for MVP processing.
     
-    MVP eligibility:
-    - Loan type: Conventional only
-    - State: NV or CA only
+    MVP eligibility (v2):
+    - Loan type: Conventional only (FHA/VA/USDA require manual)
+    - State: NOT Texas (TX has special state rules)
+    - State: NV or CA preferred, others may work
     
     Args:
         loan_id: Encompass loan GUID
@@ -193,8 +201,11 @@ def check_mvp_eligibility(loan_id: str) -> dict:
         loan_type = summary.get("loan_type", "Unknown")
         property_state = summary.get("property_state", "Unknown")
         
-        is_mvp_loan_type = LoanType.is_mvp_supported(loan_type)
-        is_mvp_state = PropertyState.is_mvp_supported(property_state)
+        # v2: Use MVPExclusions for checking
+        is_excluded_loan_type = MVPExclusions.is_excluded_loan_type(loan_type)
+        is_excluded_state = MVPExclusions.is_excluded_state(property_state)
+        is_mvp_loan_type = not is_excluded_loan_type
+        is_mvp_state = not is_excluded_state
         is_eligible = is_mvp_loan_type and is_mvp_state
         
         result = {
@@ -209,10 +220,10 @@ def check_mvp_eligibility(loan_id: str) -> dict:
         
         if not is_eligible:
             reasons = []
-            if not is_mvp_loan_type:
-                reasons.append(f"Loan type '{loan_type}' not supported (MVP: Conventional only)")
-            if not is_mvp_state:
-                reasons.append(f"State '{property_state}' not supported (MVP: NV, CA only)")
+            if is_excluded_loan_type:
+                reasons.append(f"Loan type '{loan_type}' requires manual processing (MVP: Conventional only)")
+            if is_excluded_state:
+                reasons.append(f"State '{property_state}' has special rules (TX excluded from MVP)")
             result["ineligibility_reasons"] = reasons
             result["action"] = "manual_processing_required"
         
@@ -228,40 +239,274 @@ def check_mvp_eligibility(loan_id: str) -> dict:
         }
 
 
+@tool
+def check_trid_dates(loan_id: str) -> dict:
+    """Check TRID compliance dates for Initial LE disclosure.
+    
+    Per SOP: LE must be sent within 3 business days of Application Date.
+    Business days exclude Sundays and federal holidays.
+    
+    Args:
+        loan_id: Encompass loan GUID
+        
+    Returns:
+        Dictionary with:
+        - compliant: Whether dates are compliant
+        - application_date: Application date (ISO format)
+        - le_due_date: LE due date (ISO format)
+        - days_remaining: Days until LE due date
+        - is_past_due: Whether LE due date has passed
+        - action: Recommended action if non-compliant
+        - blocking: Whether this blocks disclosure
+    """
+    logger.info(f"[TRID] Checking TRID dates for loan {loan_id[:8]}...")
+    
+    try:
+        result = check_trid_compliance(loan_id)
+        
+        if result.get("is_past_due"):
+            logger.warning(f"[TRID] LE Due Date PASSED - escalate to supervisor")
+        elif result.get("compliant"):
+            logger.info(f"[TRID] TRID compliant - {result.get('days_remaining', 0)} days remaining")
+        else:
+            logger.warning(f"[TRID] TRID not compliant: {result.get('action')}")
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"[TRID] Error checking TRID dates: {e}")
+        return {
+            "compliant": False,
+            "error": str(e),
+            "blocking": True,
+            "action": "Error checking TRID compliance - see error details"
+        }
+
+
+@tool
+def check_rate_lock_status(loan_id: str) -> dict:
+    """Check rate lock status for the loan.
+    
+    Per SOP:
+    - Case 1 (Locked Loans): All TRID info must be updated
+    - Case 2 (Non-Locked Loans): Monitor App Date & LE Due Date
+    
+    Args:
+        loan_id: Encompass loan GUID
+        
+    Returns:
+        Dictionary with:
+        - is_locked: Whether rate is locked
+        - lock_date: Lock date (if locked)
+        - lock_expiration: Lock expiration date
+        - flow: "locked" or "non_locked"
+    """
+    logger.info(f"[TRID] Checking lock status for loan {loan_id[:8]}...")
+    
+    try:
+        result = check_lock_status(loan_id)
+        
+        # Add flow indicator
+        result["flow"] = "locked" if result.get("is_locked") else "non_locked"
+        
+        if result.get("is_locked"):
+            logger.info(f"[TRID] Loan is LOCKED - using locked flow")
+        else:
+            logger.info(f"[TRID] Loan is NOT LOCKED - using non-locked flow")
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"[TRID] Error checking lock status: {e}")
+        return {
+            "is_locked": False,
+            "flow": "non_locked",
+            "error": str(e)
+        }
+
+
+@tool
+def validate_disclosure_form_fields(loan_id: str) -> dict:
+    """Validate all required form fields for disclosure.
+    
+    Per SOP, validates:
+    - 1003 URLA Lender Form (all 4 parts)
+    - Borrower Summary Origination
+    - FACT Act Disclosure (credit scores)
+    - RegZ-LE fields
+    - Affiliated Business Arrangements
+    - LO Info (NMLS verification)
+    
+    Args:
+        loan_id: Encompass loan GUID
+        
+    Returns:
+        Dictionary with:
+        - all_valid: Whether all forms passed validation
+        - forms_checked: Number of forms checked
+        - forms_passed: Number of forms that passed
+        - missing_critical: List of critical missing fields (blocking)
+        - missing_fields: List of all missing fields
+        - blocking: Whether this blocks disclosure
+    """
+    logger.info(f"[FORM] Validating all disclosure forms for loan {loan_id[:8]}...")
+    
+    try:
+        result = validate_disclosure_forms(loan_id)
+        
+        logger.info(f"[FORM] Validation complete: {result.get('forms_passed')}/{result.get('forms_checked')} forms passed")
+        
+        if result.get("missing_critical"):
+            logger.warning(f"[FORM] Missing critical fields: {result.get('missing_critical')}")
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"[FORM] Error validating forms: {e}")
+        return {
+            "all_valid": False,
+            "error": str(e),
+            "blocking": True,
+        }
+
+
+@tool
+def check_closing_date_rule(loan_id: str) -> dict:
+    """Check closing date meets 15-day rule (G8).
+    
+    Per SOP: Closing date must be at least 15 days after:
+    - Application date (if loan is NOT locked)
+    - Last rate set date (if loan IS locked)
+    
+    Args:
+        loan_id: Encompass loan GUID
+        
+    Returns:
+        Dictionary with:
+        - is_valid: Whether closing date meets requirement
+        - closing_date: Estimated closing date
+        - reference_date: App date or rate set date used
+        - days_until_closing: Days between reference and closing
+        - minimum_days: Required minimum (15)
+        - blocking: Whether this blocks disclosure
+    """
+    logger.info(f"[TRID] Checking 15-day closing date rule for loan {loan_id[:8]}...")
+    
+    try:
+        result = check_closing_date(loan_id)
+        
+        if result.get("is_valid"):
+            logger.info(f"[TRID] Closing date valid: {result.get('days_until_closing')} days")
+        else:
+            logger.warning(f"[TRID] Closing date INVALID: {result.get('action')}")
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"[TRID] Error checking closing date: {e}")
+        return {
+            "is_valid": False,
+            "error": str(e),
+            "blocking": True,
+            "action": "Error checking closing date rule"
+        }
+
+
+@tool
+def check_hard_stops(loan_id: str) -> dict:
+    """Check HARD STOP fields per SOP (G1).
+    
+    Per SOP: Missing phone number or email is a HARD STOP.
+    Disclosure CANNOT proceed if these are missing.
+    
+    Args:
+        loan_id: Encompass loan GUID
+        
+    Returns:
+        Dictionary with:
+        - has_hard_stops: Whether any hard stop fields are missing
+        - missing_fields: List of missing hard stop fields
+        - blocking: Whether this blocks disclosure
+        - blocking_message: Message explaining the hard stop
+    """
+    logger.info(f"[FORM] Checking HARD STOP fields for loan {loan_id[:8]}...")
+    
+    try:
+        result = check_hard_stop_fields(loan_id)
+        
+        if result.get("has_hard_stops"):
+            logger.error(f"[FORM] HARD STOP: Missing {result.get('missing_fields')}")
+        else:
+            logger.info(f"[FORM] No hard stops - phone and email present")
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"[FORM] Error checking hard stops: {e}")
+        return {
+            "has_hard_stops": True,
+            "missing_fields": ["unknown"],
+            "blocking": True,
+            "blocking_message": f"Error checking hard stop fields: {e}"
+        }
+
+
 # =============================================================================
-# AGENT CONFIGURATION
+# AGENT CONFIGURATION (v2)
 # =============================================================================
 
-verification_instructions = """You are a Disclosure Verification Sub-Agent.
+verification_instructions = """You are the Disclosure Verification Agent.
 
-Your job is to check if critical disclosure fields have values in Encompass.
+Your job is to validate prerequisites for Initial Loan Estimate (LE) disclosure.
 
-MVP SCOPE:
-- Only ~20 critical fields are checked (not all CSV fields)
-- Only Conventional loans in NV/CA are fully supported
-- Non-MVP loans should be flagged for manual processing
+MVP SCOPE (v2):
+- Conventional loans only (FHA/VA/USDA require manual processing)
+- NOT Texas (TX has special state rules)
+- Focus on LE (Loan Estimate), not CD (Closing Disclosure)
 
 WORKFLOW:
-1. First, use check_mvp_eligibility(loan_id) to see if this loan is MVP-eligible
-2. Use check_critical_fields(loan_id) to check all critical fields at once
-3. For specific fields, use check_field_value(loan_id, field_id)
+1. Check TRID compliance FIRST (app date, LE due date) using check_trid_dates()
+2. Check HARD STOPS (phone/email) using check_hard_stops() - G1
+3. Check closing date 15-day rule using check_closing_date_rule() - G8
+4. Check if loan is MVP-eligible using check_mvp_eligibility()
+5. Check lock status using check_rate_lock_status()
+6. Validate required form fields using validate_disclosure_form_fields()
+7. Check critical fields using check_critical_fields()
+
+BLOCKING CONDITIONS (must halt and report):
+- Application Date not set
+- LE Due Date has passed → Escalate to Supervisor
+- Missing Phone or Email → HARD STOP (G1)
+- Closing date < 15 days from app date → Must adjust (G8)
+- Texas property → Manual processing required
+- Non-Conventional loan → Manual processing required
+- Critical form fields missing
 
 REPORT SUMMARY INCLUDING:
-- MVP eligibility status (is this Conventional in NV/CA?)
-- Total fields checked
-- Number of fields with values
-- Number of fields missing
-- List of missing field IDs and names (up to first 10)
-- Critical warnings if non-MVP loan type or state
+- TRID compliance (app date, LE due date, days remaining)
+- HARD STOP status (phone/email present?) - G1
+- Closing date validity (15-day rule met?) - G8
+- MVP eligibility status (Conventional? Not TX?)
+- Lock status (locked vs non-locked flow)
+- Form validation results (critical fields missing?)
+- Any blocking conditions that require attention
 
 Be concise and clear in your report.
 """
 
 # Create the verification agent
 verification_agent = create_deep_agent(
-    agent_type="Disclosure-Verification-SubAgent",
+    agent_type="Disclosure-Verification-SubAgent-v2",
     system_prompt=verification_instructions,
     tools=[
+        # TRID tools (v2)
+        check_trid_dates,
+        check_rate_lock_status,
+        check_closing_date_rule,  # G8: 15-day rule
+        # Form validation (v2)
+        validate_disclosure_form_fields,
+        check_hard_stops,  # G1: Phone/Email hard stop
+        # Original tools
         check_critical_fields,
         check_field_value,
         check_mvp_eligibility,
@@ -274,9 +519,13 @@ verification_agent = create_deep_agent(
 # =============================================================================
 
 def run_disclosure_verification(loan_id: str) -> Dict[str, Any]:
-    """Run disclosure verification for a loan.
+    """Run disclosure verification for a loan (v2).
     
-    MVP: Only checks ~20 critical fields and validates MVP eligibility.
+    v2 additions:
+    - TRID compliance checking (app date, LE due date)
+    - Lock status checking
+    - Expanded form validation
+    - Focus on LE instead of CD
     
     Args:
         loan_id: Encompass loan GUID
@@ -284,90 +533,196 @@ def run_disclosure_verification(loan_id: str) -> Dict[str, Any]:
     Returns:
         Dictionary with verification results:
         - loan_id: Loan GUID
-        - status: "success" or "failed"
+        - status: "success", "blocked", or "failed"
         - is_mvp_supported: Whether loan is MVP eligible
+        - trid_compliance: TRID check results (v2)
+        - lock_status: Lock status results (v2)
+        - form_validation: Form validation results (v2)
         - fields_checked: Total fields checked
-        - fields_with_values: List of field IDs with values
         - fields_missing: List of field IDs missing values
-        - field_details: Detailed status for each field
+        - blocking_issues: List of issues that block disclosure
         - summary: Human-readable summary
     """
     from langchain_core.messages import HumanMessage
     
     logger.info("=" * 80)
-    logger.info("DISCLOSURE VERIFICATION STARTING (MVP)")
+    logger.info("DISCLOSURE VERIFICATION STARTING (v2 - LE Focus)")
     logger.info("=" * 80)
     logger.info(f"Loan ID: {loan_id}")
     
     try:
-        # Create task for agent
-        task = f"""Verify disclosure fields for loan {loan_id}.
+        # Create task for agent (v2 workflow with G1/G8)
+        task = f"""Verify Initial Loan Estimate (LE) disclosure prerequisites for loan {loan_id}.
 
-1. First, check if this loan is MVP-eligible using check_mvp_eligibility()
-2. Then check all critical fields using check_critical_fields()
+WORKFLOW:
+1. First, check TRID compliance using check_trid_dates()
+2. Check HARD STOPS (phone/email) using check_hard_stops() - G1
+3. Check closing date 15-day rule using check_closing_date_rule() - G8
+4. Check MVP eligibility using check_mvp_eligibility()
+5. Check lock status using check_rate_lock_status()
+6. Validate form fields using validate_disclosure_form_fields()
+7. Check critical fields using check_critical_fields()
 
-Provide a clear summary including:
-1. MVP eligibility (Conventional loan in NV/CA?)
-2. Total number of critical fields checked
-3. Number of fields with values
-4. Number of fields missing
-5. List the missing field IDs and names (up to first 10)
-6. Any warnings about MVP eligibility
+Report any BLOCKING issues:
+- Application Date not set
+- LE Due Date has passed
+- Missing Phone/Email (HARD STOP - G1)
+- Closing date < 15 days from app date (G8)
+- Texas property
+- Non-Conventional loan
+- Critical fields missing
+
+Provide a clear summary of all results.
 """
         
         # Invoke agent
         result = verification_agent.invoke({"messages": [HumanMessage(content=task)]})
         
         # Extract results from agent messages
-        tool_results = {}
-        mvp_eligibility = {}
+        import json
+        
+        trid_result = {}
+        lock_result = {}
+        form_result = {}
+        field_result = {}
+        mvp_result = {}
+        hard_stop_result = {}  # G1
+        closing_date_result = {}  # G8
         
         for message in result["messages"]:
             if hasattr(message, "name"):
-                if message.name == "check_critical_fields":
-                    import json
-                    tool_results = json.loads(message.content)
-                elif message.name == "check_mvp_eligibility":
-                    import json
-                    mvp_eligibility = json.loads(message.content)
+                try:
+                    content = json.loads(message.content)
+                    if message.name == "check_trid_dates":
+                        trid_result = content
+                    elif message.name == "check_rate_lock_status":
+                        lock_result = content
+                    elif message.name == "validate_disclosure_form_fields":
+                        form_result = content
+                    elif message.name == "check_critical_fields":
+                        field_result = content
+                    elif message.name == "check_mvp_eligibility":
+                        mvp_result = content
+                    elif message.name == "check_hard_stops":
+                        hard_stop_result = content  # G1
+                    elif message.name == "check_closing_date_rule":
+                        closing_date_result = content  # G8
+                except:
+                    pass
+        
+        # Collect blocking issues
+        blocking_issues = []
+        
+        if trid_result.get("is_past_due"):
+            blocking_issues.append("LE Due Date has PASSED - Escalate to Supervisor")
+        if not trid_result.get("application_date"):
+            blocking_issues.append("Application Date not set")
+        
+        # G1: Hard stops
+        if hard_stop_result.get("has_hard_stops"):
+            missing = hard_stop_result.get("missing_fields", [])
+            blocking_issues.append(f"HARD STOP: Missing {', '.join(missing)} - Cannot proceed")
+        
+        # G8: Closing date rule
+        if closing_date_result and not closing_date_result.get("is_valid", True):
+            blocking_issues.append(f"Closing date invalid: {closing_date_result.get('action', 'Less than 15 days')}")
+        
+        if not mvp_result.get("is_eligible", True):
+            for reason in mvp_result.get("ineligibility_reasons", []):
+                blocking_issues.append(reason)
+        
+        if form_result.get("missing_critical"):
+            blocking_issues.append(f"Critical fields missing: {form_result.get('missing_critical')}")
+        
+        # G1: Also check hard stops from form validation (fallback)
+        if form_result.get("has_hard_stops"):
+            blocking_issues.append(f"HARD STOP: Missing {form_result.get('hard_stop_fields', [])}")
+        
+        # Determine status
+        if blocking_issues:
+            status = "blocked"
+        else:
+            status = "success"
         
         # Generate summary
-        fields_checked = tool_results.get("fields_checked", 0)
-        fields_with_values = tool_results.get("fields_with_values", [])
-        fields_missing = tool_results.get("fields_missing", [])
-        is_mvp_supported = tool_results.get("is_mvp_supported", True)
-        mvp_warnings = tool_results.get("mvp_warnings", [])
+        is_mvp_supported = mvp_result.get("is_eligible", True)
+        fields_checked = field_result.get("fields_checked", 0)
+        fields_missing = field_result.get("fields_missing", [])
         
-        summary_lines = ["Verification Complete (MVP):"]
-        summary_lines.append(f"- Fields checked: {fields_checked}")
-        summary_lines.append(f"- Fields with values: {len(fields_with_values)}")
-        summary_lines.append(f"- Fields missing: {len(fields_missing)}")
+        summary_lines = ["Verification Complete (v2 - LE Focus):"]
         
-        if not is_mvp_supported:
-            summary_lines.append("\n⚠️ NON-MVP LOAN - Manual processing may be required:")
-            for warning in mvp_warnings:
-                summary_lines.append(f"  - {warning}")
+        # TRID
+        if trid_result.get("compliant"):
+            summary_lines.append(f"✓ TRID: Compliant ({trid_result.get('days_remaining', 0)} days until LE due)")
+        elif trid_result.get("is_past_due"):
+            summary_lines.append(f"✗ TRID: LE Due Date PASSED - BLOCKING")
+        else:
+            summary_lines.append(f"✗ TRID: {trid_result.get('action', 'Issue detected')}")
         
-        if fields_missing:
-            summary_lines.append("\nMissing fields require attention before disclosure.")
+        # G1: Hard stops
+        if hard_stop_result.get("has_hard_stops"):
+            summary_lines.append(f"✗ HARD STOP: Missing {hard_stop_result.get('missing_fields', [])} - BLOCKING")
+        else:
+            summary_lines.append(f"✓ Hard Stops: Phone & Email present")
+        
+        # G8: Closing date
+        if closing_date_result:
+            if closing_date_result.get("is_valid"):
+                days = closing_date_result.get("days_until_closing", 0)
+                summary_lines.append(f"✓ Closing Date: Valid ({days} days from ref date)")
+            else:
+                summary_lines.append(f"✗ Closing Date: {closing_date_result.get('action', 'Invalid')} - BLOCKING")
+        
+        # Lock status
+        flow = lock_result.get("flow", "unknown")
+        summary_lines.append(f"• Lock Status: {flow.upper()}")
+        
+        # MVP
+        if is_mvp_supported:
+            summary_lines.append(f"✓ MVP Eligible: Yes")
+        else:
+            summary_lines.append(f"✗ MVP Eligible: No - {mvp_result.get('ineligibility_reasons', [])}")
+        
+        # Forms
+        forms_passed = form_result.get("forms_passed", 0)
+        forms_checked = form_result.get("forms_checked", 0)
+        summary_lines.append(f"• Forms: {forms_passed}/{forms_checked} passed")
+        
+        # Fields
+        summary_lines.append(f"• Fields: {fields_checked} checked, {len(fields_missing)} missing")
+        
+        # Blocking
+        if blocking_issues:
+            summary_lines.append("\n⚠️ BLOCKING ISSUES:")
+            for issue in blocking_issues:
+                summary_lines.append(f"  - {issue}")
         
         summary = "\n".join(summary_lines)
         
         logger.info("=" * 80)
-        logger.info("DISCLOSURE VERIFICATION COMPLETE")
+        logger.info(f"DISCLOSURE VERIFICATION COMPLETE - Status: {status.upper()}")
         logger.info("=" * 80)
         
         return {
             "loan_id": loan_id,
-            "status": "success",
+            "status": status,
             "is_mvp_supported": is_mvp_supported,
-            "mvp_warnings": mvp_warnings,
+            # v2 additions
+            "trid_compliance": trid_result,
+            "lock_status": lock_result,
+            "form_validation": form_result,
+            # G1: Hard stop result
+            "hard_stop_check": hard_stop_result,
+            # G8: Closing date result
+            "closing_date_check": closing_date_result,
+            # Original
             "fields_checked": fields_checked,
-            "fields_with_values": fields_with_values,
+            "fields_with_values": field_result.get("fields_with_values", []),
             "fields_missing": fields_missing,
-            "field_details": tool_results.get("field_details", {}),
-            "loan_type": tool_results.get("loan_type"),
-            "property_state": tool_results.get("property_state"),
+            "field_details": field_result.get("field_details", {}),
+            "loan_type": field_result.get("loan_type"),
+            "property_state": field_result.get("property_state"),
+            "blocking_issues": blocking_issues,
             "summary": summary,
             "agent_messages": result["messages"]
         }
@@ -381,7 +736,8 @@ Provide a clear summary including:
             "is_mvp_supported": False,
             "fields_checked": 0,
             "fields_with_values": [],
-            "fields_missing": []
+            "fields_missing": [],
+            "blocking_issues": [str(e)]
         }
 
 

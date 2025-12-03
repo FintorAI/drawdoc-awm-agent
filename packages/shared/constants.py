@@ -272,3 +272,165 @@ class MIConstants:
         "95_to_97_ltv": 0.0095,  # 0.95% annual
     }
 
+
+# =============================================================================
+# REGZ-LE FIELD MAPPINGS (v2)
+# =============================================================================
+
+REGZ_LE_FIELDS = {
+    # LE Date
+    "le_date_issued": "LE1.X1",
+    
+    # Interest Accrual
+    "interest_days_per_year": "1176",
+    "zero_percent_payment_option": "3514",
+    "use_simple_interest": "3515",
+    "biweekly_interim_days": "3516",
+    
+    # Late Charge
+    "late_charge_days": "672",
+    "late_charge_percent": "674",  # Fixed: was 673 which doesn't exist
+    
+    # Assumption
+    "assumption_text": "3517",
+    
+    # Buydown
+    "buydown_marked": "1751",
+    "buydown_contributor": "1755",
+    "buydown_type": "1753",
+    "buydown_rate": "1754",
+    "buydown_term": "1756",
+    "buydown_funds": "1757",
+    
+    # Prepayment
+    "prepay_indicator": "664",
+    "prepay_type": "1762",
+    "prepay_period": "1763",
+    "prepay_percent": "1764",
+}
+
+
+# =============================================================================
+# FORM REQUIRED FIELDS (v2 - per SOP)
+# =============================================================================
+
+FORM_REQUIRED_FIELDS = {
+    "1003_URLA_Lender": [
+        "4000",  # Borrower First Name
+        "4002",  # Borrower Last Name
+        "65",    # Borrower SSN
+        "11",    # Property Address
+        "12",    # Property City
+        "14",    # Property State
+        "15",    # Property Zip
+        "1109",  # Loan Amount
+        "19",    # Loan Purpose
+        "1811",  # Occupancy Type
+    ],
+    "Borrower_Summary_Origination": [
+        "2626",  # Channel
+        "1393",  # Current Status
+        "745",   # Application Date
+    ],
+    "RegZ_LE": [
+        "LE1.X1",  # LE Date Issued
+        "3",       # Interest Rate
+        "4",       # Loan Term
+    ],
+}
+
+
+# =============================================================================
+# CASH TO CLOSE FIELDS (v2)
+# =============================================================================
+
+CTC_FIELDS = {
+    # Loan Purpose
+    "loan_purpose": "19",
+    
+    # Purchase Settings
+    "use_actual_down_payment": "NEWHUD2.X55",
+    "closing_costs_financed": "NEWHUD2.X56",
+    "include_payoffs_in_adjustments": "NEWHUD2.X57",
+    
+    # Refinance Settings
+    "alternative_form_checkbox": "NEWHUD2.X58",
+    
+    # CTC Values
+    "calculated_ctc": "NEWHUD2.X59",
+    "displayed_ctc": "LE1.X77",
+    "estimated_ctc": "CD3.X105",
+    
+    # Section M
+    "emd_deposit": "1394",
+    "general_lender_credit": "1395",
+    "seller_credit": "1396",
+}
+
+
+# =============================================================================
+# ATR/QM FIELDS (v2)
+# =============================================================================
+
+ATR_QM_FIELDS = {
+    # Qualification Flags
+    "loan_features_flag": "ATRQM.X1",
+    "points_fees_flag": "ATRQM.X2",
+    "price_limit_flag": "ATRQM.X3",
+    
+    # Eligibility
+    "atr_qm_eligibility": "ATRQM.X4",
+    
+    # Points and Fees Test
+    "points_fees_limit": "ATRQM.X10",
+    "points_fees_actual": "ATRQM.X11",
+    "points_fees_test_result": "ATRQM.X12",
+    
+    # QM Type
+    "qm_type": "ATRQM.X20",
+}
+
+
+# =============================================================================
+# TRID DATE FIELDS (v2)
+# =============================================================================
+
+TRID_FIELDS = {
+    # Application/Disclosure dates
+    "application_date": "745",
+    "le_date_issued": "LE1.X1",
+    "disclosure_sent_date": "3152",
+    
+    # Lock fields
+    "lock_date": "761",
+    "lock_expiration": "432",
+    "rate_locked": "2400",
+}
+
+
+# =============================================================================
+# MVP EXCLUSIONS (v2)
+# =============================================================================
+
+class MVPExclusions:
+    """States and loan types excluded from MVP automation."""
+    
+    # Texas has special state rules
+    EXCLUDED_STATES = ["TX"]
+    
+    # Non-Conventional loans require manual processing
+    EXCLUDED_LOAN_TYPES = ["FHA", "VA", "USDA"]
+    
+    @classmethod
+    def is_excluded_state(cls, state: str) -> bool:
+        """Check if state is excluded from MVP."""
+        if state is None:
+            return False
+        return state.upper() in cls.EXCLUDED_STATES
+    
+    @classmethod
+    def is_excluded_loan_type(cls, loan_type: str) -> bool:
+        """Check if loan type is excluded from MVP."""
+        if loan_type is None:
+            return True
+        return loan_type in cls.EXCLUDED_LOAN_TYPES

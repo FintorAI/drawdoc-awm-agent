@@ -107,7 +107,9 @@ def calculate_conventional_mi(
         else:
             ltv = 100.0
     
-    logger.info(f"[MI] Calculating Conventional MI: LTV={ltv:.2f}%, Amount=${loan_amount:,.0f}")
+    # Format loan amount safely
+    amount_str = f"${loan_amount:,.0f}" if loan_amount is not None else "$0"
+    logger.info(f"[MI] Calculating Conventional MI: LTV={ltv:.2f}%, Amount={amount_str}")
     
     # No MI required for LTV <= 80%
     if ltv <= MIConstants.MI_REQUIRED_LTV:

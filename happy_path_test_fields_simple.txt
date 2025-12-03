@@ -1,0 +1,53 @@
+Pre-check Fields
+• Application Date = Today or yesterday
+• Closing Date = Today + 20 days (or more)
+• LE Date Issued = (Set automatically by agent)
+• Loan Type = "Conventional"
+• Property State = "CA" or "NV"
+• Rate Lock Indicator = "Y" or "N"
+
+Hard Stop Fields
+• Borrower Phone = Any valid phone number
+• Borrower Email = Any valid email address
+
+Form Validation Fields
+• Borrower First Name = Any value
+• Borrower Last Name = Any value
+• Borrower SSN = Any value
+• Property Address = Any value
+• Loan Amount = Any amount
+• Interest Rate = Any rate
+• Loan Originator Name = Any value
+• Loan Originator NMLS ID = Any value
+• Loan Status = "Active"
+
+RegZ-LE Fields
+• Late Charge Days = 15
+• Late Charge Percent = 5%
+• Assumption = "may not"
+• Interest Days/Year = 360
+
+ATR/QM Fields
+• Loan Features Flag = GREEN
+• Points & Fees Flag = GREEN
+• Price Limit Flag = GREEN
+
+Cash to Close Fields
+• Displayed Cash to Close = Must match calculated CTC
+• Use Actual Down Payment = Checked (Purchase)
+• Closing Costs Financed = Checked (Purchase)
+• Include Payoffs in Adjustments = Checked (Purchase)
+• Alternative Form Checkbox = Checked (Refinance)
+
+================================================================================
+MINIMUM FIELDS TO UPDATE
+================================================================================
+1. Application Date = Today's date
+2. Closing Date = Today + 20 days
+3. Loan Type = "Conventional"
+4. Property State = "CA"
+5. Borrower Phone = Valid phone
+6. Borrower Email = Valid email
+7. Loan Status = "Active"
+
+================================================================================

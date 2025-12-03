@@ -1,0 +1,441 @@
+{
+  "_description": "Happy Path Test Data for Disclosure Agent v2 - All values set for successful processing",
+  "_mvp_scope": "Conventional loan, CA property, Purchase transaction",
+  "_last_updated": "2024-12-02",
+  
+  "loan_id": "b73fb60d-8f5d-4cbb-a05d-f1f2d1217af6",
+  
+  "=== MVP ELIGIBILITY (REQUIRED) ===": "These MUST pass for MVP processing",
+  
+  "mvp_eligibility": {
+    "1172": {
+      "field_name": "Loan Type",
+      "expected_value": "Conventional",
+      "rule": "Must be 'Conventional' (FHA/VA/USDA excluded from MVP)"
+    },
+    "14": {
+      "field_name": "Property State",
+      "expected_value": "CA",
+      "rule": "Must be 'NV' or 'CA' (Texas excluded from MVP)"
+    },
+    "19": {
+      "field_name": "Loan Purpose",
+      "expected_value": "Purchase",
+      "rule": "'Purchase' or 'Refinance' supported"
+    }
+  },
+  
+  "=== TRID COMPLIANCE ===": "Application/Disclosure timing",
+  
+  "trid_fields": {
+    "745": {
+      "field_name": "Application Date",
+      "expected_value": "2024-12-01",
+      "current_value_in_test_loan": "2022-11-15",
+      "rule": "Must be set; LE due within 3 business days"
+    },
+    "LE1.X1": {
+      "field_name": "LE Date Issued",
+      "expected_value": "2024-12-02",
+      "current_value_in_test_loan": "(empty)",
+      "rule": "SET BY PREPARATION AGENT to current date when preparing LE"
+    },
+    "3152": {
+      "field_name": "LE Due Date / Disclosure Sent Date",
+      "expected_value": "2024-12-04",
+      "current_value_in_test_loan": "(empty)",
+      "rule": "Calculated: App Date + 3 business days (excludes Sundays, holidays)"
+    },
+    "761": {
+      "field_name": "Lock Date",
+      "expected_value": "2024-12-01",
+      "current_value_in_test_loan": "(see rateLock section)",
+      "rule": "If locked, Case 1 flow applies"
+    },
+    "762": {
+      "field_name": "Lock Expiration Date",
+      "expected_value": "2024-12-15",
+      "rule": "For locked loans (CSV confirms 762 is Lock Expiration Date)"
+    },
+    "2400": {
+      "field_name": "Rate Locked Indicator",
+      "expected_value": "Y",
+      "rule": "'Y' = Locked, 'N' = Not Locked"
+    }
+  },
+  
+  "=== BORROWER INFO (1003 URLA) ===": "Required for forms validation",
+  
+  "borrower_fields": {
+    "4000": {
+      "field_name": "Borrower First Name",
+      "expected_value": "ATHENA",
+      "current_value_in_test_loan": "ATHENA",
+      "status": "PRESENT"
+    },
+    "4002": {
+      "field_name": "Borrower Last Name",
+      "expected_value": "WHITE",
+      "current_value_in_test_loan": "WHITE",
+      "status": "PRESENT"
+    },
+    "65": {
+      "field_name": "Borrower SSN",
+      "expected_value": "900-88-7799",
+      "current_value_in_test_loan": "900-88-7799",
+      "status": "PRESENT"
+    },
+    "1240": {
+      "field_name": "Borrower Email",
+      "expected_value": "toktok8calabarzon@gmail.com",
+      "current_value_in_test_loan": "(need to verify)",
+      "status": "CHECK",
+      "note": "CSV confirms 1240 is Borrower Email (1402 is DOB)"
+    },
+    "1402": {
+      "field_name": "Borrower DOB",
+      "expected_value": "08/08/1978",
+      "current_value_in_test_loan": "08/08/1978",
+      "status": "PRESENT"
+    }
+  },
+  
+  "=== PROPERTY INFO ===": "Required for disclosure",
+  
+  "property_fields": {
+    "11": {
+      "field_name": "Property Street Address",
+      "expected_value": "8080 BALLER ST",
+      "current_value_in_test_loan": "8080 BALLER ST",
+      "status": "PRESENT"
+    },
+    "12": {
+      "field_name": "Property City",
+      "expected_value": "Garden Grove",
+      "current_value_in_test_loan": "Garden Grove",
+      "status": "PRESENT"
+    },
+    "14": {
+      "field_name": "Property State",
+      "expected_value": "CA",
+      "current_value_in_test_loan": "CA",
+      "status": "PRESENT"
+    },
+    "15": {
+      "field_name": "Property Zip",
+      "expected_value": "92840",
+      "current_value_in_test_loan": "92840",
+      "status": "PRESENT"
+    },
+    "1041": {
+      "field_name": "Property Type",
+      "expected_value": "Detached",
+      "current_value_in_test_loan": "Detached",
+      "status": "PRESENT"
+    },
+    "1811": {
+      "field_name": "Occupancy Type",
+      "expected_value": "PrimaryResidence",
+      "current_value_in_test_loan": "OwnerOccupied",
+      "status": "PRESENT"
+    }
+  },
+  
+  "=== LOAN TERMS ===": "Core loan information",
+  
+  "loan_fields": {
+    "1109": {
+      "field_name": "Loan Amount",
+      "expected_value": 968877.00,
+      "current_value_in_test_loan": 968877.00,
+      "status": "PRESENT"
+    },
+    "3": {
+      "field_name": "Interest Rate",
+      "expected_value": 6.0,
+      "current_value_in_test_loan": 6.0,
+      "status": "PRESENT"
+    },
+    "4": {
+      "field_name": "Loan Term (months)",
+      "expected_value": 360,
+      "current_value_in_test_loan": 360,
+      "status": "PRESENT"
+    },
+    "353": {
+      "field_name": "LTV",
+      "expected_value": 98.865,
+      "current_value_in_test_loan": 98.865,
+      "status": "PRESENT",
+      "rule": "If > 80%, MI calculation required for Conventional"
+    },
+    "976": {
+      "field_name": "CLTV",
+      "expected_value": 98.865,
+      "current_value_in_test_loan": 98.865,
+      "status": "PRESENT"
+    },
+    "356": {
+      "field_name": "Appraised Value",
+      "expected_value": 980000,
+      "current_value_in_test_loan": 980000,
+      "status": "PRESENT"
+    },
+    "136": {
+      "field_name": "Purchase Price",
+      "expected_value": 980000.00,
+      "current_value_in_test_loan": 980000.00,
+      "status": "PRESENT"
+    }
+  },
+  
+  "=== REGZ-LE FIELDS ===": "Fields updated by Preparation Agent",
+  
+  "regz_le_fields": {
+    "LE1.X1": {
+      "field_name": "LE Date Issued",
+      "expected_value": "(current date - set by agent)",
+      "action": "WRITE - Set to current date when preparing LE"
+    },
+    "1176": {
+      "field_name": "Interest Days Per Year",
+      "expected_value": "360/360",
+      "action": "WRITE - Per SOP"
+    },
+    "3514": {
+      "field_name": "0% Payment Option",
+      "expected_value": "(blank)",
+      "action": "VERIFY BLANK - Per SOP"
+    },
+    "3515": {
+      "field_name": "Use Simple Interest Accrual",
+      "expected_value": "(blank)",
+      "action": "VERIFY BLANK - Per SOP"
+    },
+    "3516": {
+      "field_name": "Biweekly/Interim Interest Days",
+      "expected_value": "365",
+      "action": "WRITE - Per SOP"
+    },
+    "672": {
+      "field_name": "Late Charge Days",
+      "expected_value": 15,
+      "rule": "Conventional = 15 days"
+    },
+    "673": {
+      "field_name": "Late Charge Percent",
+      "expected_value": 5.0,
+      "rule": "Conventional = 5% (FHA/VA = 4%, NC = 4% all)"
+    },
+    "3517": {
+      "field_name": "Assumption Text",
+      "expected_value": "may not",
+      "rule": "Conventional = 'may not', FHA/VA = 'may, subject to conditions'"
+    },
+    "1751": {
+      "field_name": "Buydown Marked",
+      "expected_value": "(check if marked)",
+      "rule": "If marked, buydown fields must be updated"
+    },
+    "664": {
+      "field_name": "Prepayment Indicator",
+      "expected_value": "Will not",
+      "rule": "If 'Will/May/May be', update prepay penalty fields"
+    }
+  },
+  
+  "=== CASH TO CLOSE FIELDS ===": "CTC matching settings",
+  
+  "ctc_fields": {
+    "19": {
+      "field_name": "Loan Purpose",
+      "expected_value": "Purchase",
+      "rule": "Determines which CTC settings to apply"
+    },
+    "_purchase_settings": {
+      "NEWHUD2.X55": {
+        "field_name": "Use Actual Down Payment",
+        "expected_value": true,
+        "action": "WRITE for Purchase loans"
+      },
+      "NEWHUD2.X56": {
+        "field_name": "Closing Costs Financed",
+        "expected_value": true,
+        "action": "WRITE for Purchase loans"
+      },
+      "NEWHUD2.X57": {
+        "field_name": "Include Payoffs in Adjustments",
+        "expected_value": true,
+        "action": "WRITE for Purchase loans"
+      }
+    },
+    "_refinance_settings": {
+      "NEWHUD2.X58": {
+        "field_name": "Alternative Form Checkbox",
+        "expected_value": true,
+        "action": "WRITE for Refinance loans"
+      }
+    },
+    "LE1.X77": {
+      "field_name": "Displayed CTC (LE Page 2)",
+      "expected_value": 44690.00,
+      "current_value_in_test_loan": 44690.00,
+      "rule": "Must match calculated CTC"
+    }
+  },
+  
+  "=== ATR/QM FIELDS ===": "Mandatory compliance flags",
+  
+  "atr_qm_fields": {
+    "ATRQM.X1": {
+      "field_name": "Loan Features Flag",
+      "expected_value": "Green",
+      "current_status": "Review Needed",
+      "rule": "MUST BE GREEN - Blocking if Red"
+    },
+    "ATRQM.X2": {
+      "field_name": "Points and Fees Flag",
+      "expected_value": "Green",
+      "current_status": "Not Meet",
+      "rule": "MUST BE GREEN - Blocking if Red"
+    },
+    "ATRQM.X3": {
+      "field_name": "Price Limit Flag",
+      "expected_value": "Green",
+      "current_status": "Not Meet",
+      "rule": "MUST BE GREEN - Blocking if Red"
+    },
+    "_note": "Current test loan has ATR/QM issues - may need different test loan for happy path"
+  },
+  
+  "=== MAVENT COMPLIANCE ===": "Mandatory before sending",
+  
+  "mavent": {
+    "_check": "Run via GET /ecs/v1/compliancereports",
+    "expected_result": {
+      "fails": 0,
+      "alerts": 0,
+      "warnings": 0
+    },
+    "rule": "MUST have no Fails/Alerts/Warnings - Blocking if any exist"
+  },
+  
+  "=== eDISCLOSURES API ===": "Required for ordering Initial LE package",
+  
+  "edisclosures_api": {
+    "loan_id": "b73fb60d-8f5d-4cbb-a05d-f1f2d1217af6",
+    "application_id": {
+      "source": "GET /encompass/v3/loans/{loanId} -> applications[0].id",
+      "expected_value": "2a5e4b26-212e-4ce4-a1d5-04b6e353646b",
+      "current_value_in_test_loan": "2a5e4b26-212e-4ce4-a1d5-04b6e353646b",
+      "status": "PRESENT"
+    },
+    "borrower_info": {
+      "full_name": "ATHENA WHITE",
+      "email": "toktok8calabarzon@gmail.com",
+      "phone": "714-488-2888"
+    },
+    "_api_flow": [
+      "Step 1: POST /encompassdocs/v1/documentAudits/opening (audit loan)",
+      "Step 2: POST /encompassdocs/v1/documentOrders/opening (create doc set)",
+      "Step 3: POST /encompassdocs/v1/documentOrders/opening/{docSetId}/delivery (send to borrower)"
+    ]
+  },
+  
+  "=== LOAN ORIGINATOR INFO ===": "LO verification",
+  
+  "lo_info": {
+    "317": {
+      "field_name": "LO Name",
+      "expected_value": "Loan Officer 1",
+      "current_value_in_test_loan": "Loan Officer 1",
+      "status": "PRESENT"
+    },
+    "3238": {
+      "field_name": "LO NMLS ID",
+      "expected_value": "(valid NMLS)",
+      "rule": "Must verify LO is licensed in property state (CA)"
+    },
+    "3330": {
+      "field_name": "Company NMLS",
+      "expected_value": "(valid NMLS)",
+      "status": "CHECK"
+    }
+  },
+  
+  "=== BORROWER SUMMARY ORIGINATION ===": "Status fields",
+  
+  "status_fields": {
+    "2626": {
+      "field_name": "Channel",
+      "expected_value": "(any valid channel)",
+      "rule": "Must be set"
+    },
+    "1393": {
+      "field_name": "Current Status",
+      "expected_value": "Active",
+      "rule": "Must be Active for processing"
+    }
+  },
+  
+  "=== SUMMARY ===": "Quick reference",
+  
+  "happy_path_requirements": {
+    "mvp_eligibility": {
+      "loan_type": "Conventional",
+      "property_state": "CA or NV",
+      "not_texas": true
+    },
+    "trid": {
+      "application_date": "Set and within 3 business days",
+      "le_due_date": "Not passed"
+    },
+    "forms": {
+      "1003_urla": "All critical fields populated",
+      "regz_le": "Updated per SOP rules",
+      "ctc": "Calculated matches displayed"
+    },
+    "compliance": {
+      "mavent": "No Fails/Alerts/Warnings",
+      "atr_qm": "All flags GREEN"
+    },
+    "edisclosures": {
+      "application_id": "Available from loan details",
+      "borrower_email": "Valid for delivery"
+    }
+  },
+  
+  "=== TEST LOAN ISSUES ===": "Fields that need updating in test loan",
+  
+  "fields_to_update_for_happy_path": [
+    {
+      "field_id": "745",
+      "field_name": "Application Date",
+      "current": "2022-11-15",
+      "needed": "Recent date (e.g., today or yesterday)",
+      "reason": "LE due date must not be passed"
+    },
+    {
+      "field_id": "LE1.X1",
+      "field_name": "LE Date Issued",
+      "current": "(empty)",
+      "needed": "Current date (set by agent)",
+      "reason": "Required for LE preparation"
+    },
+    {
+      "field_id": "ATRQM.X1",
+      "field_name": "ATR/QM Loan Features Flag",
+      "current": "Review Needed",
+      "needed": "Meets Standard (Green)",
+      "reason": "Blocking if not green"
+    },
+    {
+      "field_id": "ATRQM.X2",
+      "field_name": "ATR/QM Points/Fees Flag",
+      "current": "Not Meet",
+      "needed": "Meets Standard (Green)",
+      "reason": "Blocking if not green"
+    }
+  ]
+}
+

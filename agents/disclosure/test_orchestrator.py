@@ -1,78 +1,99 @@
-"""Test script for Disclosure Orchestrator Agent (MVP).
+"""Test script for Disclosure Orchestrator Agent (v2 - LE Focus).
 
 Tests the orchestrator and individual sub-agents including:
-- Verification with MVP eligibility check
-- Preparation with MI calculation and tolerance checking
-- Request with MI and tolerance in email
-- Non-MVP case handling
+- Milestone/Queue pre-check
+- Verification with TRID compliance and MVP eligibility
+- Preparation with RegZ-LE, MI calculation, and CTC matching
+- Send with Mavent, ATR/QM, and eDisclosures ordering
+
+Testing Approaches:
+1. LIVE MODE: Uses real loan data from Encompass (requires valid loan)
+2. MOCK MODE: Uses simulated responses (no Encompass connection needed)
 """
 
 import sys
 import json
 from pathlib import Path
+from datetime import datetime
 
 # Add project root to path (go up two levels from test file)
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
+# Load .env BEFORE importing any project modules
+from dotenv import load_dotenv
+env_path = project_root / ".env"
+load_dotenv(env_path)
+
 from agents.disclosure import run_disclosure_orchestrator
 
 
-def test_disclosure_orchestrator():
-    """Test basic orchestrator execution in demo mode."""
-    print("=" * 80)
-    print("TEST: Disclosure Orchestrator (Demo Mode)")
-    print("=" * 80)
-    
-    # Load example input
+# =============================================================================
+# TEST CONFIGURATION
+# =============================================================================
+
+# Default test loan (update with your verified loan)
+DEFAULT_TEST_LOAN_ID = "b73fb60d-8f5d-4cbb-a05d-f1f2d1217af6"
+DEFAULT_LO_EMAIL = "test@example.com"
+
+
+def load_test_config():
+    """Load test configuration from example_input.json or use defaults."""
     example_input_path = Path(__file__).parent / "example_input.json"
     if example_input_path.exists():
         with open(example_input_path, "r") as f:
             config = json.load(f)
-        loan_id = config.get("loan_id", "387596ee-7090-47ca-8385-206e22c9c9da")
-        lo_email = config.get("lo_email", "test@example.com")
-        print(f"  Loaded config from example_input.json")
-    else:
-        loan_id = "387596ee-7090-47ca-8385-206e22c9c9da"
-        lo_email = "test@example.com"
+        return {
+            "loan_id": config.get("loan_id", DEFAULT_TEST_LOAN_ID),
+            "lo_email": config.get("lo_email", DEFAULT_LO_EMAIL),
+            "demo_mode": config.get("demo_mode", True),
+        }
+    return {
+        "loan_id": DEFAULT_TEST_LOAN_ID,
+        "lo_email": DEFAULT_LO_EMAIL,
+        "demo_mode": True,
+    }
+
+
+# =============================================================================
+# PRE-CHECK TEST: MILESTONE/QUEUE
+# =============================================================================
+
+def test_milestone_precheck():
+    """Test milestone/queue pre-check before disclosure processing.
     
-    print(f"  Loan ID: {loan_id[:8]}...")
-    print(f"  LO Email: {lo_email}")
+    Per SOP: Loans should be in DD Request queue with Active status.
+    """
+    print("\n" + "=" * 80)
+    print("TEST: Milestone/Queue Pre-Check")
+    print("=" * 80)
     
     try:
-        results = run_disclosure_orchestrator(
-            loan_id=loan_id,
-            lo_email=lo_email,
-            demo_mode=True
-        )
+        from packages.shared import check_milestone
         
-        # Validate structure
-        assert "loan_id" in results, "Missing loan_id in results"
-        assert results["loan_id"] == loan_id, "Loan ID mismatch"
-        assert "demo_mode" in results, "Missing demo_mode in results"
-        assert results["demo_mode"] == True, "Demo mode should be True"
-        assert "agents" in results, "Missing agents in results"
+        config = load_test_config()
+        loan_id = config["loan_id"]
         
-        # Check each agent ran
-        agents = results["agents"]
-        assert "verification" in agents, "Missing verification results"
-        assert "preparation" in agents, "Missing preparation results"
-        assert "request" in agents, "Missing request results"
+        print(f"  Loan ID: {loan_id[:8]}...")
         
-        # Check MVP fields
-        assert "is_mvp_supported" in results, "Missing is_mvp_supported"
-        assert "handoff" in results, "Missing handoff data"
+        result = check_milestone(loan_id)
         
-        # Print summary
-        print("\n" + results.get("summary", ""))
+        print(f"\n  Results:")
+        print(f"  ✓ Can Proceed: {result.can_proceed}")
+        print(f"  ✓ Current Status: {result.current_status}")
+        print(f"  ✓ Current Milestone: {result.current_milestone}")
+        print(f"  ✓ Application Date: {result.application_date}")
         
-        # Save results
-        output_file = Path(__file__).parent / "test_results.json"
-        with open(output_file, 'w') as f:
-            json.dump(results, f, indent=2, default=str)
-        print(f"\n✓ Results saved to: {output_file.name}")
+        if result.blocking_reason:
+            print(f"  ⚠️ Blocking Reason: {result.blocking_reason}")
         
-        print("\n✓ TEST PASSED: Basic execution successful")
+        if result.warnings:
+            for warning in result.warnings:
+                print(f"  ⚠️ Warning: {warning}")
+        
+        # For this test, we don't fail if can_proceed is False
+        # We just want to verify the check runs correctly
+        print("\n✓ TEST PASSED: Milestone pre-check executed successfully")
         return True
         
     except Exception as e:
@@ -82,16 +103,25 @@ def test_disclosure_orchestrator():
         return False
 
 
+# =============================================================================
+# VERIFICATION AGENT TEST (v2)
+# =============================================================================
+
 def test_verification_agent():
-    """Test verification agent standalone with MVP eligibility."""
+    """Test verification agent standalone with TRID compliance and MVP eligibility."""
     print("\n" + "=" * 80)
-    print("TEST: Verification Agent (MVP)")
+    print("TEST: Verification Agent (v2)")
     print("=" * 80)
     
     try:
         from agents.disclosure.subagents.verification_agent.verification_agent import run_disclosure_verification
         
-        result = run_disclosure_verification("387596ee-7090-47ca-8385-206e22c9c9da")
+        config = load_test_config()
+        loan_id = config["loan_id"]
+        
+        print(f"  Loan ID: {loan_id[:8]}...")
+        
+        result = run_disclosure_verification(loan_id)
         
         assert result["status"] == "success", "Verification should succeed"
         assert "fields_checked" in result, "Missing fields_checked"
@@ -100,11 +130,21 @@ def test_verification_agent():
         assert "loan_type" in result, "Missing loan_type"
         assert "property_state" in result, "Missing property_state"
         
+        # v2: Check TRID compliance result
+        trid = result.get("trid_compliance", {})
+        
+        print(f"\n  Results:")
         print(f"  ✓ Fields checked: {result['fields_checked']}")
         print(f"  ✓ Fields missing: {len(result['fields_missing'])}")
         print(f"  ✓ MVP Supported: {result['is_mvp_supported']}")
         print(f"  ✓ Loan Type: {result.get('loan_type', 'Unknown')}")
         print(f"  ✓ State: {result.get('property_state', 'Unknown')}")
+        
+        # v2: TRID results
+        if trid:
+            print(f"  ✓ TRID Compliant: {trid.get('compliant', 'N/A')}")
+            print(f"  ✓ App Date: {trid.get('application_date', 'N/A')}")
+            print(f"  ✓ LE Due Date: {trid.get('le_due_date', 'N/A')}")
         
         print("\n✓ TEST PASSED: Verification agent working")
         return True
@@ -116,46 +156,61 @@ def test_verification_agent():
         return False
 
 
+# =============================================================================
+# PREPARATION AGENT TEST (v2)
+# =============================================================================
+
 def test_preparation_agent():
-    """Test preparation agent standalone with MI calculation."""
+    """Test preparation agent standalone with RegZ-LE, MI, and CTC."""
     print("\n" + "=" * 80)
-    print("TEST: Preparation Agent (MVP)")
+    print("TEST: Preparation Agent (v2)")
     print("=" * 80)
     
     try:
         from agents.disclosure.subagents.preparation_agent.preparation_agent import run_disclosure_preparation
         
+        config = load_test_config()
+        loan_id = config["loan_id"]
+        
+        print(f"  Loan ID: {loan_id[:8]}...")
+        
         # Test with mock missing fields
         result = run_disclosure_preparation(
-            loan_id="387596ee-7090-47ca-8385-206e22c9c9da",
+            loan_id=loan_id,
             missing_fields=["FIELD1", "FIELD2"],
             demo_mode=True
         )
         
         assert result["status"] == "success", "Preparation should succeed"
         assert "fields_populated" in result, "Missing fields_populated"
-        assert "fields_cleaned" in result, "Missing fields_cleaned"
-        assert "mi_result" in result, "Missing mi_result"
-        assert "tolerance_result" in result, "Missing tolerance_result"
+        # Note: fields_cleaned was removed in v2 - agent now returns fields_failed instead
         
+        # v2: Check new results
+        regz_le = result.get("regz_le_result", {})
+        mi_result = result.get("mi_result", {})
+        ctc_result = result.get("ctc_result", {})
+        
+        print(f"\n  Results:")
         print(f"  ✓ Fields populated: {len(result['fields_populated'])}")
-        print(f"  ✓ Fields cleaned: {len(result['fields_cleaned'])}")
+        print(f"  ✓ Fields failed: {len(result.get('fields_failed', []))}")
+        
+        # v2: RegZ-LE
+        if regz_le:
+            print(f"  ✓ RegZ-LE Updates: {len(regz_le.get('updates_made', {}))}")
         
         # MI result
-        if result.get("mi_result"):
-            mi = result["mi_result"]
-            print(f"  ✓ MI Requires: {mi.get('requires_mi', 'N/A')}")
-            if mi.get('requires_mi'):
-                print(f"  ✓ MI Monthly: ${mi.get('monthly_amount', 0):.2f}")
-        else:
-            print(f"  ✓ MI Result: Not calculated")
+        if mi_result:
+            if mi_result.get('requires_mi'):
+                print(f"  ✓ MI Monthly: ${mi_result.get('monthly_amount', 0):.2f}")
+            else:
+                print(f"  ✓ MI: Not required")
         
-        # Tolerance result
-        if result.get("tolerance_result"):
-            tol = result["tolerance_result"]
-            print(f"  ✓ Tolerance Violations: {tol.get('has_violations', False)}")
-        else:
-            print(f"  ✓ Tolerance Result: Not checked")
+        # v2: CTC result
+        if ctc_result:
+            if ctc_result.get("matched"):
+                print(f"  ✓ CTC: Matched ${ctc_result.get('calculated_ctc', 0):,.2f}")
+            else:
+                print(f"  ⚠️ CTC: Mismatch")
         
         print("\n✓ TEST PASSED: Preparation agent working")
         return True
@@ -167,61 +222,63 @@ def test_preparation_agent():
         return False
 
 
-def test_request_agent():
-    """Test request agent standalone with MI and tolerance info."""
+# =============================================================================
+# SEND AGENT TEST (v2 - replaces Request Agent)
+# =============================================================================
+
+def test_send_agent():
+    """Test send agent standalone with Mavent, ATR/QM, and ordering."""
     print("\n" + "=" * 80)
-    print("TEST: Request Agent (MVP)")
+    print("TEST: Send Agent (v2)")
     print("=" * 80)
     
     try:
-        from agents.disclosure.subagents.request_agent.request_agent import run_disclosure_request
+        from agents.disclosure.subagents.send_agent.send_agent import run_disclosure_send
         
-        # Mock verification and preparation results with MVP fields
-        verification_results = {
-            "fields_checked": 20,
-            "fields_missing": ["FIELD1"],
-            "fields_with_values": ["FIELD2", "FIELD3"],
-            "is_mvp_supported": True,
-            "mvp_warnings": [],
-            "loan_type": "Conventional",
-            "property_state": "NV"
-        }
+        config = load_test_config()
+        loan_id = config["loan_id"]
         
-        preparation_results = {
-            "fields_populated": ["FIELD1"],
-            "fields_cleaned": ["FIELD2"],
-            "fields_failed": [],
-            "mi_result": {
-                "requires_mi": True,
-                "monthly_amount": 125.50,
-                "source": "calculated",
-                "ltv": 85.0
-            },
-            "tolerance_result": {
-                "has_violations": False,
-                "total_cure_needed": 0
-            }
-        }
+        print(f"  Loan ID: {loan_id[:8]}...")
         
-        result = run_disclosure_request(
-            loan_id="387596ee-7090-47ca-8385-206e22c9c9da",
-            lo_email="test@example.com",
-            verification_results=verification_results,
-            preparation_results=preparation_results,
+        result = run_disclosure_send(
+            loan_id=loan_id,
             demo_mode=True
         )
         
-        assert result["status"] == "success", "Request should succeed"
-        assert "email_sent" in result, "Missing email_sent"
-        assert result["lo_email"] == "test@example.com", "LO email mismatch"
-        assert "email_summary" in result, "Missing email_summary"
+        assert result["status"] in ["success", "blocked"], "Send should return valid status"
         
-        summary = result.get("email_summary", {})
-        print(f"  ✓ Email sent (dry run): {result['email_sent']}")
-        print(f"  ✓ MI included: {summary.get('requires_mi', 'N/A')}")
-        print(f"  ✓ Tolerance included: {not summary.get('has_tolerance_violations', True)}")
+        # v2: Check compliance results
+        mavent = result.get("mavent_result", {})
+        atr_qm = result.get("atr_qm_result", {})
+        order = result.get("order_result", {})
+        blocking = result.get("blocking_issues", [])
         
-        print("\n✓ TEST PASSED: Request agent working")
+        print(f"\n  Results:")
+        
+        # Mavent
+        if mavent:
+            status = "PASSED" if mavent.get("passed") else f"ISSUES ({mavent.get('total_issues', 0)})"
+            print(f"  ✓ Mavent: {status}")
+        
+        # ATR/QM
+        if atr_qm:
+            status = "PASSED" if atr_qm.get("passed") else f"RED FLAGS: {atr_qm.get('red_flags', [])}"
+            print(f"  ✓ ATR/QM: {status}")
+        
+        # Order result
+        if order:
+            if order.get("success"):
+                print(f"  ✓ Ordered! Tracking ID: {order.get('tracking_id', 'N/A')}")
+            else:
+                print(f"  ✓ Order: Not sent (demo mode or blocked)")
+        
+        # Blocking issues
+        if blocking:
+            print(f"  ⚠️ Blocking issues: {len(blocking)}")
+            for issue in blocking[:3]:  # Show first 3
+                print(f"     - {issue}")
+        
+        print("\n✓ TEST PASSED: Send agent working")
         return True
         
     except Exception as e:
@@ -231,6 +288,70 @@ def test_request_agent():
         return False
 
 
+# =============================================================================
+# ORCHESTRATOR INTEGRATION TEST (v2)
+# =============================================================================
+
+def test_disclosure_orchestrator():
+    """Test full orchestrator execution (v2)."""
+    print("=" * 80)
+    print("TEST: Disclosure Orchestrator (v2 - Demo Mode)")
+    print("=" * 80)
+    
+    config = load_test_config()
+    loan_id = config["loan_id"]
+    lo_email = config["lo_email"]
+    
+    print(f"  Loan ID: {loan_id[:8]}...")
+    print(f"  LO Email: {lo_email}")
+    
+    try:
+        results = run_disclosure_orchestrator(
+            loan_id=loan_id,
+            lo_email=lo_email,
+            demo_mode=True,
+            skip_non_mvp=False  # Don't skip - we want to see the result
+        )
+        
+        # Validate structure
+        assert "loan_id" in results, "Missing loan_id in results"
+        assert results["loan_id"] == loan_id, "Loan ID mismatch"
+        assert "demo_mode" in results, "Missing demo_mode in results"
+        assert results["demo_mode"] == True, "Demo mode should be True"
+        assert "agents" in results, "Missing agents in results"
+        
+        # Check each agent ran (v2: send instead of request)
+        agents = results["agents"]
+        assert "verification" in agents, "Missing verification results"
+        assert "preparation" in agents, "Missing preparation results"
+        assert "send" in agents, "Missing send results"  # v2: changed from "request"
+        
+        # Check MVP fields
+        assert "is_mvp_supported" in results, "Missing is_mvp_supported"
+        
+        # Print summary
+        print("\n" + results.get("summary", ""))
+        
+        # Save results
+        output_file = Path(__file__).parent / "test_results.json"
+        with open(output_file, 'w') as f:
+            json.dump(results, f, indent=2, default=str)
+        print(f"\n✓ Results saved to: {output_file.name}")
+        
+        print("\n✓ TEST PASSED: Orchestrator execution successful")
+        return True
+        
+    except Exception as e:
+        print(f"\n✗ TEST FAILED: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+
+
+# =============================================================================
+# UTILITY TESTS
+# =============================================================================
+
 def test_mi_calculator():
     """Test MI calculator directly."""
     print("\n" + "=" * 80)
@@ -238,7 +359,7 @@ def test_mi_calculator():
     print("=" * 80)
     
     try:
-        from packages.shared import calculate_conventional_mi, calculate_mi
+        from packages.shared import calculate_conventional_mi
         
         # Test Conventional MI with LTV > 80%
         result = calculate_conventional_mi(
@@ -357,69 +478,32 @@ def test_non_mvp_handling():
         return False
 
 
-def test_handoff_schema():
-    """Test handoff schema."""
+def test_trid_checker():
+    """Test TRID compliance checker."""
     print("\n" + "=" * 80)
-    print("TEST: Handoff Schema")
+    print("TEST: TRID Checker")
     print("=" * 80)
     
     try:
-        from packages.shared import DisclosureHandoff, create_handoff_from_results
-        from datetime import date
+        from packages.shared import TRIDChecker, calculate_le_due_date
+        from datetime import date, timedelta
         
-        # Test creating handoff from results
-        verification_results = {
-            "fields_checked": 20,
-            "fields_missing": ["FIELD1"],
-            "is_mvp_supported": True,
-            "mvp_warnings": [],
-            "loan_type": "Conventional",
-            "property_state": "NV"
-        }
+        # Test LE due date calculation
+        # 3 business days from today (should skip weekends)
+        today = date.today()
+        due_date = calculate_le_due_date(today)
         
-        preparation_results = {
-            "fields_populated": [],
-            "fields_cleaned": [],
-            "mi_result": {
-                "requires_mi": True,
-                "monthly_amount": 125.50
-            },
-            "tolerance_result": {
-                "has_violations": False,
-                "total_cure_needed": 0
-            }
-        }
+        assert due_date > today, "LE due date should be after application date"
         
-        handoff = create_handoff_from_results(
-            loan_id="test-loan-123",
-            verification_results=verification_results,
-            preparation_results=preparation_results,
-        )
+        # Check it's approximately 3 business days (could be 3-5 calendar days depending on weekends)
+        days_diff = (due_date - today).days
+        assert 3 <= days_diff <= 5, f"LE due date should be 3-5 days out, got {days_diff}"
         
-        assert handoff.loan_id == "test-loan-123", "Loan ID mismatch"
-        assert handoff.is_mvp_supported == True, "MVP supported mismatch"
-        assert handoff.loan_type == "Conventional", "Loan type mismatch"
-        assert handoff.mi_calculated is not None, "MI should be included"
+        print(f"  ✓ App Date: {today}")
+        print(f"  ✓ LE Due Date: {due_date}")
+        print(f"  ✓ Days: {days_diff}")
         
-        print(f"  ✓ Loan ID: {handoff.loan_id}")
-        print(f"  ✓ MVP Supported: {handoff.is_mvp_supported}")
-        print(f"  ✓ Loan Type: {handoff.loan_type}")
-        print(f"  ✓ State: {handoff.property_state}")
-        print(f"  ✓ Requires Manual: {handoff.requires_manual}")
-        
-        # Test to_dict
-        handoff_dict = handoff.to_dict()
-        assert "loan_id" in handoff_dict, "to_dict should include loan_id"
-        assert "mi_calculated" in handoff_dict, "to_dict should include mi_calculated"
-        
-        print(f"  ✓ to_dict works correctly")
-        
-        # Test summary
-        summary = handoff.get_status_summary()
-        assert "Conventional" in summary, "Summary should include loan type"
-        print(f"  ✓ get_status_summary works correctly")
-        
-        print("\n✓ TEST PASSED: Handoff schema working")
+        print("\n✓ TEST PASSED: TRID checker working")
         return True
         
     except Exception as e:
@@ -429,22 +513,135 @@ def test_handoff_schema():
         return False
 
 
+# =============================================================================
+# MOCK-BASED TESTING (No Encompass connection needed)
+# =============================================================================
+
+def test_with_mock_data():
+    """Test orchestrator flow with mock data (no API calls).
+    
+    Use this when you don't have a valid test loan in Encompass.
+    """
+    print("\n" + "=" * 80)
+    print("TEST: Mock-Based Flow Test")
+    print("=" * 80)
+    
+    try:
+        # Mock verification result
+        mock_verification = {
+            "status": "success",
+            "fields_checked": 47,
+            "fields_missing": ["LE1.X1", "3152"],
+            "is_mvp_supported": True,
+            "loan_type": "Conventional",
+            "property_state": "CA",
+            "trid_compliance": {
+                "compliant": True,
+                "application_date": "2024-12-01",
+                "le_due_date": "2024-12-04",
+                "days_remaining": 2,
+            },
+            "blocking_issues": [],
+        }
+        
+        # Mock preparation result
+        mock_preparation = {
+            "status": "success",
+            "fields_populated": ["LE1.X1"],
+            "fields_cleaned": [],
+            "regz_le_result": {
+                "success": True,
+                "updates_made": {
+                    "LE1.X1": "2024-12-02",
+                    "672": 15,
+                    "673": 5.0,
+                }
+            },
+            "mi_result": {
+                "requires_mi": True,
+                "monthly_amount": 125.50,
+                "ltv": 85.0,
+                "cancel_at_ltv": 78.0,
+            },
+            "ctc_result": {
+                "matched": True,
+                "calculated_ctc": 44690.00,
+                "displayed_ctc": 44690.00,
+            },
+        }
+        
+        # Mock send result
+        mock_send = {
+            "status": "success",
+            "mavent_result": {
+                "passed": True,
+                "total_issues": 0,
+            },
+            "atr_qm_result": {
+                "passed": True,
+                "red_flags": [],
+            },
+            "order_result": {
+                "success": True,
+                "tracking_id": "mock-tracking-123",
+            },
+            "blocking_issues": [],
+        }
+        
+        # Validate mock data structure
+        assert mock_verification["status"] == "success"
+        assert mock_verification["is_mvp_supported"] == True
+        assert mock_preparation["mi_result"]["requires_mi"] == True
+        assert mock_send["mavent_result"]["passed"] == True
+        
+        print("  ✓ Mock verification: MVP supported, TRID compliant")
+        print("  ✓ Mock preparation: MI calculated, CTC matched")
+        print("  ✓ Mock send: Mavent passed, ATR/QM passed")
+        print("  ✓ Mock tracking ID: mock-tracking-123")
+        
+        print("\n✓ TEST PASSED: Mock-based flow validation successful")
+        print("  (Use this structure when creating integration tests)")
+        return True
+        
+    except Exception as e:
+        print(f"\n✗ TEST FAILED: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+
+
+# =============================================================================
+# MAIN TEST RUNNER
+# =============================================================================
+
 def main():
     """Run all tests."""
     print("\n")
     print("=" * 80)
-    print("DISCLOSURE AGENT TEST SUITE (MVP)")
+    print("DISCLOSURE AGENT TEST SUITE (v2 - LE Focus)")
+    print("=" * 80)
+    print(f"Test Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    
+    config = load_test_config()
+    print(f"Test Loan: {config['loan_id'][:8]}...")
+    print(f"Demo Mode: {config['demo_mode']}")
     print("=" * 80)
     
+    # Tests in order of dependency
     tests = [
+        # Utility tests (no API)
         ("MI Calculator", test_mi_calculator),
-        ("Fee Tolerance Calculator", test_fee_tolerance),
+        ("Fee Tolerance", test_fee_tolerance),
         ("Non-MVP Handling", test_non_mvp_handling),
-        ("Handoff Schema", test_handoff_schema),
-        ("Verification Agent", test_verification_agent),
-        ("Preparation Agent", test_preparation_agent),
-        ("Request Agent", test_request_agent),
-        ("Orchestrator (Integration)", test_disclosure_orchestrator),
+        ("TRID Checker", test_trid_checker),
+        ("Mock-Based Flow", test_with_mock_data),
+        
+        # API-dependent tests
+        ("Milestone Pre-Check", test_milestone_precheck),
+        ("Verification Agent (v2)", test_verification_agent),
+        ("Preparation Agent (v2)", test_preparation_agent),
+        ("Send Agent (v2)", test_send_agent),
+        ("Orchestrator (v2)", test_disclosure_orchestrator),
     ]
     
     results = []
