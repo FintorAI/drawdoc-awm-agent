@@ -39,7 +39,7 @@ def test_full_pipeline_dry_run():
     print("=" * 80 + "\n")
     
     # Test loan ID (same as prep test - verified working with fallback)
-    loan_id = "387596ee-7090-47ca-8385-206e22c9c9da"
+    loan_id = "8587ad65-e186-4655-b813-f713ff98709f"
     
     # Document types that work perfectly (from successful prep test)
     document_types = ["ID", "Title Report", "Appraisal", "LE", "1003"]

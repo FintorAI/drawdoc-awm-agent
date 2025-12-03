@@ -20,6 +20,9 @@ from models import (
     CreateRunRequest,
     AgentType,
     AGENT_TYPE_SUB_AGENTS,
+    SubmitFieldReviewRequest,
+    PendingFieldItem,
+    FieldDecision,
 )
 
 # Add project root to path for status_writer import
@@ -91,6 +94,7 @@ def derive_overall_status(agents: dict, agent_type: AgentType = AgentType.DRAWDO
     Derive overall run status from agent statuses.
     
     Rules:
+    - Any pending_review → "pending_review" (HIL pause)
     - All success → "success"
     - Any failed → "failed"
     - Any blocked → "blocked" (disclosure)
@@ -106,6 +110,10 @@ def derive_overall_status(agents: dict, agent_type: AgentType = AgentType.DRAWDO
         else:
             status = getattr(agent_data, "status", "pending")
         statuses.append(status)
+    
+    # Check for pending_review (HIL pause) - takes priority
+    if any(s == "pending_review" for s in statuses):
+        return RunStatus.PENDING_REVIEW
     
     # Check for any blocked (disclosure-specific)
     if any(s == "blocked" for s in statuses):
@@ -300,6 +308,9 @@ def create_run(request: CreateRunRequest) -> tuple[str, AgentType]:
         agent_type=request.agent_type.value,
     )
     
+    # Get require_review from request (default True)
+    require_review = getattr(request, 'require_review', True)
+    
     # Spawn agent process in background
     spawn_agent_process(
         run_id=run_id,
@@ -309,6 +320,7 @@ def create_run(request: CreateRunRequest) -> tuple[str, AgentType]:
         max_retries=request.max_retries,
         document_types=request.document_types,
         lo_email=request.lo_email,
+        require_review=require_review,
     )
     
     return run_id, request.agent_type
@@ -322,6 +334,8 @@ def spawn_agent_process(
     max_retries: int,
     document_types: Optional[list[str]],
     lo_email: Optional[str] = None,
+    require_review: bool = True,
+    resume_from: Optional[str] = None,
 ) -> None:
     """
     Spawn the agent orchestrator process in the background.
@@ -334,6 +348,8 @@ def spawn_agent_process(
         max_retries: Number of retry attempts
         document_types: Optional list of document types to process (DrawDocs only)
         lo_email: Loan officer email (Disclosure/LOA only)
+        require_review: If True, pause after prep agent for user review (HIL)
+        resume_from: If set, resume from this agent (for continuing after review)
     """
     # Get paths
     project_root = Path(__file__).parent.parent
@@ -359,6 +375,12 @@ def spawn_agent_process(
     if lo_email:
         cmd.extend(["--lo-email", lo_email])
     
+    if require_review and not resume_from:
+        cmd.append("--require-review")
+    
+    if resume_from:
+        cmd.extend(["--resume-from", resume_from])
+    
     # Spawn subprocess in background
     # Use subprocess.Popen with stdout/stderr redirected to avoid blocking
     subprocess.Popen(
@@ -368,4 +390,268 @@ def spawn_agent_process(
         start_new_session=True,  # Detach from parent process
         cwd=str(project_root),
     )
+
+
+# =============================================================================
+# HIL (HUMAN-IN-THE-LOOP) REVIEW SERVICES
+# =============================================================================
+
+# Field ID to human-readable name mapping (from DrawingDoc Verifications CSV)
+FIELD_ID_TO_NAME = {
+    "4000": "Borrower First Name",
+    "4001": "Borrower Middle Name",
+    "4002": "Borrower Last Name",
+    "36": "Borrower First/Middle Name",
+    "65": "Borrower SSN",
+    "66": "Borrower Home Phone",
+    "52": "Borrower Marital Status",
+    "356": "Appraised Value",
+    "745": "Application Date",
+    "748": "Closing Date",
+    "799": "APR",
+    "608": "Amortization Type",
+    "1040": "Agency Case #",
+    "1240": "Borrower Email",
+    "1402": "Borrower DOB",
+    # Add more as needed from CSV
+}
+
+
+def get_pending_fields(run_id: str) -> Optional[dict]:
+    """
+    Get fields pending user review for a run.
+    
+    Extracts the field mappings from the Prep Agent output and formats
+    them for user review.
+    
+    Args:
+        run_id: The run identifier
+        
+    Returns:
+        Dict with pending fields or None if run not found
+    """
+    file_path = get_run_file_path(run_id)
+    data = load_run_data(file_path)
+    
+    if data is None:
+        return None
+    
+    # Check if run is in pending_review status
+    agents = data.get("agents", {})
+    prep_data = agents.get("preparation", {})
+    prep_status = prep_data.get("status", "pending") if isinstance(prep_data, dict) else getattr(prep_data, "status", "pending")
+    
+    # For now, allow fetching fields even if not explicitly in pending_review
+    # This supports both the new HIL workflow and viewing completed runs
+    
+    # Extract field mappings from prep output
+    prep_output = prep_data.get("output", {}) if isinstance(prep_data, dict) else getattr(prep_data, "output", {})
+    if not prep_output:
+        return {
+            "run_id": run_id,
+            "loan_id": data.get("loan_id", ""),
+            "status": prep_status,
+            "fields": [],
+            "total_fields": 0,
+            "documents_processed": 0,
+        }
+    
+    # Get field mappings and doc_context
+    results = prep_output.get("results", {}) or {}
+    field_mappings = results.get("field_mappings", {}) or {}
+    doc_context = prep_output.get("doc_context", {}) or {}
+    raw_extractions = doc_context.get("raw_extractions", {}) or {}
+    extracted_entities = raw_extractions.get("extracted_entities", {}) or {}
+    
+    # Build list of pending fields
+    pending_fields = []
+    
+    for field_id, field_data in field_mappings.items():
+        if isinstance(field_data, dict):
+            value = field_data.get("value", "")
+            attachment_id = field_data.get("attachment_id", "unknown")
+        else:
+            value = field_data
+            attachment_id = "unknown"
+        
+        # Find source document from extracted_entities
+        source_doc = "Unknown Document"
+        for doc_type, doc_data in extracted_entities.items():
+            if isinstance(doc_data, dict):
+                for extracted_field, extracted_value in doc_data.items():
+                    # Check if this extraction matches our field
+                    if str(extracted_value) == str(value):
+                        source_doc = doc_type
+                        break
+        
+        pending_fields.append(PendingFieldItem(
+            field_id=field_id,
+            field_name=FIELD_ID_TO_NAME.get(field_id, f"Field {field_id}"),
+            extracted_value=value,
+            source_document=source_doc,
+            attachment_id=attachment_id,
+            confidence=None,  # TODO: Add confidence scoring
+        ).model_dump())
+    
+    return {
+        "run_id": run_id,
+        "loan_id": data.get("loan_id", ""),
+        "status": prep_status,
+        "fields": pending_fields,
+        "total_fields": len(pending_fields),
+        "documents_processed": prep_output.get("documents_processed", 0),
+    }
+
+
+def submit_field_review(run_id: str, request: SubmitFieldReviewRequest) -> Optional[dict]:
+    """
+    Submit user decisions for field review.
+    
+    Updates the run data with user decisions and optionally continues
+    to the next agents.
+    
+    Args:
+        run_id: The run identifier
+        request: User decisions for each field
+        
+    Returns:
+        Summary of the review submission or None if run not found
+    """
+    file_path = get_run_file_path(run_id)
+    data = load_run_data(file_path)
+    
+    if data is None:
+        return None
+    
+    # Process decisions
+    accepted_count = 0
+    rejected_count = 0
+    edited_count = 0
+    
+    # Get current field mappings
+    agents = data.get("agents", {})
+    prep_data = agents.get("preparation", {})
+    prep_output = prep_data.get("output", {}) if isinstance(prep_data, dict) else getattr(prep_data, "output", {})
+    results = prep_output.get("results", {}) or {}
+    field_mappings = results.get("field_mappings", {}) or {}
+    
+    # Track user decisions in a new field
+    user_decisions = {}
+    approved_fields = {}
+    
+    for decision in request.decisions:
+        field_id = decision.field_id
+        
+        if decision.decision == FieldDecision.ACCEPT:
+            accepted_count += 1
+            user_decisions[field_id] = {
+                "decision": "accept",
+                "original_value": field_mappings.get(field_id, {}).get("value") if isinstance(field_mappings.get(field_id), dict) else field_mappings.get(field_id),
+            }
+            approved_fields[field_id] = field_mappings.get(field_id)
+            
+        elif decision.decision == FieldDecision.REJECT:
+            rejected_count += 1
+            user_decisions[field_id] = {
+                "decision": "reject",
+                "reason": decision.rejection_reason,
+                "original_value": field_mappings.get(field_id, {}).get("value") if isinstance(field_mappings.get(field_id), dict) else field_mappings.get(field_id),
+            }
+            # Don't include rejected fields in approved_fields
+            
+        elif decision.decision == FieldDecision.EDIT:
+            edited_count += 1
+            original = field_mappings.get(field_id, {})
+            user_decisions[field_id] = {
+                "decision": "edit",
+                "original_value": original.get("value") if isinstance(original, dict) else original,
+                "edited_value": decision.edited_value,
+            }
+            # Update the field mapping with edited value
+            if isinstance(original, dict):
+                approved_fields[field_id] = {
+                    **original,
+                    "value": decision.edited_value,
+                    "edited_by_user": True,
+                }
+            else:
+                approved_fields[field_id] = {
+                    "value": decision.edited_value,
+                    "edited_by_user": True,
+                }
+    
+    # Store user decisions in the run data
+    if "user_review" not in data:
+        data["user_review"] = {}
+    
+    data["user_review"] = {
+        "submitted_at": datetime.now().isoformat(),
+        "decisions": user_decisions,
+        "summary": {
+            "accepted": accepted_count,
+            "rejected": rejected_count,
+            "edited": edited_count,
+        },
+        "proceed": request.proceed,
+    }
+    
+    # Update the approved field mappings
+    if prep_output and "results" in prep_output:
+        prep_output["results"]["approved_field_mappings"] = approved_fields
+    
+    # Update run status based on user decision
+    if request.proceed:
+        # Continue to next agents - mark prep as success and drawcore as running
+        if isinstance(prep_data, dict):
+            prep_data["status"] = "success"
+        
+        # Mark drawcore as running to continue the pipeline
+        drawcore_data = agents.get("drawcore", {})
+        if isinstance(drawcore_data, dict):
+            drawcore_data["status"] = "running"
+        
+        message = f"Review submitted. Continuing with {accepted_count + edited_count} approved fields."
+        
+        # Save updated data before spawning process
+        save_run_data(file_path, data)
+        
+        # Spawn continuation process to resume from drawcore
+        loan_id = data.get("loan_id", "")
+        demo_mode = data.get("demo_mode", True)
+        
+        # Get document types from config if available
+        config = data.get("config", {})
+        document_types = config.get("document_types")
+        max_retries = config.get("max_retries", 2)
+        agent_type = config.get("agent_type", "drawdocs")
+        
+        spawn_agent_process(
+            run_id=run_id,
+            loan_id=loan_id,
+            agent_type=AgentType(agent_type),
+            demo_mode=demo_mode,
+            max_retries=max_retries,
+            document_types=document_types,
+            require_review=False,  # Don't pause again
+            resume_from="drawcore",  # Resume from drawcore
+        )
+        
+    else:
+        # User chose not to proceed - mark run as completed/cancelled
+        message = f"Review submitted. Run stopped by user."
+        
+        # Mark as cancelled
+        data["cancelled"] = True
+        data["cancelled_at"] = datetime.now().isoformat()
+        
+        # Save updated data
+        save_run_data(file_path, data)
+    
+    return {
+        "success": True,
+        "accepted_count": accepted_count,
+        "rejected_count": rejected_count,
+        "edited_count": edited_count,
+        "message": message,
+    }
 

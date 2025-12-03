@@ -93,6 +93,7 @@ export function RunTriggerForm({ onSuccess, onError, agentType = "drawdocs", cla
   const [userPrompt, setUserPrompt] = React.useState("");
   const [selectedDocTypes, setSelectedDocTypes] = React.useState<string[]>([]);
   const [allDocuments, setAllDocuments] = React.useState(false);
+  const [requireReview, setRequireReview] = React.useState(true); // HIL review enabled by default
   
   // Validation state
   const [validationError, setValidationError] = React.useState<string | null>(null);
@@ -214,6 +215,7 @@ export function RunTriggerForm({ onSuccess, onError, agentType = "drawdocs", cla
     
     if (formConfig.requiresDocTypes) {
       baseConfig.document_types = allDocuments ? null : selectedDocTypes.length > 0 ? selectedDocTypes : null;
+      baseConfig.require_review = requireReview; // DrawDocs only
     }
     
     createRunMutation.mutate(baseConfig);
@@ -321,6 +323,32 @@ export function RunTriggerForm({ onSuccess, onError, agentType = "drawdocs", cla
                 </div>
               )}
             </div>
+            
+            {/* Require Review (HIL) - DrawDocs only */}
+            {agentType === "drawdocs" && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="require-review">Require Field Review</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Review fields before Encompass write
+                    </p>
+                  </div>
+                  <Switch
+                    id="require-review"
+                    checked={requireReview}
+                    onCheckedChange={setRequireReview}
+                    disabled={isSubmitting}
+                  />
+                </div>
+                {requireReview && (
+                  <div className="flex items-center gap-2 p-2 rounded-md bg-blue-50 border border-blue-200 text-blue-800 text-xs">
+                    <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                    <span>Pipeline will pause for you to approve extracted fields</span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           
           {/* DrawDocs-specific fields */}

@@ -20,6 +20,7 @@ Status transitions per agent:
 - "running" → "success" (when agent completes successfully)
 - "running" → "failed" (when agent errors after all retries)
 - "running" → "blocked" (for disclosure when compliance blocks)
+- "running" → "pending_review" (HIL: waiting for user to review/approve fields)
 """
 
 import json
@@ -210,7 +211,7 @@ class StatusWriter:
         Args:
             run_id: Unique run identifier
             agent_name: Name of agent ("preparation", "drawcore", "verification", "orderdocs")
-            status: New status ("pending", "running", "success", "failed")
+            status: New status ("pending", "running", "success", "failed", "pending_review")
             attempts: Number of attempts made (optional)
             elapsed_seconds: Time taken in seconds (optional)
             output: Agent output data (optional)
@@ -346,6 +347,41 @@ class StatusWriter:
             output=None,
             error=error,
             set_next_running=False,
+        )
+    
+    def mark_agent_pending_review(
+        self,
+        run_id: str,
+        agent_name: str,
+        attempts: int,
+        elapsed_seconds: float,
+        output: Any,
+    ) -> Dict[str, Any]:
+        """
+        Mark an agent as pending review (HIL - Human in the Loop).
+        
+        This status indicates the agent has completed extraction but is
+        waiting for user review before proceeding to write fields.
+        
+        Args:
+            run_id: Unique run identifier
+            agent_name: Name of agent
+            attempts: Number of attempts made
+            elapsed_seconds: Time taken
+            output: Agent output data (extracted fields)
+            
+        Returns:
+            The updated status data dict
+        """
+        return self.update_agent_status(
+            run_id=run_id,
+            agent_name=agent_name,
+            status="pending_review",
+            attempts=attempts,
+            elapsed_seconds=elapsed_seconds,
+            output=output,
+            error=None,
+            set_next_running=False,  # Don't auto-start next agent
         )
     
     def add_log(

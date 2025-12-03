@@ -258,6 +258,8 @@ def run_agent(
     max_retries: int = 2,
     document_types: Optional[list[str]] = None,
     lo_email: Optional[str] = None,
+    require_review: bool = False,
+    resume_from: Optional[str] = None,
 ) -> None:
     """
     Run the orchestrator agent with live status updates.
@@ -273,6 +275,8 @@ def run_agent(
         max_retries: Number of retry attempts per agent
         document_types: Optional list of document types to process (DrawDocs only)
         lo_email: Loan officer email (Disclosure/LOA only)
+        require_review: If True, pause after prep agent for user review (HIL)
+        resume_from: If set, resume run from this agent (e.g., "drawcore")
     """
     # Extract run_id and output directory
     run_id = extract_run_id_from_output_file(output_file)
@@ -329,15 +333,81 @@ def run_agent(
             # Create progress callback using StatusWriter
             progress_callback = create_status_callback(run_id, output_dir)
             
-            # Run DrawDocs orchestrator
-            results = run_orchestrator(
-                loan_id=loan_id,
-                demo_mode=demo_mode,
-                max_retries=max_retries,
-                document_types=document_types,
-                output_file=str(output_file),
-                progress_callback=progress_callback,
-            )
+            # Check if resuming from a specific agent (HIL continuation)
+            if resume_from:
+                logger.info(f"Resuming run from {resume_from}")
+                
+                # Load existing results from the status file
+                existing_data = writer.get_run_data(run_id)
+                existing_results = None
+                if existing_data:
+                    existing_results = {
+                        "loan_id": existing_data.get("loan_id", loan_id),
+                        "execution_timestamp": existing_data.get("execution_timestamp"),
+                        "demo_mode": existing_data.get("demo_mode", demo_mode),
+                        "agents": existing_data.get("agents", {}),
+                    }
+                    logger.info(f"Loaded existing results with {len(existing_results.get('agents', {}))} agents")
+                
+                # Run orchestrator starting from the specified agent
+                results = run_orchestrator(
+                    loan_id=loan_id,
+                    demo_mode=demo_mode,
+                    max_retries=max_retries,
+                    document_types=document_types,
+                    output_file=str(output_file),
+                    progress_callback=progress_callback,
+                    start_from_agent=resume_from,
+                    existing_results=existing_results,
+                )
+            elif require_review:
+                # Run only the prep agent, then pause for review (HIL)
+                logger.info("Running prep agent only (HIL review enabled)")
+                results = run_orchestrator(
+                    loan_id=loan_id,
+                    demo_mode=demo_mode,
+                    max_retries=max_retries,
+                    document_types=document_types,
+                    output_file=str(output_file),
+                    progress_callback=progress_callback,
+                    stop_after_agent="preparation",
+                )
+                
+                # Mark run as pending review instead of finalizing
+                if results.get("agents", {}).get("preparation", {}).get("status") == "success":
+                    writer.mark_agent_pending_review(
+                        run_id=run_id,
+                        agent_name="preparation",
+                        attempts=results.get("agents", {}).get("preparation", {}).get("attempts", 1),
+                        elapsed_seconds=results.get("agents", {}).get("preparation", {}).get("elapsed_seconds", 0),
+                        output=results.get("agents", {}).get("preparation", {}).get("output"),
+                    )
+                    
+                    # Add log entry for user
+                    writer.add_log(
+                        run_id=run_id,
+                        message="Waiting for field review before proceeding",
+                        level="info",
+                        agent="preparation",
+                        event_type="pending_review",
+                    )
+                    
+                    logger.info(f"Run paused for review - waiting for user to approve fields")
+                    
+                    # Clear callbacks and exit early
+                    set_progress_callback(None)
+                    set_log_callback(None)
+                    return
+            else:
+                # Run full orchestrator
+                results = run_orchestrator(
+                    loan_id=loan_id,
+                    demo_mode=demo_mode,
+                    max_retries=max_retries,
+                    document_types=document_types,
+                    output_file=str(output_file),
+                    progress_callback=progress_callback,
+                )
             
             # Clear callbacks
             set_progress_callback(None)
@@ -456,6 +526,16 @@ def main():
         "--lo-email",
         help="Loan officer email address (required for Disclosure and LOA agents)"
     )
+    parser.add_argument(
+        "--require-review",
+        action="store_true",
+        help="Pause after prep agent for user to review fields (HIL)"
+    )
+    parser.add_argument(
+        "--resume-from",
+        choices=["drawcore", "verification", "orderdocs"],
+        help="Resume run from specified agent (for continuing after HIL review)"
+    )
     
     args = parser.parse_args()
     
@@ -473,6 +553,8 @@ def main():
         max_retries=args.max_retries,
         document_types=document_types,
         lo_email=args.lo_email,
+        require_review=args.require_review,
+        resume_from=args.resume_from,
     )
 
 

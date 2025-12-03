@@ -35,13 +35,19 @@ export interface RunConfig {
    * null = process all documents
    */
   document_types: string[] | null;
+  
+  /**
+   * If true (default), pause after Prep Agent for user to review/approve extracted fields
+   * before Drawcore Agent writes them to Encompass (Human-in-the-Loop review)
+   */
+  require_review?: boolean;
 }
 
 // =============================================================================
 // AGENT RUN STATUS
 // =============================================================================
 
-export type RunStatus = 'pending' | 'running' | 'success' | 'failed' | 'blocked';
+export type RunStatus = 'pending' | 'running' | 'success' | 'failed' | 'blocked' | 'pending_review';
 
 /**
  * Result from an individual agent (Preparation, Drawcore, Verification, or OrderDocs)

@@ -12,20 +12,20 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-# Load environment variables
+# Load environment variables from PROJECT ROOT first (for working credentials)
 from dotenv import load_dotenv
 
-# Load from MCP server first, then local (local won't override)
-mcp_env_path = Path.home() / "Documents/Fintor/encompass-mcp-server/.env"
-if mcp_env_path.exists():
-    load_dotenv(mcp_env_path)
-    print(f"✅ Loaded MCP server environment from {mcp_env_path}")
-
-# Load local .env (won't override existing vars)
+# Load project root .env FIRST (has working Encompass credentials)
 local_env_path = project_root / ".env"
 if local_env_path.exists():
-    load_dotenv(local_env_path, override=False)
-    print(f"✅ Loaded local environment from {local_env_path}")
+    load_dotenv(local_env_path)
+    print(f"✅ Loaded project root environment from {local_env_path}")
+
+# Load MCP server .env without override (for any additional settings)
+mcp_env_path = Path.home() / "Documents/Fintor/encompass-mcp-server/.env"
+if mcp_env_path.exists():
+    load_dotenv(mcp_env_path, override=False)
+    print(f"✅ Loaded MCP server environment from {mcp_env_path}")
 
 # Now import the primitives
 from agents.drawdocs.tools import list_loan_documents, download_document_from_efolder

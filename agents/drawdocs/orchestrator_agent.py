@@ -74,22 +74,39 @@ class OrchestratorConfig:
 class OrchestratorAgent:
     """Orchestrator that manages sequential execution of sub-agents."""
     
-    def __init__(self, config: OrchestratorConfig, progress_callback=None):
+    def __init__(
+        self, 
+        config: OrchestratorConfig, 
+        progress_callback=None,
+        stop_after_agent: Optional[str] = None,
+        start_from_agent: Optional[str] = None,
+        existing_results: Optional[Dict[str, Any]] = None
+    ):
         """Initialize orchestrator with configuration.
         
         Args:
             config: OrchestratorConfig instance
             progress_callback: Optional callback function called after each agent completes.
                               Signature: callback(agent_name: str, result: dict, orchestrator: OrchestratorAgent)
+            stop_after_agent: If set, stop after this agent completes (for HIL review)
+            start_from_agent: If set, skip agents before this one (for resuming)
+            existing_results: If resuming, pass the existing results to continue from
         """
         self.config = config
         self.progress_callback = progress_callback
-        self.results = {
-            "loan_id": config.loan_id,
-            "execution_timestamp": datetime.now().isoformat(),
-            "demo_mode": config.demo_mode,
-            "agents": {}
-        }
+        self.stop_after_agent = stop_after_agent
+        self.start_from_agent = start_from_agent
+        
+        # If resuming, use existing results
+        if existing_results:
+            self.results = existing_results
+        else:
+            self.results = {
+                "loan_id": config.loan_id,
+                "execution_timestamp": datetime.now().isoformat(),
+                "demo_mode": config.demo_mode,
+                "agents": {}
+            }
         
         # Parse user prompt if provided
         self.instructions = self._parse_user_prompt(config.user_prompt)
@@ -607,6 +624,7 @@ class OrchestratorAgent:
         """Execute orchestrator workflow.
         
         Runs agents sequentially with retry logic.
+        Supports stop_after_agent for HIL review and start_from_agent for resuming.
         
         Returns:
             Complete results dictionary
@@ -615,8 +633,18 @@ class OrchestratorAgent:
         logger.info(f"ORCHESTRATOR STARTING - Loan {self.config.loan_id}")
         logger.info("=" * 80)
         
+        # Define agent order
+        agent_order = ["preparation", "drawcore", "verification", "orderdocs"]
+        
+        # Determine which agents to skip based on start_from_agent
+        skip_before = set()
+        if self.start_from_agent:
+            start_idx = agent_order.index(self.start_from_agent) if self.start_from_agent in agent_order else 0
+            skip_before = set(agent_order[:start_idx])
+            logger.info(f"Resuming from {self.start_from_agent} - skipping: {skip_before}")
+        
         # Step 1: Preparation Agent
-        if "preparation" not in self.instructions.get("skip_agents", []):
+        if "preparation" not in self.instructions.get("skip_agents", []) and "preparation" not in skip_before:
             prep_result = self._run_with_retry(
                 self._run_preparation_agent,
                 "preparation"
@@ -631,11 +659,17 @@ class OrchestratorAgent:
                 logger.error("[PREPARATION] Failed - stopping orchestration")
                 self.results["summary_text"] = self._generate_summary()
                 return self.results
+            
+            # Check if we should stop after preparation (HIL review)
+            if self.stop_after_agent == "preparation":
+                logger.info("[PREPARATION] Stopping for HIL review")
+                self.results["summary_text"] = self._generate_summary()
+                return self.results
         else:
             logger.info("[PREPARATION] Skipped per user request")
         
         # Step 2: Drawcore Agent
-        if "drawcore" not in self.instructions.get("skip_agents", []):
+        if "drawcore" not in self.instructions.get("skip_agents", []) and "drawcore" not in skip_before:
             if "preparation" in self.results["agents"]:
                 drawcore_result = self._run_with_retry(
                     self._run_drawcore_agent,
@@ -656,7 +690,7 @@ class OrchestratorAgent:
             logger.info("[DRAWCORE] Skipped per user request")
         
         # Step 3: Verification Agent
-        if "verification" not in self.instructions.get("skip_agents", []):
+        if "verification" not in self.instructions.get("skip_agents", []) and "verification" not in skip_before:
             if "preparation" in self.results["agents"]:
                 ver_result = self._run_with_retry(
                     self._run_verification_agent,
@@ -677,7 +711,7 @@ class OrchestratorAgent:
             logger.info("[VERIFICATION] Skipped per user request")
         
         # Step 4: Orderdocs Agent
-        if "orderdocs" not in self.instructions.get("skip_agents", []):
+        if "orderdocs" not in self.instructions.get("skip_agents", []) and "orderdocs" not in skip_before:
             if "preparation" in self.results["agents"]:
                 ord_result = self._run_with_retry(
                     self._run_orderdocs_agent,
@@ -717,7 +751,10 @@ def run_orchestrator(
     max_retries: int = 2,
     document_types: Optional[List[str]] = None,
     output_file: Optional[str] = None,
-    progress_callback=None
+    progress_callback=None,
+    stop_after_agent: Optional[str] = None,
+    start_from_agent: Optional[str] = None,
+    existing_results: Optional[Dict[str, Any]] = None
 ) -> Dict[str, Any]:
     """Run the orchestrator agent.
     
@@ -734,6 +771,9 @@ def run_orchestrator(
                           Signature: callback(agent_name: str, result: dict, orchestrator: OrchestratorAgent)
                           When provided, file writes are delegated to the callback system
                           (typically StatusWriter) instead of being done here.
+        stop_after_agent: If set, stop after this agent (for HIL review)
+        start_from_agent: If set, resume from this agent
+        existing_results: If resuming, existing results to continue from
         
     Returns:
         Dictionary with complete execution results
@@ -754,7 +794,13 @@ def run_orchestrator(
         output_file=output_file
     )
     
-    orchestrator = OrchestratorAgent(config, progress_callback=progress_callback)
+    orchestrator = OrchestratorAgent(
+        config, 
+        progress_callback=progress_callback,
+        stop_after_agent=stop_after_agent,
+        start_from_agent=start_from_agent,
+        existing_results=existing_results
+    )
     results = orchestrator.run()
     
     # Print summary
