@@ -1202,6 +1202,10 @@ def read_fields(loan_id: str, field_ids: List[str]) -> Dict[str, Any]:
     """
     Read multiple fields from Encompass using Field Reader API.
     
+    Two-tier approach:
+    1. Try MCP server's HTTP client first (uses server's OAuth)
+    2. Fall back to EncompassConnect if MCP fails
+    
     Args:
         loan_id: The loan GUID
         field_ids: List of Encompass field IDs to read
@@ -1209,9 +1213,12 @@ def read_fields(loan_id: str, field_ids: List[str]) -> Dict[str, Any]:
     Returns:
         Dictionary mapping field_id -> value
     """
+    mcp_error = None
+    
+    # Tier 1: Try MCP server's HTTP client
     if MCP_HTTP_CLIENT_AVAILABLE:
-        # Use MCP server's HTTP client (more reliable, uses correct credentials)
         try:
+            logger.info(f"[read_fields] Tier 1: Trying MCP HTTP client for {len(field_ids)} fields...")
             http_client = _get_http_client()
             token = http_client.auth_manager.get_client_credentials_token()
             
@@ -1226,33 +1233,41 @@ def read_fields(loan_id: str, field_ids: List[str]) -> Dict[str, Any]:
             
             if response.status_code == 200:
                 fields = response.json()
-                logger.info(f"Read {len(fields)} fields from loan {loan_id}")
+                logger.info(f"[read_fields] ✓ MCP: Read {len(fields)} fields from loan {loan_id}")
                 return fields
             else:
-                error_msg = f"Field read failed (status {response.status_code}): {response.text}"
-                logger.error(error_msg)
-                raise RuntimeError(error_msg)
+                mcp_error = f"MCP field read failed (status {response.status_code}): {response.text}"
+                logger.warning(f"[read_fields] {mcp_error}")
                 
         except Exception as e:
-            logger.error(f"Error reading fields from {loan_id} via MCP: {e}")
-            raise
+            mcp_error = str(e)
+            logger.warning(f"[read_fields] MCP failed: {mcp_error}")
     else:
-        # Fallback to EncompassConnect (legacy)
+        mcp_error = "MCP HTTP client not available"
+        logger.info(f"[read_fields] {mcp_error}")
+    
+    # Tier 2: Fall back to EncompassConnect
+    logger.info(f"[read_fields] Tier 2: Falling back to EncompassConnect...")
+    try:
         client = _get_encompass_client()
+        fields = client.get_field(loan_id, field_ids)
+        logger.info(f"[read_fields] ✓ EncompassConnect: Read {len(fields)} fields from loan {loan_id}")
+        return fields
         
-        try:
-            fields = client.get_field(loan_id, field_ids)
-            logger.info(f"Read {len(fields)} fields from loan {loan_id}")
-            return fields
-            
-        except Exception as e:
-            logger.error(f"Error reading fields from {loan_id}: {e}")
-            raise
+    except Exception as e:
+        fallback_error = str(e)
+        logger.error(f"[read_fields] ✗ EncompassConnect fallback also failed: {fallback_error}")
+        # Raise with both errors for debugging
+        raise RuntimeError(f"Field read failed. MCP: {mcp_error}. EncompassConnect: {fallback_error}")
 
 
 def write_fields(loan_id: str, updates: List[Dict[str, Any]]) -> bool:
     """
     Write multiple fields to Encompass.
+    
+    Two-tier approach:
+    1. Try MCP server's HTTP client first (PATCH loan)
+    2. Fall back to EncompassConnect if MCP fails
     
     Args:
         loan_id: The loan GUID
@@ -1262,27 +1277,74 @@ def write_fields(loan_id: str, updates: List[Dict[str, Any]]) -> bool:
     Returns:
         True if successful, False otherwise
     """
-    client = _get_encompass_client()
-    
     # Check if writes are enabled
     if not os.getenv("ENABLE_ENCOMPASS_WRITES", "false").lower() == "true":
-        logger.warning(f"Encompass writes disabled. Would have written {len(updates)} fields to {loan_id}")
+        logger.warning(f"[write_fields] Encompass writes disabled. Would have written {len(updates)} fields to {loan_id}")
         return False
     
+    mcp_error = None
+    
+    # Tier 1: Try MCP server's HTTP client (batch PATCH)
+    if MCP_HTTP_CLIENT_AVAILABLE:
+        try:
+            logger.info(f"[write_fields] Tier 1: Trying MCP HTTP client for {len(updates)} fields...")
+            http_client = _get_http_client()
+            token = http_client.auth_manager.get_client_credentials_token()
+            
+            # Convert updates to loan PATCH format
+            # Format: { "fieldId": value, ... }
+            patch_body = {}
+            for update in updates:
+                field_id = update.get("field_id") or update.get("fieldId")
+                value = update.get("value")
+                if field_id:
+                    patch_body[field_id] = value
+            
+            response = http_client.request(
+                method="PATCH",
+                path=f"/encompass/v3/loans/{loan_id}",
+                token=token,
+                headers={"Content-Type": "application/json"},
+                json_body=patch_body
+            )
+            
+            if response.status_code in [200, 204]:
+                logger.info(f"[write_fields] ✓ MCP: Wrote {len(updates)} fields to loan {loan_id}")
+                return True
+            else:
+                mcp_error = f"MCP field write failed (status {response.status_code}): {response.text}"
+                logger.warning(f"[write_fields] {mcp_error}")
+                
+        except Exception as e:
+            mcp_error = str(e)
+            logger.warning(f"[write_fields] MCP failed: {mcp_error}")
+    else:
+        mcp_error = "MCP HTTP client not available"
+        logger.info(f"[write_fields] {mcp_error}")
+    
+    # Tier 2: Fall back to EncompassConnect
+    logger.info(f"[write_fields] Tier 2: Falling back to EncompassConnect...")
     try:
-        # Write each field individually
+        client = _get_encompass_client()
+        
+        # Write each field individually (EncompassConnect's approach)
         success_count = 0
         for update in updates:
-            field_id = update["field_id"]
-            value = update["value"]
-            if client.write_field(loan_id, field_id, value):
-                success_count += 1
+            field_id = update.get("field_id") or update.get("fieldId")
+            value = update.get("value")
+            if field_id:
+                try:
+                    if client.write_field(loan_id, field_id, value):
+                        success_count += 1
+                except Exception as field_error:
+                    logger.warning(f"[write_fields] Failed to write field {field_id}: {field_error}")
         
-        logger.info(f"Wrote {success_count}/{len(updates)} fields to loan {loan_id}")
+        logger.info(f"[write_fields] ✓ EncompassConnect: Wrote {success_count}/{len(updates)} fields to loan {loan_id}")
         return success_count == len(updates)
         
     except Exception as e:
-        logger.error(f"Error writing fields to {loan_id}: {e}")
+        fallback_error = str(e)
+        logger.error(f"[write_fields] ✗ EncompassConnect fallback also failed: {fallback_error}")
         return False
 
 

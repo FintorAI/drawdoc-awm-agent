@@ -47,7 +47,7 @@ class StatusWriter:
     """
     
     # Agent names in execution order
-    AGENTS = ["preparation", "verification", "orderdocs"]
+    AGENTS = ["preparation", "drawcore", "verification", "orderdocs"]
     
     def __init__(self, output_dir: Optional[Union[str, Path]] = None):
         """
@@ -140,6 +140,13 @@ class StatusWriter:
                     "output": None,
                     "error": None,
                 },
+                "drawcore": {
+                    "status": "pending",
+                    "attempts": 0,
+                    "elapsed_seconds": 0,
+                    "output": None,
+                    "error": None,
+                },
                 "verification": {
                     "status": "pending",
                     "attempts": 0,
@@ -194,7 +201,7 @@ class StatusWriter:
         
         Args:
             run_id: Unique run identifier
-            agent_name: Name of agent ("preparation", "verification", "orderdocs")
+            agent_name: Name of agent ("preparation", "drawcore", "verification", "orderdocs")
             status: New status ("pending", "running", "success", "failed")
             attempts: Number of attempts made (optional)
             elapsed_seconds: Time taken in seconds (optional)
@@ -559,6 +566,29 @@ class StatusWriter:
             agent="verification",
             event_type="verification_summary",
             details={"corrections_count": corrections_count, "fields_checked": fields_checked},
+        )
+    
+    def log_drawcore_summary(
+        self,
+        run_id: str,
+        phases_completed: int,
+        total_phases: int,
+        fields_updated: int,
+        fields_failed: int,
+    ) -> Dict[str, Any]:
+        """Log drawcore summary."""
+        return self.add_log(
+            run_id=run_id,
+            message=f"Completed {phases_completed}/{total_phases} phases, {fields_updated} fields updated, {fields_failed} failed",
+            level="info",
+            agent="drawcore",
+            event_type="drawcore_summary",
+            details={
+                "phases_completed": phases_completed,
+                "total_phases": total_phases,
+                "fields_updated": fields_updated,
+                "fields_failed": fields_failed,
+            },
         )
     
     def log_orderdocs_summary(

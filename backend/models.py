@@ -47,6 +47,7 @@ class CreateRunRequest(BaseModel):
 class AgentSummary(BaseModel):
     """Summary of agent statuses in a run."""
     preparation: AgentStatus = AgentStatus.PENDING
+    drawcore: AgentStatus = AgentStatus.PENDING
     verification: AgentStatus = AgentStatus.PENDING
     orderdocs: AgentStatus = AgentStatus.PENDING
 
@@ -99,6 +100,7 @@ class RunData(BaseModel):
             demo_mode=demo_mode,
             agents={
                 "preparation": AgentResult(status=AgentStatus.RUNNING),
+                "drawcore": AgentResult(status=AgentStatus.PENDING),
                 "verification": AgentResult(status=AgentStatus.PENDING),
                 "orderdocs": AgentResult(status=AgentStatus.PENDING),
             }

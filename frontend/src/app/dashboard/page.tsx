@@ -111,6 +111,19 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="flex items-center gap-4">
+                  <AgentIcon type="drawcore" showBackground />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm font-medium">Drawcore Agent</span>
+                      <span className="text-sm text-muted-foreground">30s avg</span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-orange-500 rounded-full" style={{ width: "65%" }} />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4">
                   <AgentIcon type="verification" showBackground />
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-1">

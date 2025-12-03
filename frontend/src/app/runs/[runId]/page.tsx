@@ -9,6 +9,7 @@ import { RunDetailHeader } from "@/components/runs/run-detail-header";
 import { AgentStatusCards } from "@/components/runs/agent-status-card";
 import { OverviewTab } from "@/components/runs/overview-tab";
 import { TimelineTab } from "@/components/runs/timeline-tab";
+import { FinalReportTab } from "@/components/runs/final-report-tab";
 import { useRunDetail } from "@/hooks/use-runs";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -193,6 +194,7 @@ export default function RunDetailPage() {
           <TabsList className="bg-muted/50">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="timeline">Timeline</TabsTrigger>
+            <TabsTrigger value="report">Report</TabsTrigger>
             <TabsTrigger value="documents">Documents</TabsTrigger>
             <TabsTrigger value="fields">Fields</TabsTrigger>
           </TabsList>
@@ -206,6 +208,13 @@ export default function RunDetailPage() {
 
           <TabsContent value="timeline">
             <TimelineTab
+              runDetail={runDetail}
+              isLoading={isLoading && !runDetail}
+            />
+          </TabsContent>
+
+          <TabsContent value="report">
+            <FinalReportTab
               runDetail={runDetail}
               isLoading={isLoading && !runDetail}
             />

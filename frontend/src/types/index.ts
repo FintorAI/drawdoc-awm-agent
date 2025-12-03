@@ -41,7 +41,7 @@ export interface RunConfig {
 export type RunStatus = 'pending' | 'running' | 'success' | 'failed';
 
 /**
- * Result from an individual agent (Preparation, Verification, or OrderDocs)
+ * Result from an individual agent (Preparation, Drawcore, Verification, or OrderDocs)
  */
 export interface AgentResult {
   /** Current status of the agent */
@@ -63,7 +63,7 @@ export interface AgentResult {
 /**
  * Union type for different agent outputs
  */
-export type AgentOutput = PreparationOutput | VerificationOutput | OrderDocsOutput;
+export type AgentOutput = PreparationOutput | DrawcoreOutput | VerificationOutput | OrderDocsOutput;
 
 /**
  * Output from the Preparation Agent
@@ -93,6 +93,22 @@ export interface PreparationOutput {
 export interface FieldMapping {
   value: string | number;
   attachment_id: string | null;
+}
+
+/**
+ * Output from the Drawcore Agent
+ */
+export interface DrawcoreOutput {
+  phases_completed: number;
+  total_phases: number;
+  fields_updated: number;
+  fields_failed: number;
+  phase_results: {
+    phase_name: string;
+    status: 'success' | 'failed' | 'skipped';
+    fields_updated: number;
+    error?: string;
+  }[];
 }
 
 /**
@@ -138,6 +154,7 @@ export interface AgentRun {
   /** Results from each agent */
   agents: {
     preparation: AgentResult | null;
+    drawcore: AgentResult | null;
     verification: AgentResult | null;
     orderdocs: AgentResult | null;
   };
@@ -159,6 +176,7 @@ export interface AgentRunJsonOutput {
   summary: Record<string, unknown>;
   agents: {
     preparation: AgentResultJson | null;
+    drawcore: AgentResultJson | null;
     verification: AgentResultJson | null;
     orderdocs: AgentResultJson | null;
   };

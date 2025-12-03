@@ -75,6 +75,7 @@ export function useRunDetail(runId: string | null, options: UseRunDetailOptions 
       const data = query.state.data as RunDetail | undefined;
       if (data) {
         const allAgentsDone = ['success', 'failed'].includes(data.agents.preparation?.status || 'pending') &&
+                              ['success', 'failed'].includes(data.agents.drawcore?.status || 'pending') &&
                               ['success', 'failed'].includes(data.agents.verification?.status || 'pending') &&
                               ['success', 'failed'].includes(data.agents.orderdocs?.status || 'pending');
         if (allAgentsDone) {

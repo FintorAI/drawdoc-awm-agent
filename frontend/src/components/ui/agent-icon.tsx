@@ -1,24 +1,27 @@
 import * as React from "react";
-import { FileSearch, CheckCircle, FileText, LucideIcon } from "lucide-react";
+import { FileSearch, CheckCircle, FileText, Zap, LucideIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-type AgentType = "preparation" | "verification" | "orderdocs";
+type AgentType = "preparation" | "drawcore" | "verification" | "orderdocs";
 
 const agentIconMap: Record<AgentType, LucideIcon> = {
   preparation: FileSearch,
+  drawcore: Zap,
   verification: CheckCircle,
   orderdocs: FileText,
 };
 
 const agentColorMap: Record<AgentType, string> = {
   preparation: "text-blue-600",
+  drawcore: "text-orange-600",
   verification: "text-emerald-600",
   orderdocs: "text-purple-600",
 };
 
 const agentBgMap: Record<AgentType, string> = {
   preparation: "bg-blue-100",
+  drawcore: "bg-orange-100",
   verification: "bg-emerald-100",
   orderdocs: "bg-purple-100",
 };

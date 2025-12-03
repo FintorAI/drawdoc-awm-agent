@@ -95,7 +95,7 @@ def derive_overall_status(agents: dict) -> RunStatus:
     - Any running → "running"
     """
     statuses = []
-    for agent_name in ["preparation", "verification", "orderdocs"]:
+    for agent_name in ["preparation", "drawcore", "verification", "orderdocs"]:
         agent_data = agents.get(agent_name, {})
         if isinstance(agent_data, dict):
             status = agent_data.get("status", "pending")
@@ -122,7 +122,7 @@ def derive_overall_status(agents: dict) -> RunStatus:
 def calculate_duration(agents: dict) -> float:
     """Calculate total duration from agent elapsed times."""
     total = 0.0
-    for agent_name in ["preparation", "verification", "orderdocs"]:
+    for agent_name in ["preparation", "drawcore", "verification", "orderdocs"]:
         agent_data = agents.get(agent_name, {})
         if isinstance(agent_data, dict):
             elapsed = agent_data.get("elapsed_seconds", 0) or 0
@@ -166,6 +166,7 @@ def build_agent_summary(agents: dict) -> AgentSummary:
     
     return AgentSummary(
         preparation=get_status("preparation"),
+        drawcore=get_status("drawcore"),
         verification=get_status("verification"),
         orderdocs=get_status("orderdocs"),
     )

@@ -84,6 +84,7 @@ function formatDate(isoString: string): string {
 function getTotalDuration(agents: RunDetail["agents"]): number {
   let total = 0;
   if (agents.preparation?.elapsed_seconds) total += agents.preparation.elapsed_seconds;
+  if (agents.drawcore?.elapsed_seconds) total += agents.drawcore.elapsed_seconds;
   if (agents.verification?.elapsed_seconds) total += agents.verification.elapsed_seconds;
   if (agents.orderdocs?.elapsed_seconds) total += agents.orderdocs.elapsed_seconds;
   return total;
@@ -189,9 +190,10 @@ interface TimingBreakdownProps {
 
 function TimingBreakdown({ agents, progress, executionTimestamp }: TimingBreakdownProps) {
   const isPrepRunning = agents.preparation?.status === "running";
+  const isDrawcoreRunning = agents.drawcore?.status === "running";
   const isVerifRunning = agents.verification?.status === "running";
   const isOrderRunning = agents.orderdocs?.status === "running";
-  const anyRunning = isPrepRunning || isVerifRunning || isOrderRunning;
+  const anyRunning = isPrepRunning || isDrawcoreRunning || isVerifRunning || isOrderRunning;
   
   // Live elapsed time for overall
   const liveElapsed = useLiveElapsed(executionTimestamp, anyRunning);
@@ -200,6 +202,8 @@ function TimingBreakdown({ agents, progress, executionTimestamp }: TimingBreakdo
   const completedTime = 
     (agents.preparation?.status === "success" || agents.preparation?.status === "failed" 
       ? agents.preparation?.elapsed_seconds || 0 : 0) +
+    (agents.drawcore?.status === "success" || agents.drawcore?.status === "failed" 
+      ? agents.drawcore?.elapsed_seconds || 0 : 0) +
     (agents.verification?.status === "success" || agents.verification?.status === "failed" 
       ? agents.verification?.elapsed_seconds || 0 : 0) +
     (agents.orderdocs?.status === "success" || agents.orderdocs?.status === "failed" 
@@ -230,6 +234,14 @@ function TimingBreakdown({ agents, progress, executionTimestamp }: TimingBreakdo
       progressText: isPrepRunning && progress?.documents_found 
         ? `${progress.documents_processed}/${progress.documents_found} docs`
         : undefined,
+    },
+    { 
+      key: "drawcore", 
+      name: "Drawcore", 
+      seconds: agents.drawcore?.elapsed_seconds || 0,
+      status: agents.drawcore?.status,
+      progress: agents.drawcore?.status === "success" || agents.drawcore?.status === "failed" ? 100 
+        : agents.drawcore?.status === "running" ? 50 : 0,
     },
     { 
       key: "verification", 
@@ -281,7 +293,7 @@ function TimingBreakdown({ agents, progress, executionTimestamp }: TimingBreakdo
               <div key={agent.key} className="space-y-1.5">
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2">
-                    <AgentIcon type={agent.key as "preparation" | "verification" | "orderdocs"} size="sm" />
+                    <AgentIcon type={agent.key as "preparation" | "drawcore" | "verification" | "orderdocs"} size="sm" />
                     <span>{agent.name}</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -315,6 +327,7 @@ function TimingBreakdown({ agents, progress, executionTimestamp }: TimingBreakdo
                       "h-full rounded-full transition-all duration-300",
                       isFailed && "bg-red-500",
                       !isFailed && agent.key === "preparation" && "bg-blue-500",
+                      !isFailed && agent.key === "drawcore" && "bg-orange-500",
                       !isFailed && agent.key === "verification" && "bg-emerald-500",
                       !isFailed && agent.key === "orderdocs" && "bg-purple-500",
                     )}
@@ -725,6 +738,9 @@ function ErrorDetailsCard({ agents }: ErrorDetailsCardProps) {
   if (agents.preparation?.status === "failed" && agents.preparation.error) {
     errors.push({ agent: "Preparation", error: agents.preparation.error });
   }
+  if (agents.drawcore?.status === "failed" && agents.drawcore.error) {
+    errors.push({ agent: "Drawcore", error: agents.drawcore.error });
+  }
   if (agents.verification?.status === "failed" && agents.verification.error) {
     errors.push({ agent: "Verification", error: agents.verification.error });
   }
@@ -793,6 +809,7 @@ export function OverviewTab({ runDetail, isLoading, className }: OverviewTabProp
   // Check if any agent failed
   const hasFailed = 
     runDetail.agents.preparation?.status === "failed" ||
+    runDetail.agents.drawcore?.status === "failed" ||
     runDetail.agents.verification?.status === "failed" ||
     runDetail.agents.orderdocs?.status === "failed";
 

@@ -3,7 +3,7 @@
  */
 
 export type LogLevel = 'info' | 'success' | 'warning' | 'error' | 'debug';
-export type AgentName = 'system' | 'orchestrator' | 'preparation' | 'verification' | 'orderdocs';
+export type AgentName = 'system' | 'orchestrator' | 'preparation' | 'drawcore' | 'verification' | 'orderdocs';
 
 export interface TimelineEvent {
   id: string;
@@ -35,6 +35,7 @@ export const AGENT_COLORS: Record<AgentName, { bg: string; text: string; border:
   system: { bg: 'bg-slate-100', text: 'text-slate-700', border: 'border-slate-400' },
   orchestrator: { bg: 'bg-slate-100', text: 'text-slate-700', border: 'border-slate-400' },
   preparation: { bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-400' },
+  drawcore: { bg: 'bg-orange-100', text: 'text-orange-700', border: 'border-orange-400' },
   verification: { bg: 'bg-purple-100', text: 'text-purple-700', border: 'border-purple-400' },
   orderdocs: { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-400' },
 };

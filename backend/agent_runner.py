@@ -82,6 +82,21 @@ def _add_agent_summary_logs(writer: StatusWriter, run_id: str, agent_name: str, 
                     details={"field_count": len(field_mappings)},
                 )
                 
+        elif agent_name == "drawcore":
+            # Log drawcore summary
+            phases_completed = output.get("phases_completed", 0)
+            total_phases = output.get("total_phases", 5)
+            fields_updated = output.get("fields_updated", 0)
+            fields_failed = output.get("fields_failed", 0)
+            
+            writer.log_drawcore_summary(
+                run_id=run_id,
+                phases_completed=phases_completed,
+                total_phases=total_phases,
+                fields_updated=fields_updated,
+                fields_failed=fields_failed,
+            )
+                
         elif agent_name == "verification":
             # Log corrections summary
             corrections = output.get("corrections", [])
@@ -331,7 +346,7 @@ def run_agent(
             
             if data:
                 # Find which agent was running and mark it as failed
-                for agent_name in ["preparation", "verification", "orderdocs"]:
+                for agent_name in ["preparation", "drawcore", "verification", "orderdocs"]:
                     agent_data = data.get("agents", {}).get(agent_name, {})
                     if agent_data.get("status") == "running":
                         writer.mark_agent_failed(

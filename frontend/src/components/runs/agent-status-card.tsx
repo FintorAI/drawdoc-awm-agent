@@ -12,7 +12,7 @@ import type { AgentResultDetail } from "@/lib/api";
 // TYPES
 // =============================================================================
 
-type AgentType = "preparation" | "verification" | "orderdocs";
+type AgentType = "preparation" | "drawcore" | "verification" | "orderdocs";
 
 interface AgentStatusCardProps {
   agent: AgentType;
@@ -31,14 +31,16 @@ interface AgentStatusCardProps {
 
 const agentNames: Record<AgentType, string> = {
   preparation: "Preparation",
+  drawcore: "Drawcore",
   verification: "Verification",
   orderdocs: "OrderDocs",
 };
 
 const agentDescriptions: Record<AgentType, string> = {
   preparation: "Extract data from documents",
+  drawcore: "Update Encompass fields in bulk",
   verification: "Verify against SOP rules",
-  orderdocs: "Update Encompass fields",
+  orderdocs: "Mavent check & order docs",
 };
 
 function formatDuration(seconds: number): string {
@@ -256,6 +258,7 @@ function AgentStatusCardSkeleton({ className }: { className?: string }) {
   interface AgentStatusCardsProps {
     agents: {
       preparation?: AgentResultDetail;
+      drawcore?: AgentResultDetail;
       verification?: AgentResultDetail;
       orderdocs?: AgentResultDetail;
     } | undefined;
@@ -275,10 +278,10 @@ function AgentStatusCardSkeleton({ className }: { className?: string }) {
     className,
     executionTimestamp,
   }: AgentStatusCardsProps) {
-    const agentTypes: AgentType[] = ["preparation", "verification", "orderdocs"];
+    const agentTypes: AgentType[] = ["preparation", "drawcore", "verification", "orderdocs"];
   
     return (
-      <div className={cn("grid grid-cols-1 sm:grid-cols-3 gap-4", className)}>
+      <div className={cn("grid grid-cols-1 sm:grid-cols-4 gap-4", className)}>
         {agentTypes.map((agentType) => (
           <AgentStatusCard
             key={agentType}

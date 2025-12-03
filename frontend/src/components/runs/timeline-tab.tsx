@@ -42,6 +42,7 @@ type LevelFilter = LogLevel | 'all';
 const AGENT_OPTIONS: { value: AgentFilter; label: string }[] = [
   { value: 'all', label: 'All' },
   { value: 'preparation', label: 'Preparation' },
+  { value: 'drawcore', label: 'Drawcore' },
   { value: 'verification', label: 'Verification' },
   { value: 'orderdocs', label: 'OrderDocs' },
 ];
