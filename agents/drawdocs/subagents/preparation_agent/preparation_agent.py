@@ -732,10 +732,19 @@ def _process_single_document(
     loan_id: str,
     document_types: Optional[List[str]],
     dry_run: bool,
+    matched_type: Optional[str] = None,
 ) -> Optional[Dict[str, Any]]:
     """Process a single document: download, extract, and map fields.
     
     Supports both old format (with attachments array) and new MCP format (with id directly).
+    
+    Args:
+        doc: Document dictionary from API
+        loan_id: Loan GUID
+        document_types: List of requested document types
+        dry_run: If True, don't write to Encompass
+        matched_type: The document type that this document was matched as (e.g., "ID" for a driver's license).
+                      This is used for schema lookup when the API returns generic types like "Cloud".
     
     Returns:
         Processing result dictionary or None if document should be skipped
@@ -820,9 +829,35 @@ def _process_single_document(
             }
         
         # Normalize document type
-        # If doc_type is generic (Unknown, empty, or Cloud), infer from title
+        # PRIORITY 1: Use matched_type if provided (from document matching phase)
+        # PRIORITY 2: If doc_type is generic (Unknown, empty, or Cloud), infer from title
         normalized_doc_type = doc_type
-        if doc_type in ["Unknown", "", "Cloud", "cloud"]:
+        
+        # First, try to use the matched_type passed from the matching phase
+        # This is the most reliable since the matching already identified the document correctly
+        logger.debug(f"[PROCESS] Normalization - matched_type='{matched_type}', doc_type='{doc_type}'")
+        if matched_type and doc_type in ["Unknown", "", "Cloud", "cloud"]:
+            try:
+                from tools.extraction_schemas import list_supported_document_types
+            except ImportError:
+                from agents.drawdocs.subagents.preparation_agent.tools.extraction_schemas import list_supported_document_types
+            supported_types = list_supported_document_types()
+            logger.debug(f"[PROCESS] Looking for matched_type '{matched_type}' in {len(supported_types)} supported types")
+            
+            # Check if matched_type is directly in supported types
+            matched_lower = matched_type.lower().strip()
+            for supported_type in supported_types:
+                if matched_lower == supported_type.lower():
+                    normalized_doc_type = supported_type
+                    logger.info(f"[PROCESS] ✓ Using matched type '{matched_type}' -> '{normalized_doc_type}' (exact match in supported types)")
+                    break
+            
+            # If no exact match, keep trying fallbacks
+            if normalized_doc_type == doc_type:
+                logger.warning(f"[PROCESS] matched_type '{matched_type}' not found exactly in supported types, trying fallbacks")
+        
+        # Fallback: If still generic, try to infer from title and document_types
+        if normalized_doc_type in ["Unknown", "", "Cloud", "cloud"]:
             try:
                 from tools.extraction_schemas import list_supported_document_types
             except ImportError:
@@ -866,7 +901,7 @@ def _process_single_document(
                     normalized_doc_type = best_match
                     logger.info(f"[PROCESS] Normalized document type from '{doc_type}' to '{normalized_doc_type}' based on requested types (match score: {best_score})")
             
-            if normalized_doc_type == "Unknown" or normalized_doc_type == "":
+            if normalized_doc_type == "Unknown" or normalized_doc_type == "" or normalized_doc_type in ["Cloud", "cloud"]:
                 best_match = None
                 best_score = 0
                 for supported_type in supported_types:
@@ -1245,7 +1280,10 @@ def process_loan_documents(
             for doc, (score, is_exact_title, is_preferred) in selected_docs:
                 doc_title = doc.get("title", "Unknown")
                 logger.info(f"[PROCESS] Selected match for '{requested_type}': {doc_title} (score: {score}, exact_title: {is_exact_title}, preferred: {is_preferred})")
-                matching_documents.append(doc)
+                # Store document with its matched type for later processing
+                doc_with_match = doc.copy()
+                doc_with_match["_matched_type"] = requested_type  # Track which type this doc matched
+                matching_documents.append(doc_with_match)
             
             if len(docs) > MAX_DOCS_PER_TYPE:
                 logger.info(f"[PROCESS] Selected {len(selected_docs)} best document(s) for '{requested_type}' (skipped {len(docs) - MAX_DOCS_PER_TYPE} lower-scoring documents)")
@@ -1316,7 +1354,11 @@ def process_loan_documents(
     
     def process_document(doc: Dict[str, Any]) -> Dict[str, Any]:
         """Process a single document - extracted to function for parallel processing."""
-        return _process_single_document(doc, loan_id, document_types, dry_run)
+        # Extract the matched type that was stored during document matching phase
+        matched_type = doc.pop("_matched_type", None)
+        doc_title = doc.get("title", "Unknown")
+        logger.debug(f"[PROCESS] Processing document '{doc_title}' with matched_type='{matched_type}'")
+        return _process_single_document(doc, loan_id, document_types, dry_run, matched_type=matched_type)
     
     # Process documents in parallel - increased workers for faster processing
     # OPTIMIZATION: Increased to 5 workers for better throughput
@@ -1401,7 +1443,8 @@ def process_loan_documents(
                 details={"document_name": doc_title}
             )
             
-            result = _process_single_document(doc, loan_id, document_types, dry_run)
+            # Extract matched_type and use process_document for consistency
+            result = process_document(doc)
             if result:
                 processing_results.append(result)
                 # Count fields extracted

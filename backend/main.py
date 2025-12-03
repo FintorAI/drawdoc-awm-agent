@@ -21,8 +21,14 @@ load_dotenv(project_root / ".env")
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
-from models import CreateRunRequest, CreateRunResponse, RunSummary, AgentType
-from services import list_all_runs, get_run_detail, create_run
+from models import (
+    CreateRunRequest, CreateRunResponse, RunSummary, AgentType,
+    SubmitFieldReviewRequest, SubmitFieldReviewResponse, PendingFieldsResponse
+)
+from services import (
+    list_all_runs, get_run_detail, create_run,
+    get_pending_fields, submit_field_review
+)
 
 
 # =============================================================================
@@ -123,6 +129,85 @@ async def start_run(request: CreateRunRequest):
     """
     run_id, agent_type = create_run(request)
     return CreateRunResponse(run_id=run_id, agent_type=agent_type)
+
+
+# =============================================================================
+# HIL (HUMAN-IN-THE-LOOP) REVIEW ENDPOINTS
+# =============================================================================
+
+@app.get("/api/runs/{run_id}/pending-fields", response_model=PendingFieldsResponse)
+async def get_run_pending_fields(run_id: str):
+    """
+    Get fields pending user review for a run.
+    
+    Returns the extracted fields from the Prep Agent that need user approval
+    before the Drawcore Agent writes them to Encompass.
+    
+    Args:
+        run_id: The run identifier
+        
+    Returns:
+        List of pending fields with their extracted values and source documents
+        
+    Raises:
+        404: Run not found
+        400: Run is not in pending_review status
+    """
+    result = get_pending_fields(run_id)
+    
+    if result is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Run '{run_id}' not found"
+        )
+    
+    if "error" in result:
+        raise HTTPException(
+            status_code=400,
+            detail=result["error"]
+        )
+    
+    return result
+
+
+@app.post("/api/runs/{run_id}/review", response_model=SubmitFieldReviewResponse)
+async def submit_run_review(run_id: str, request: SubmitFieldReviewRequest):
+    """
+    Submit user decisions for field review.
+    
+    After reviewing the extracted fields, the user can:
+    - Accept: Use the extracted value as-is
+    - Reject: Skip writing this field (with optional reason)
+    - Edit: Use a modified value instead
+    
+    After submission, the run continues to the next agents if `proceed=True`.
+    
+    Args:
+        run_id: The run identifier
+        request: Field decisions and whether to proceed
+        
+    Returns:
+        Summary of accepted/rejected/edited fields
+        
+    Raises:
+        404: Run not found
+        400: Run is not in pending_review status
+    """
+    result = submit_field_review(run_id, request)
+    
+    if result is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Run '{run_id}' not found"
+        )
+    
+    if not result.get("success", False) and "error" in result:
+        raise HTTPException(
+            status_code=400,
+            detail=result["error"]
+        )
+    
+    return result
 
 
 # =============================================================================

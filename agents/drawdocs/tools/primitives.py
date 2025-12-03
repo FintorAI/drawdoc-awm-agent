@@ -86,9 +86,9 @@ except ImportError:
 def _get_encompass_client() -> EncompassConnect:
     """Get an initialized Encompass client with credentials from environment variables.
     
-    Uses the SAME env var names as Prep Agent for consistency.
+    This is the FALLBACK client using regular ENCOMPASS_* variables.
+    Used when MCP server fails.
     """
-    # Match Prep Agent's approach exactly
     return EncompassConnect(
         access_token=os.getenv("ENCOMPASS_ACCESS_TOKEN", ""),
         api_base_url=os.getenv("ENCOMPASS_API_BASE_URL", "https://api.elliemae.com"),
@@ -105,18 +105,65 @@ def _get_encompass_client() -> EncompassConnect:
 
 
 def _get_http_client():
-    """Get HTTP client for raw API requests (milestones, etc.)."""
+    """Get HTTP client for MCP server API requests.
+    
+    Loads credentials directly from MCP server's .env file.
+    This is the PRIMARY client - Tier 1.
+    """
     if not MCP_HTTP_CLIENT_AVAILABLE:
         raise RuntimeError("MCP HTTP client not available. Cannot make raw API requests.")
     
-    # Use ENCOMPASS_API_BASE_URL (matching Prep Agent)
-    api_server = os.getenv("ENCOMPASS_API_BASE_URL", "https://api.elliemae.com")
-    timeout = int(os.getenv("ENCOMPASS_TIMEOUT", "60"))
-    verify_ssl = os.getenv("ENCOMPASS_VERIFY_SSL", "true").lower() != "false"
+    # Load MCP server's .env directly to get its credentials
+    mcp_server_env_path = Path(__file__).parent.parent.parent.parent.parent / "encompass-mcp-server" / ".env"
+    mcp_credentials = {}
     
-    logger.debug(f"[_get_http_client] API server: {api_server}")
+    if mcp_server_env_path.exists():
+        # Parse MCP server .env file directly
+        with open(mcp_server_env_path, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    key, value = line.split('=', 1)
+                    # Remove quotes if present
+                    value = value.strip('"').strip("'")
+                    mcp_credentials[key.strip()] = value
+        logger.info(f"[_get_http_client] Loaded MCP credentials from: {mcp_server_env_path}")
     
-    # Create auth manager (reads credentials from env vars internally)
+    # Get MCP server settings (try MCP_ prefix first, then MCP server's vars)
+    api_server = (
+        os.getenv("MCP_ENCOMPASS_API_SERVER") or 
+        mcp_credentials.get("ENCOMPASS_API_SERVER") or 
+        "https://api.elliemae.com"
+    )
+    timeout = int(os.getenv("MCP_ENCOMPASS_TIMEOUT", "60"))
+    verify_ssl = os.getenv("MCP_ENCOMPASS_VERIFY_SSL", "true").lower() != "false"
+    
+    logger.info(f"[_get_http_client] MCP API server: {api_server}")
+    
+    # Set MCP server credentials as env vars that EncompassAuthManager expects
+    original_vars = {}
+    mcp_var_mapping = {
+        "ENCOMPASS_CLIENT_ID": mcp_credentials.get("ENCOMPASS_CLIENT_ID", ""),
+        "ENCOMPASS_CLIENT_SECRET": mcp_credentials.get("ENCOMPASS_CLIENT_SECRET", ""),
+        "ENCOMPASS_INSTANCE_ID": mcp_credentials.get("ENCOMPASS_INSTANCE_ID", ""),
+        "ENCOMPASS_SMART_USER": mcp_credentials.get("ENCOMPASS_SMART_USER", ""),
+        "ENCOMPASS_SMART_PASS": mcp_credentials.get("ENCOMPASS_SMART_PASS", ""),
+        "ENCOMPASS_SCOPE": mcp_credentials.get("ENCOMPASS_SCOPE", "lp"),
+    }
+    
+    # Debug: Show what credentials were loaded (mask secrets)
+    logger.info(f"[_get_http_client] CLIENT_ID: {mcp_var_mapping['ENCOMPASS_CLIENT_ID'][:8] if mcp_var_mapping['ENCOMPASS_CLIENT_ID'] else 'EMPTY'}...")
+    logger.info(f"[_get_http_client] INSTANCE_ID: {mcp_var_mapping['ENCOMPASS_INSTANCE_ID'] or 'EMPTY'}")
+    logger.info(f"[_get_http_client] SMART_USER: {mcp_var_mapping['ENCOMPASS_SMART_USER'] or 'EMPTY'}")
+    logger.info(f"[_get_http_client] SMART_PASS: {'SET' if mcp_var_mapping['ENCOMPASS_SMART_PASS'] else 'EMPTY'}")
+    
+    # Backup and set MCP credentials
+    for var_name, mcp_value in mcp_var_mapping.items():
+        if mcp_value:  # Only set if value exists
+            original_vars[var_name] = os.environ.get(var_name)
+            os.environ[var_name] = mcp_value
+    
+    # Create auth manager (reads ENCOMPASS_* vars which we set to MCP values)
     auth_manager = EncompassAuthManager(
         api_server=api_server,
         timeout=timeout,
@@ -130,6 +177,27 @@ def _get_http_client():
         timeout=timeout,
         verify_ssl=verify_ssl
     )
+    
+    # Pre-fetch token BEFORE restoring env vars (token is cached in auth_manager)
+    try:
+        _ = auth_manager.get_client_credentials_token()
+        logger.info("[_get_http_client] ✓ Pre-fetched client_credentials token successfully")
+    except Exception as e:
+        logger.error(f"[_get_http_client] ✗ Failed to get token: {e}")
+        # Restore env vars before raising
+        for var_name, original_value in original_vars.items():
+            if original_value is not None:
+                os.environ[var_name] = original_value
+            elif var_name in os.environ:
+                del os.environ[var_name]
+        raise
+    
+    # Restore original env vars (token is already cached)
+    for var_name, original_value in original_vars.items():
+        if original_value is not None:
+            os.environ[var_name] = original_value
+        elif var_name in os.environ:
+            del os.environ[var_name]
     
     return http_client
 
