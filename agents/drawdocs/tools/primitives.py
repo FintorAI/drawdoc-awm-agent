@@ -21,15 +21,21 @@ from datetime import datetime
 from dotenv import load_dotenv
 
 # Load environment variables from BOTH sources
-# Strategy: Load MCP server FIRST (for Encompass OAuth), then local for other vars
+# Strategy: Load project root FIRST (matching Prep Agent's working approach)
 
-# 1. Load MCP server .env FIRST (for working Encompass OAuth credentials)
+# 1. Load project root .env FIRST (has working Encompass credentials)
+project_root_env = Path(__file__).parent.parent.parent.parent / ".env"
+if project_root_env.exists():
+    load_dotenv(project_root_env)
+    print(f"[primitives] Loaded project root .env from: {project_root_env}")
+
+# 2. Then load MCP server .env WITHOUT override (for any additional settings)
 mcp_env_path = Path(__file__).parent.parent.parent.parent.parent / "encompass-mcp-server" / ".env"
 if mcp_env_path.exists():
-    load_dotenv(mcp_env_path)  # Load MCP credentials first
+    load_dotenv(mcp_env_path, override=False)
     
-# 2. Then load local .env WITHOUT override (for LandingAI, DOCREPO, etc.)
-load_dotenv(override=False)  # Adds local vars without overriding MCP's Encompass creds
+# 3. Load local .env WITHOUT override
+load_dotenv(override=False)
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -80,25 +86,15 @@ except ImportError:
 def _get_encompass_client() -> EncompassConnect:
     """Get an initialized Encompass client with credentials from environment variables.
     
-    Supports both MCP server variable names and direct variables.
+    Uses the SAME env var names as Prep Agent for consistency.
     """
-    # Try MCP server variable names first, then fall back to direct variables
-    api_server = (
-        os.getenv("ENCOMPASS_API_SERVER") or  # MCP server uses this
-        os.getenv("ENCOMPASS_API_BASE_URL") or  # Direct variable
-        "https://api.elliemae.com"  # Default
-    )
-    
-    # Support both MCP server and direct credential variable names
-    username = os.getenv("ENCOMPASS_SMART_USER") or os.getenv("ENCOMPASS_USERNAME", "")
-    password = os.getenv("ENCOMPASS_SMART_PASS") or os.getenv("ENCOMPASS_PASSWORD", "")
-    
+    # Match Prep Agent's approach exactly
     return EncompassConnect(
         access_token=os.getenv("ENCOMPASS_ACCESS_TOKEN", ""),
-        api_base_url=api_server,
+        api_base_url=os.getenv("ENCOMPASS_API_BASE_URL", "https://api.elliemae.com"),
         credentials={
-            "username": username,
-            "password": password,
+            "username": os.getenv("ENCOMPASS_USERNAME", ""),
+            "password": os.getenv("ENCOMPASS_PASSWORD", ""),
             "client_id": os.getenv("ENCOMPASS_CLIENT_ID", ""),
             "client_secret": os.getenv("ENCOMPASS_CLIENT_SECRET", ""),
             "instance_id": os.getenv("ENCOMPASS_INSTANCE_ID", ""),
@@ -113,12 +109,12 @@ def _get_http_client():
     if not MCP_HTTP_CLIENT_AVAILABLE:
         raise RuntimeError("MCP HTTP client not available. Cannot make raw API requests.")
     
-    # Get API server URL (handle both ENCOMPASS_API_SERVER and old var names)
-    api_server = os.getenv("ENCOMPASS_API_SERVER") or os.getenv("ENCOMPASS_API_BASE_URL", "https://api.elliemae.com")
+    # Use ENCOMPASS_API_BASE_URL (matching Prep Agent)
+    api_server = os.getenv("ENCOMPASS_API_BASE_URL", "https://api.elliemae.com")
     timeout = int(os.getenv("ENCOMPASS_TIMEOUT", "60"))
     verify_ssl = os.getenv("ENCOMPASS_VERIFY_SSL", "true").lower() != "false"
     
-    logger.debug(f"Using API server: {api_server}, CLIENT_ID: {os.getenv('ENCOMPASS_CLIENT_ID')}, INSTANCE: {os.getenv('ENCOMPASS_INSTANCE_ID')}")
+    logger.debug(f"[_get_http_client] API server: {api_server}")
     
     # Create auth manager (reads credentials from env vars internally)
     auth_manager = EncompassAuthManager(
