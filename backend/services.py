@@ -111,15 +111,13 @@ def derive_overall_status(agents: dict, agent_type: AgentType = AgentType.DRAWDO
             status = getattr(agent_data, "status", "pending")
         statuses.append(status)
     
-<<<<<<< HEAD
-    # Check for any blocked (disclosure-specific)
-    if any(s == "blocked" for s in statuses):
-        return RunStatus.BLOCKED
-=======
     # Check for pending_review (HIL pause) - takes priority
     if any(s == "pending_review" for s in statuses):
         return RunStatus.PENDING_REVIEW
->>>>>>> feature/disclosure-agent
+    
+    # Check for any blocked (disclosure-specific)
+    if any(s == "blocked" for s in statuses):
+        return RunStatus.BLOCKED
     
     # Check for any failed
     if any(s == "failed" for s in statuses):

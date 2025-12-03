@@ -291,7 +291,6 @@ def run_agent(
     }
     
     try:
-<<<<<<< HEAD
         if agent_type == "drawdocs":
             # Import DrawDocs orchestrator
             from agents.drawdocs.orchestrator_agent import run_orchestrator
@@ -332,124 +331,81 @@ def run_agent(
             # Create progress callback using StatusWriter
             progress_callback = create_status_callback(run_id, output_dir)
             
-            # Run DrawDocs orchestrator
-=======
-        # Import orchestrator (after path setup)
-        from agents.drawdocs.orchestrator_agent import run_orchestrator
-        
-        # Set up live progress callback for preparation agent
-        from agents.drawdocs.subagents.preparation_agent.preparation_agent import set_progress_callback, set_log_callback
-        
-        def prep_progress_callback(documents_found=None, documents_processed=None, fields_extracted=None, current_document=None):
-            """Update status file with live progress from preparation agent."""
-            try:
-                writer.update_progress(
-                    run_id=run_id,
-                    documents_found=documents_found,
-                    documents_processed=documents_processed,
-                    fields_extracted=fields_extracted,
-                    current_document=current_document,
+            # Check if resuming from a specific agent (HIL continuation)
+            if resume_from:
+                logger.info(f"Resuming run from {resume_from}")
+                
+                # Load existing results from the status file
+                existing_data = writer.get_run_data(run_id)
+                existing_results = None
+                if existing_data:
+                    existing_results = {
+                        "loan_id": existing_data.get("loan_id", loan_id),
+                        "execution_timestamp": existing_data.get("execution_timestamp"),
+                        "demo_mode": existing_data.get("demo_mode", demo_mode),
+                        "agents": existing_data.get("agents", {}),
+                    }
+                    logger.info(f"Loaded existing results with {len(existing_results.get('agents', {}))} agents")
+                
+                # Run orchestrator starting from the specified agent
+                results = run_orchestrator(
+                    loan_id=loan_id,
+                    demo_mode=demo_mode,
+                    max_retries=max_retries,
+                    document_types=document_types,
+                    output_file=str(output_file),
+                    progress_callback=progress_callback,
+                    start_from_agent=resume_from,
+                    existing_results=existing_results,
                 )
-            except Exception as e:
-                logger.warning(f"Failed to update progress: {e}")
-        
-        def prep_log_callback(message: str, level: str = "info", event_type: str = None, details: dict = None):
-            """Add log entry from preparation agent."""
-            try:
-                writer.add_log(
-                    run_id=run_id,
-                    message=message,
-                    level=level,
-                    agent="preparation",
-                    event_type=event_type,
-                    details=details,
-                )
-            except Exception as e:
-                logger.warning(f"Failed to add log: {e}")
-        
-        set_progress_callback(prep_progress_callback)
-        set_log_callback(prep_log_callback)
-        
-        # Create progress callback using StatusWriter
-        progress_callback = create_status_callback(run_id, output_dir)
-        
-        # Check if resuming from a specific agent
-        if resume_from:
-            logger.info(f"Resuming run from {resume_from}")
-            
-            # Load existing results from the status file
-            existing_data = writer.get_run_data(run_id)
-            existing_results = None
-            if existing_data:
-                existing_results = {
-                    "loan_id": existing_data.get("loan_id", loan_id),
-                    "execution_timestamp": existing_data.get("execution_timestamp"),
-                    "demo_mode": existing_data.get("demo_mode", demo_mode),
-                    "agents": existing_data.get("agents", {}),
-                }
-                logger.info(f"Loaded existing results with {len(existing_results.get('agents', {}))} agents")
-            
-            # Run orchestrator starting from the specified agent
-            results = run_orchestrator(
-                loan_id=loan_id,
-                demo_mode=demo_mode,
-                max_retries=max_retries,
-                document_types=document_types,
-                output_file=str(output_file),
-                progress_callback=progress_callback,
-                start_from_agent=resume_from,
-                existing_results=existing_results,
-            )
-        elif require_review:
-            # Run only the prep agent, then pause for review
-            logger.info("Running prep agent only (HIL review enabled)")
-            results = run_orchestrator(
-                loan_id=loan_id,
-                demo_mode=demo_mode,
-                max_retries=max_retries,
-                document_types=document_types,
-                output_file=str(output_file),
-                progress_callback=progress_callback,
-                stop_after_agent="preparation",
-            )
-            
-            # Mark run as pending review instead of finalizing
-            if results.get("agents", {}).get("preparation", {}).get("status") == "success":
-                writer.mark_agent_pending_review(
-                    run_id=run_id,
-                    agent_name="preparation",
-                    attempts=results.get("agents", {}).get("preparation", {}).get("attempts", 1),
-                    elapsed_seconds=results.get("agents", {}).get("preparation", {}).get("elapsed_seconds", 0),
-                    output=results.get("agents", {}).get("preparation", {}).get("output"),
+            elif require_review:
+                # Run only the prep agent, then pause for review (HIL)
+                logger.info("Running prep agent only (HIL review enabled)")
+                results = run_orchestrator(
+                    loan_id=loan_id,
+                    demo_mode=demo_mode,
+                    max_retries=max_retries,
+                    document_types=document_types,
+                    output_file=str(output_file),
+                    progress_callback=progress_callback,
+                    stop_after_agent="preparation",
                 )
                 
-                # Add log entry for user
-                writer.add_log(
-                    run_id=run_id,
-                    message="Waiting for field review before proceeding",
-                    level="info",
-                    agent="preparation",
-                    event_type="pending_review",
+                # Mark run as pending review instead of finalizing
+                if results.get("agents", {}).get("preparation", {}).get("status") == "success":
+                    writer.mark_agent_pending_review(
+                        run_id=run_id,
+                        agent_name="preparation",
+                        attempts=results.get("agents", {}).get("preparation", {}).get("attempts", 1),
+                        elapsed_seconds=results.get("agents", {}).get("preparation", {}).get("elapsed_seconds", 0),
+                        output=results.get("agents", {}).get("preparation", {}).get("output"),
+                    )
+                    
+                    # Add log entry for user
+                    writer.add_log(
+                        run_id=run_id,
+                        message="Waiting for field review before proceeding",
+                        level="info",
+                        agent="preparation",
+                        event_type="pending_review",
+                    )
+                    
+                    logger.info(f"Run paused for review - waiting for user to approve fields")
+                    
+                    # Clear callbacks and exit early
+                    set_progress_callback(None)
+                    set_log_callback(None)
+                    return
+            else:
+                # Run full orchestrator
+                results = run_orchestrator(
+                    loan_id=loan_id,
+                    demo_mode=demo_mode,
+                    max_retries=max_retries,
+                    document_types=document_types,
+                    output_file=str(output_file),
+                    progress_callback=progress_callback,
                 )
-                
-                logger.info(f"Run paused for review - waiting for user to approve fields")
-                
-                # Clear callbacks and exit early
-                set_progress_callback(None)
-                set_log_callback(None)
-                return
-        else:
-            # Run full orchestrator
->>>>>>> feature/disclosure-agent
-            results = run_orchestrator(
-                loan_id=loan_id,
-                demo_mode=demo_mode,
-                max_retries=max_retries,
-                document_types=document_types,
-                output_file=str(output_file),
-                progress_callback=progress_callback,
-            )
-<<<<<<< HEAD
             
             # Clear callbacks
             set_progress_callback(None)
@@ -476,8 +432,6 @@ def run_agent(
             
         else:
             raise ValueError(f"Unknown agent type: {agent_type}")
-=======
->>>>>>> feature/disclosure-agent
         
         # Finalize the run with summary information
         writer.finalize_run(
