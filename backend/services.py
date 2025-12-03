@@ -617,10 +617,12 @@ def submit_field_review(run_id: str, request: SubmitFieldReviewRequest) -> Optio
         config = data.get("config", {})
         document_types = config.get("document_types")
         max_retries = config.get("max_retries", 2)
+        agent_type = config.get("agent_type", "drawdocs")
         
         spawn_agent_process(
             run_id=run_id,
             loan_id=loan_id,
+            agent_type=AgentType(agent_type),
             demo_mode=demo_mode,
             max_retries=max_retries,
             document_types=document_types,
