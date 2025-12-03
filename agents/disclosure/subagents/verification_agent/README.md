@@ -1,97 +1,229 @@
-# Disclosure Verification Agent
+# Disclosure Verification Agent (v2)
 
-## Overview
+**Version**: 2.0 (LE-focused)  
+**Last Updated**: December 3, 2025  
 
-The Verification Agent is the first step in the Disclosure workflow. It checks if critical disclosure fields have values in Encompass and validates whether the loan is eligible for automated MVP processing.
-
-**MVP Scope**: Conventional loans in NV/CA only  
-**Current Status**: ✅ Implemented and tested
+[🔙 Back to Main Disclosure README](../../README.md)
 
 ---
 
-## What It Does
+## Overview
 
-### 1. MVP Eligibility Check
-- ✅ Checks if loan type is **Conventional**
-- ✅ Checks if property state is **NV or CA**
-- ⚠️ Flags non-MVP loans for manual processing
+The Verification Agent is the first step in the Disclosure v2 workflow. It validates prerequisites for **Initial Loan Estimate (LE)** disclosure, ensuring TRID compliance, form completeness, and MVP eligibility before proceeding to preparation.
 
-### 2. Critical Field Verification
-- ✅ Checks **~20 critical fields** (not all CSV fields)
-- ✅ Categorizes by: borrower, property, loan, contacts, dates
-- ✅ Returns detailed status for each field
+**Purpose**: Gate-check to ensure loan is ready for LE disclosure preparation.
 
-### 3. Output
-- List of missing fields
-- MVP warnings (if FHA/VA/USDA or non-NV/CA state)
-- Field details for downstream agents
+---
+
+## v2 Key Features
+
+### 1. TRID Compliance (NEW) ✅
+- **3-Business-Day Rule**: LE must be sent within 3 business days of application
+- **Application Date Check**: Validates app date is set
+- **LE Due Date Calculation**: Excludes Sundays and federal holidays
+- **Days Remaining**: Reports how many days until LE due
+- **Past Due Escalation**: Flags loans past LE due date for supervisor
+
+**Blocking**: LE due date passed → Escalate to Supervisor
+
+### 2. Hard Stops - G1 (NEW) ✅
+- **Phone Number**: Field FE0117 must have value
+- **Email Address**: Field 1240 must have value
+- **Impact**: Missing either field BLOCKS disclosure entirely
+
+**Blocking**: Missing phone or email → HARD STOP
+
+### 3. Closing Date 15-Day Rule - G8 (NEW) ✅
+- **Non-Locked Loans**: Closing date ≥ 15 days from application date
+- **Locked Loans**: Closing date ≥ 15 days from last rate set date
+- **Field**: 748 (Estimated Closing Date)
+
+**Blocking**: Closing date < 15 days → Cannot proceed
+
+### 4. Lock Status Check (NEW) ✅
+- **Locked Flow**: Requires all TRID info updated (property address, DTI, appraised value)
+- **Non-Locked Flow**: Monitors app date & LE due date
+- **Impact**: Determines which validation rules apply
+
+### 5. Form Field Validation (EXPANDED) ✅
+Validates SOP-required forms:
+- 1003 URLA Lender Form (all 4 parts)
+- Borrower Summary Origination
+- FACT Act Disclosure (credit scores)
+- RegZ-LE fields
+- Affiliated Business Arrangements
+- LO Info (NMLS verification)
+
+### 6. MVP Eligibility Check ✅
+- **Loan Type**: Conventional only (FHA/VA/USDA require manual)
+- **State**: NOT Texas (TX has special rules)
+- **Preferred States**: NV, CA (others may work but not tested)
+
+**Blocking**: Texas property or Non-Conventional → Manual processing required
 
 ---
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────┐
-│ Verification Agent (LLM)                │
-│                                          │
-│ System Prompt:                           │
-│ - Check MVP eligibility first            │
-│ - Check critical fields                  │
-│ - Report missing fields                  │
-└────────────┬────────────────────────────┘
-             │
-             │ Uses 3 tools:
-             │
-             ├── check_mvp_eligibility()
-             │   └── Reads loan type + state
-             │       Validates against MVP criteria
-             │
-             ├── check_critical_fields()
-             │   └── Batch reads ~20 fields
-             │       Returns missing/present status
-             │
-             └── check_field_value()
-                 └── Reads individual fields
-                     For spot checking
+┌────────────────────────────────────────────────────────────┐
+│              VERIFICATION AGENT (v2)                        │
+│                                                             │
+│  Step 1: TRID Compliance                                    │
+│  ├── check_trid_dates()          → 3-day rule             │
+│  ├── check_rate_lock_status()    → Locked/non-locked      │
+│  └── check_closing_date_rule()   → 15-day rule (G8)       │
+│                                                             │
+│  Step 2: Hard Stops                                         │
+│  └── check_hard_stops()          → Phone/Email (G1)       │
+│                                                             │
+│  Step 3: MVP Eligibility                                    │
+│  └── check_mvp_eligibility()     → Conventional, not TX   │
+│                                                             │
+│  Step 4: Form Validation                                    │
+│  └── validate_disclosure_form_fields() → 15+ forms        │
+│                                                             │
+│  Step 5: Critical Fields                                    │
+│  └── check_critical_fields()     → ~20 key fields         │
+│                                                             │
+│  Output: Blocking issues (if any) + field status           │
+└────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Critical Fields Checked (~20)
+## Tools
 
-From `packages/shared/constants.py`:
+### TRID Tools
 
-**Borrower** (4 fields)
-- 4000: Borrower First Name
-- 4002: Borrower Last Name
-- 65: Borrower SSN
-- 1402: Borrower Email
+#### `check_trid_dates(loan_id: str)`
+Validates TRID compliance for Initial LE.
 
-**Property** (4 fields)
-- 11: Property Street Address
-- 12: Property City
-- 14: Property State
-- 15: Property Zip
+**Returns**:
+```python
+{
+    "compliant": True/False,
+    "application_date": "2025-12-01",
+    "le_due_date": "2025-12-04",
+    "days_remaining": 1,
+    "is_past_due": False,
+    "action": "Proceed" or "Escalate to Supervisor",
+    "blocking": True if past due
+}
+```
 
-**Loan** (6 fields)
-- 1109: Loan Amount
-- 3: Interest Rate
-- 4: Loan Term
-- 1172: Loan Type
-- 19: Loan Purpose
-- 353: LTV
+#### `check_rate_lock_status(loan_id: str)`
+Determines locked vs non-locked flow.
 
-**Property Value** (2 fields)
-- 356: Appraised Value
-- 136: Purchase Price
+**Returns**:
+```python
+{
+    "is_locked": True/False,
+    "lock_date": "2025-11-28",
+    "lock_expiration": "2025-12-28",
+    "flow": "locked" or "non_locked"
+}
+```
 
-**Contacts** (2 fields)
-- VEND.X263: Settlement Agent
-- 411: Title Company
+#### `check_closing_date_rule(loan_id: str)`
+Validates 15-day closing date rule (G8).
 
-**Dates** (2 fields)
-- CD1.X1: CD Date Issued
-- 748: Estimated Closing Date
+**Returns**:
+```python
+{
+    "is_valid": True/False,
+    "closing_date": "2025-12-20",
+    "reference_date": "2025-12-01",  # App date or rate set date
+    "days_until_closing": 19,
+    "minimum_days": 15,
+    "blocking": True if < 15 days,
+    "action": "Proceed" or "Adjust closing date"
+}
+```
+
+### Hard Stop Tools
+
+#### `check_hard_stops(loan_id: str)`
+Validates critical phone and email fields (G1).
+
+**Returns**:
+```python
+{
+    "has_hard_stops": True/False,
+    "missing_fields": ["borrower_phone"],  # or []
+    "blocking": True if has_hard_stops,
+    "blocking_message": "HARD STOP: Missing phone number"
+}
+```
+
+### Form Validation Tools
+
+#### `validate_disclosure_form_fields(loan_id: str)`
+Validates all required disclosure forms.
+
+**Returns**:
+```python
+{
+    "all_valid": True/False,
+    "forms_checked": 8,
+    "forms_passed": 7,
+    "missing_critical": ["FACT_Act_credit_score"],
+    "missing_fields": [...],
+    "blocking": True if missing_critical
+}
+```
+
+### MVP Eligibility Tools
+
+#### `check_mvp_eligibility(loan_id: str)`
+Checks if loan qualifies for MVP processing.
+
+**Returns**:
+```python
+{
+    "is_eligible": True/False,
+    "loan_type": "Conventional",
+    "is_mvp_loan_type": True,
+    "property_state": "CA",
+    "is_mvp_state": True,
+    "ineligibility_reasons": [],  # or ["Non-Conventional", "Texas property"]
+    "action": "proceed" or "manual_processing_required"
+}
+```
+
+### Field Check Tools
+
+#### `check_critical_fields(loan_id: str)`
+Batch checks ~20 critical LE fields.
+
+**Returns**:
+```python
+{
+    "fields_checked": 20,
+    "fields_with_values": ["1109", "3", "4", ...],
+    "fields_missing": ["LE1.X1"],
+    "field_details": {
+        "1109": {"name": "Loan Amount", "has_value": True, "value": 250000.00}
+    }
+}
+```
+
+---
+
+## Blocking Conditions
+
+The agent will set `status="blocked"` and stop the workflow if:
+
+| Condition | Severity | Action |
+|-----------|----------|--------|
+| LE due date passed | 🔴 Critical | Escalate to Supervisor |
+| Application date not set | 🔴 Critical | Cannot proceed |
+| Missing phone number | 🔴 Critical | HARD STOP - cannot proceed |
+| Missing email address | 🔴 Critical | HARD STOP - cannot proceed |
+| Closing date < 15 days | 🔴 Critical | Adjust closing date |
+| Texas property | 🟡 Medium | Manual processing required |
+| Non-Conventional loan | 🟡 Medium | Manual processing required |
+| Critical form fields missing | 🟡 Medium | Flag for review |
 
 ---
 
@@ -100,44 +232,101 @@ From `packages/shared/constants.py`:
 ### Command Line
 
 ```bash
-# Run verification for a loan
+# Run verification agent
 python agents/disclosure/subagents/verification_agent/verification_agent.py \
-  --loan-id "387596ee-7090-47ca-8385-206e22c9c9da"
+  --loan-id "your-loan-guid"
 ```
 
 ### Python API
 
 ```python
-from agents.disclosure.subagents.verification_agent.verification_agent import (
-    run_disclosure_verification
-)
+from agents.disclosure.subagents.verification_agent import run_disclosure_verification
 
-result = run_disclosure_verification("387596ee-7090-47ca-8385-206e22c9c9da")
+result = run_disclosure_verification("your-loan-guid")
 
-print(f"MVP Supported: {result['is_mvp_supported']}")
-print(f"Loan Type: {result['loan_type']}")
-print(f"State: {result['property_state']}")
-print(f"Missing Fields: {len(result['fields_missing'])}")
+# Check status
+print(result["status"])  # "success", "blocked", or "failed"
+
+# Check TRID compliance
+trid = result["trid_compliance"]
+print(f"Days until LE due: {trid['days_remaining']}")
+print(f"Past due: {trid['is_past_due']}")
+
+# Check hard stops
+hard_stops = result["hard_stop_check"]
+if hard_stops["has_hard_stops"]:
+    print(f"HARD STOP: Missing {hard_stops['missing_fields']}")
+
+# Check closing date
+closing = result["closing_date_check"]
+if not closing["is_valid"]:
+    print(f"Closing date too soon: {closing['days_until_closing']} days")
+
+# Check blocking issues
+if result["blocking_issues"]:
+    print("Blocking issues:")
+    for issue in result["blocking_issues"]:
+        print(f"  - {issue}")
 ```
 
-### Output Structure
+---
+
+## Output Structure
 
 ```python
 {
-    "loan_id": "387596ee-7090-47ca-8385-206e22c9c9da",
-    "status": "success",
-    "is_mvp_supported": False,  # FHA loan
-    "loan_type": "FHA",
-    "property_state": "UT",
-    "mvp_warnings": [
-        "Non-MVP loan type: FHA. Only Conventional is fully supported.",
-        "Non-MVP state: UT. Only NV and CA are fully supported."
-    ],
+    "loan_id": "...",
+    "status": "success" | "blocked" | "failed",
+    "is_mvp_supported": True/False,
+    
+    # v2: TRID compliance
+    "trid_compliance": {
+        "compliant": True,
+        "application_date": "2025-12-01",
+        "le_due_date": "2025-12-04",
+        "days_remaining": 1,
+        "is_past_due": False
+    },
+    
+    # v2: Hard stops (G1)
+    "hard_stop_check": {
+        "has_hard_stops": False,
+        "missing_fields": []
+    },
+    
+    # v2: Closing date (G8)
+    "closing_date_check": {
+        "is_valid": True,
+        "days_until_closing": 20
+    },
+    
+    # v2: Lock status
+    "lock_status": {
+        "is_locked": False,
+        "flow": "non_locked"
+    },
+    
+    # v2: Form validation
+    "form_validation": {
+        "all_valid": True,
+        "forms_checked": 8,
+        "missing_critical": []
+    },
+    
+    # Original field checks
     "fields_checked": 20,
-    "fields_with_values": ["1109", "3", "4", "11", "12", ...],
-    "fields_missing": ["CD1.X1", "VEND.X263"],
+    "fields_with_values": [...],
+    "fields_missing": [...],
     "field_details": {...},
-    "summary": "..."
+    
+    # Loan info
+    "loan_type": "Conventional",
+    "property_state": "CA",
+    
+    # Blocking issues
+    "blocking_issues": [],  # List of strings if blocked
+    
+    "summary": "Verification Complete (v2 - LE Focus): ..."
 }
 ```
 
@@ -148,151 +337,31 @@ print(f"Missing Fields: {len(result['fields_missing'])}")
 ### Test All Fields Script
 
 ```bash
-# Test reading all 12 loan summary fields
+# Test field reading and credential validation
 python agents/disclosure/subagents/verification_agent/test_all_fields.py
 ```
 
-**What it does:**
-- ✅ Checks Encompass credentials
-- ✅ Tests batch read of all 12 fields
-- ✅ Shows raw values from Encompass
-- ✅ Diagnoses connection issues
+This script:
+- Validates Encompass credentials
+- Tests batch field reading
+- Shows raw field values
+- Diagnoses connection issues
 
-**Example output:**
+### Integration Test
+
+```bash
+# Run full orchestrator (includes verification)
+python agents/disclosure/test_orchestrator.py
 ```
-✓ 1172   (Loan Type)         = FHA
-✓ 19     (Loan Purpose)      = Purchase
-✓ 1109   (Loan Amount)       = 150,000.00
-✓ 14     (Property State)    = UT
-✓ 353    (LTV)               = 51.724
-```
-
-### Current Test Loan
-
-**Loan ID**: `387596ee-7090-47ca-8385-206e22c9c9da`
-
-**Details:**
-- Loan Type: **FHA** (⚠️ Non-MVP)
-- State: **UT** (⚠️ Non-MVP)
-- Loan Amount: $150,000
-- LTV: 51.724%
-- Purpose: Purchase
-
-**Expected Behavior:**
-```python
-is_mvp_supported = False
-mvp_warnings = [
-    "Non-MVP loan type: FHA",
-    "Non-MVP state: UT"
-]
-```
-
-The agent will process this loan but flag it for manual review since it's outside MVP scope.
-
----
-
-## MVP Eligibility Rules
-
-### Loan Types
-```python
-✓ Supported: Conventional
-✗ Phase 2:   FHA, VA, USDA
-```
-
-### States
-```python
-✓ Supported: NV, CA
-✗ Phase 2:   TX, FL, CO, IL, UT, AZ, WA, OR, ID, MI, etc.
-```
-
-### What Happens to Non-MVP Loans?
-
-**Option 1: Continue with Warnings** (default)
-- Agent processes the loan
-- Flags warnings in email to LO
-- Marks `requires_manual=True` in handoff
-
-**Option 2: Skip Processing** (`skip_non_mvp=True`)
-- Returns early with `status="manual_required"`
-- No preparation or email sent
-- Loan routed to manual processing queue
-
----
-
-## Integration
-
-### Called By
-- `orchestrator_agent.py` - As first step in disclosure pipeline
-
-### Calls
-- `packages/shared/read_fields()` - Batch field reads
-- `packages/shared/get_loan_summary()` - Loan metadata
-- `packages/shared/LoanType.is_mvp_supported()` - MVP check
-- `packages/shared/PropertyState.is_mvp_supported()` - State check
-
-### Output Used By
-- **Preparation Agent**: Uses `fields_missing` to know what to populate
-- **Request Agent**: Includes MVP warnings in email to LO
-- **Orchestrator**: Decides whether to continue or skip processing
-
----
-
-## Error Handling
-
-### 401 Authentication Error
-```
-⚠️ Invalid or expired Encompass credentials
-Fix: Update .env with valid access token
-```
-
-### 404 Not Found Error
-```
-⚠️ Loan ID doesn't exist or not accessible
-Fix: Verify loan ID is correct
-```
-
-### Missing Fields
-```
-ℹ️ Not an error - expected behavior
-Action: Preparation agent will attempt to populate
-```
-
-### Non-MVP Loan
-```
-⚠️ Loan type or state not in MVP scope
-Action: Flagged for manual processing or Phase 2
-```
-
----
-
-## File Structure
-
-```
-verification_agent/
-├── verification_agent.py       # Main agent
-├── test_all_fields.py         # Field testing script
-├── README.md                  # This file
-└── tools/
-    └── field_check_tools.py   # Legacy tools (deprecated)
-```
-
----
-
-## Next Steps
-
-1. **Get Conventional Test Loan** - Request from client for proper MVP testing
-2. **Test with Real Data** - Once credentials are valid
-3. **Integration Test** - Test with full orchestrator pipeline
-4. **Phase 2** - Add FHA/VA/USDA support after MVP
 
 ---
 
 ## Configuration
 
-Required environment variables (`.env` file):
+Set in `.env`:
 
-```bash
-ENCOMPASS_ACCESS_TOKEN=your_token
+```env
+ENCOMPASS_API_BASE_URL=https://concept.api.elliemae.com
 ENCOMPASS_CLIENT_ID=your_client_id
 ENCOMPASS_CLIENT_SECRET=your_secret
 ENCOMPASS_INSTANCE_ID=your_instance_id
@@ -300,19 +369,97 @@ ENCOMPASS_INSTANCE_ID=your_instance_id
 
 ---
 
-## Performance
+## Error Handling
 
-- **Fields checked**: 20 (vs 100+ in old version)
-- **API calls**: 1 batch read (vs 20+ individual reads)
-- **Execution time**: ~1-2 seconds (vs 5-10 seconds)
-- **Cost**: Lower token usage, fewer API calls
+### Authentication Error (401)
+```
+Invalid or expired Encompass credentials
+→ Update .env with valid credentials
+```
+
+### Loan Not Found (404)
+```
+Loan ID doesn't exist or not accessible
+→ Verify loan GUID is correct
+```
+
+### TRID Compliance Failure
+```
+LE Due Date passed
+→ Escalate to Supervisor (cannot auto-process)
+```
+
+### Hard Stop
+```
+Missing phone or email
+→ Request from borrower before proceeding
+```
+
+### Closing Date Invalid
+```
+Closing date < 15 days from app/lock date
+→ Adjust closing date to meet 15-day requirement
+```
+
+### Non-MVP Loan
+```
+Loan type is FHA/VA/USDA or property is in Texas
+→ Route to manual processing
+```
 
 ---
 
-## Notes
+## Performance
 
-- MVP intentionally focuses on Conventional loans to ship faster
-- FHA/VA/USDA support is Phase 2 (adds 1-2 weeks)
-- Non-MVP loans are still processed but flagged for review
-- State-specific rules (TX, FL, etc.) are Phase 2
+- **Execution Time**: ~3-5 seconds
+- **API Calls**: 2-4 (batch reads where possible)
+- **Fields Checked**: ~20 critical fields
+- **TRID Calculation**: < 1 second
 
+---
+
+## Integration
+
+### Called By
+- `orchestrator_agent.py` - Step 1 after pre-check
+
+### Calls
+- `packages/shared/check_trid_compliance()`
+- `packages/shared/check_lock_status()`
+- `packages/shared/check_closing_date()`
+- `packages/shared/check_hard_stop_fields()`
+- `packages/shared/validate_disclosure_forms()`
+- `packages/shared/read_fields()`
+
+### Output Used By
+- **Preparation Agent**: Uses `fields_missing` to populate
+- **Orchestrator**: Uses `blocking_issues` to halt if needed
+- **Send Agent**: Receives prepared loan data
+
+---
+
+## File Structure
+
+```
+verification_agent/
+├── verification_agent.py       # Main v2 agent
+├── test_all_fields.py         # Field testing utility
+├── README.md                  # This file
+├── __init__.py
+└── tools/
+    └── (tools are inline in verification_agent.py)
+```
+
+---
+
+## Next Steps for Phase 2
+
+- FHA/VA/USDA loan type support
+- Texas state-specific rules
+- Additional state validations
+- Enhanced form field checks
+- Automated credit report validation
+
+---
+
+*Last updated: December 3, 2025 - v2 LE-focused implementation*
