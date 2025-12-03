@@ -10,8 +10,9 @@ import { AgentStatusCards } from "@/components/runs/agent-status-card";
 import { OverviewTab } from "@/components/runs/overview-tab";
 import { TimelineTab } from "@/components/runs/timeline-tab";
 import { FinalReportTab } from "@/components/runs/final-report-tab";
+import { FieldReviewTab } from "@/components/runs/field-review-tab";
 import { useRunDetail } from "@/hooks/use-runs";
-import { AlertTriangle, RefreshCw } from "lucide-react";
+import { AlertTriangle, RefreshCw, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 // =============================================================================
@@ -131,26 +132,7 @@ function DocumentsTabPlaceholder() {
   );
 }
 
-function FieldsTabPlaceholder() {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Fields</CardTitle>
-        <CardDescription>Extracted data and field values</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-3">
-            <span className="text-2xl">🔍</span>
-          </div>
-          <p className="text-muted-foreground">
-            Fields view coming in Slice 7
-          </p>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+// FieldsTab is now FieldReviewTab - imported from components
 
 // =============================================================================
 // MAIN PAGE COMPONENT
@@ -189,6 +171,40 @@ export default function RunDetailPage() {
           executionTimestamp={runDetail?.execution_timestamp}
         />
 
+        {/* Check if pending review */}
+        {(() => {
+          const prepStatus = runDetail?.agents?.preparation?.status;
+          const isPendingReview = prepStatus === "pending_review" || 
+            (prepStatus === "success" && runDetail?.agents?.drawcore?.status === "pending");
+          return isPendingReview && (
+            <Card className="border-amber-300 bg-amber-50">
+              <CardContent className="py-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full bg-amber-100 flex items-center justify-center">
+                    <AlertCircle className="h-5 w-5 text-amber-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-amber-900">Review Required</h3>
+                    <p className="text-sm text-amber-700">
+                      Please review the extracted fields before continuing to write them to Encompass
+                    </p>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    className="border-amber-300 text-amber-900 hover:bg-amber-100"
+                    onClick={() => {
+                      const fieldsTab = document.querySelector('[data-state="inactive"][value="fields"]');
+                      if (fieldsTab) (fieldsTab as HTMLElement).click();
+                    }}
+                  >
+                    Go to Fields Tab →
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })()}
+
         {/* Tabs */}
         <Tabs defaultValue="overview" className="space-y-4">
           <TabsList className="bg-muted/50">
@@ -196,7 +212,13 @@ export default function RunDetailPage() {
             <TabsTrigger value="timeline">Timeline</TabsTrigger>
             <TabsTrigger value="report">Report</TabsTrigger>
             <TabsTrigger value="documents">Documents</TabsTrigger>
-            <TabsTrigger value="fields">Fields</TabsTrigger>
+            <TabsTrigger value="fields" className="relative">
+              Fields
+              {runDetail?.agents?.preparation?.status === "success" && 
+               runDetail?.agents?.drawcore?.status === "pending" && (
+                <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+              )}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview">
@@ -225,7 +247,11 @@ export default function RunDetailPage() {
           </TabsContent>
 
           <TabsContent value="fields">
-            <FieldsTabPlaceholder />
+            <FieldReviewTab
+              runDetail={runDetail}
+              runId={runId}
+              isLoading={isLoading && !runDetail}
+            />
           </TabsContent>
         </Tabs>
       </div>
