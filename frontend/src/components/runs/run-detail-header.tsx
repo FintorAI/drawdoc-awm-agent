@@ -36,6 +36,8 @@ interface RunDetailHeaderProps {
   runDetail: RunDetail | undefined;
   isLoading: boolean;
   className?: string;
+  /** Back navigation path (default: "/runs") */
+  backPath?: string;
 }
 
 // =============================================================================
@@ -50,32 +52,30 @@ function getOverallStatus(runDetail: RunDetail | undefined): RunStatusValue | "p
   if (!runDetail) return "pending";
   
   const agents = runDetail.agents;
+  const agentStatuses = Object.values(agents).map(a => a?.status);
+  
+  // If any agent is blocked, the run is blocked
+  if (agentStatuses.some(s => s === "blocked")) {
+    return "blocked";
+  }
   
   // If any agent failed, the run failed
-  if (agents.preparation?.status === "failed" || 
-      agents.verification?.status === "failed" || 
-      agents.orderdocs?.status === "failed") {
+  if (agentStatuses.some(s => s === "failed")) {
     return "failed";
   }
   
   // If any agent is running, the run is running
-  if (agents.preparation?.status === "running" || 
-      agents.verification?.status === "running" || 
-      agents.orderdocs?.status === "running") {
+  if (agentStatuses.some(s => s === "running")) {
     return "running";
   }
   
   // If all agents are pending, the run is pending
-  if ((!agents.preparation || agents.preparation.status === "pending") &&
-      (!agents.verification || agents.verification.status === "pending") &&
-      (!agents.orderdocs || agents.orderdocs.status === "pending")) {
+  if (agentStatuses.every(s => !s || s === "pending")) {
     return "pending";
   }
   
   // If all agents are successful
-  if (agents.preparation?.status === "success" && 
-      agents.verification?.status === "success" && 
-      agents.orderdocs?.status === "success") {
+  if (agentStatuses.every(s => s === "success")) {
     return "success";
   }
   
@@ -83,7 +83,7 @@ function getOverallStatus(runDetail: RunDetail | undefined): RunStatusValue | "p
   return "running";
 }
 
-function getStatusBadgeVariant(status: RunStatusValue | "pending"): "success" | "processing" | "error" | "pending" {
+function getStatusBadgeVariant(status: RunStatusValue | "pending"): "success" | "processing" | "error" | "warning" | "pending" {
   switch (status) {
     case "success":
       return "success";
@@ -91,6 +91,8 @@ function getStatusBadgeVariant(status: RunStatusValue | "pending"): "success" | 
       return "processing";
     case "failed":
       return "error";
+    case "blocked":
+      return "warning";
     case "pending":
     default:
       return "pending";
@@ -105,6 +107,8 @@ function getStatusLabel(status: RunStatusValue | "pending"): string {
       return "Running";
     case "failed":
       return "Failed";
+    case "blocked":
+      return "Blocked";
     case "pending":
     default:
       return "Pending";
@@ -155,13 +159,25 @@ export function RunDetailHeader({
   runId, 
   runDetail, 
   isLoading,
-  className 
+  className,
+  backPath = "/runs",
 }: RunDetailHeaderProps) {
   const router = useRouter();
   const { addToast } = useToast();
   
   const overallStatus = getOverallStatus(runDetail);
   const loanId = runDetail?.loan_id || "";
+  const agentType = runDetail?.agent_type || "drawdocs";
+
+  // Get agent-specific route
+  const getAgentRoute = (newRunId: string) => {
+    const routes: Record<string, string> = {
+      drawdocs: `/drawdocs/runs/${newRunId}`,
+      disclosure: `/disclosure/runs/${newRunId}`,
+      loa: `/loa/runs/${newRunId}`,
+    };
+    return routes[agentType] || `/runs/${newRunId}`;
+  };
 
   // Re-run mutation
   const createRunMutation = useCreateRun({
@@ -171,7 +187,7 @@ export function RunDetailHeader({
         description: "New run has been queued",
         variant: "success",
       });
-      router.push(`/runs/${data.run_id}`);
+      router.push(getAgentRoute(data.run_id));
     },
     onError: (error) => {
       addToast({
@@ -187,6 +203,7 @@ export function RunDetailHeader({
     
     createRunMutation.mutate({
       loan_id: runDetail.loan_id,
+      agent_type: agentType as "drawdocs" | "disclosure" | "loa",
       demo_mode: runDetail.demo_mode,
     });
   };
@@ -218,7 +235,7 @@ export function RunDetailHeader({
       <div className="flex items-center gap-4">
         {/* Back Button */}
         <Button variant="ghost" size="sm" asChild className="-ml-2">
-          <Link href="/runs" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground">
+          <Link href={backPath} className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground">
             <ArrowLeft className="h-4 w-4" />
             <span>Runs</span>
           </Link>

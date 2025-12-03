@@ -1,11 +1,16 @@
 """
-Agent Runner Script
+Multi-Agent Runner Script
 
-This script runs the orchestrator agent and updates the status JSON file
-after each sub-agent completes, enabling live status updates.
+This script runs agent orchestrators (DrawDocs, Disclosure, LOA) and updates 
+the status JSON file after each sub-agent completes, enabling live status updates.
 
 Usage:
-    python agent_runner.py --loan-id <uuid> --output <path> [--production] [--max-retries N] [--document-types type1,type2]
+    python agent_runner.py --loan-id <uuid> --agent-type <type> --output <path> [--production] [--max-retries N] [--document-types type1,type2]
+
+Supported agent types:
+- drawdocs: Document extraction → Field writing → Verification → Order closing docs
+- disclosure: TRID verification → LE preparation → Mavent/ATR-QM → Order disclosures  
+- loa: (future) Letter of Authorization processing
 
 The status file is updated in real-time using the StatusWriter utility,
 allowing the frontend to poll for live progress updates.
@@ -14,6 +19,7 @@ Status transitions:
 - "pending" → "running" (when agent starts)
 - "running" → "success" (when agent completes successfully)
 - "running" → "failed" (when agent errors after all retries)
+- "running" → "blocked" (disclosure: compliance block)
 """
 
 import argparse
@@ -246,6 +252,7 @@ def extract_run_id_from_output_file(output_file: Path) -> str:
 
 def run_agent(
     loan_id: str,
+    agent_type: str,
     output_file: Path,
     demo_mode: bool = True,
     max_retries: int = 2,
@@ -259,6 +266,7 @@ def run_agent(
     
     Args:
         loan_id: Encompass loan GUID
+        agent_type: Type of agent pipeline ("drawdocs", "disclosure", "loa")
         output_file: Path to the output JSON file
         demo_mode: Whether to run in demo mode
         max_retries: Number of retry attempts per agent
@@ -271,82 +279,111 @@ def run_agent(
     # Create status writer for error handling
     writer = StatusWriter(output_dir)
     
+    # Agent type to sub-agents mapping for error handling
+    agent_type_sub_agents = {
+        "drawdocs": ["preparation", "drawcore", "verification", "orderdocs"],
+        "disclosure": ["verification", "preparation", "send"],
+        "loa": ["verification", "generation", "delivery"],
+    }
+    
     try:
-        # Import orchestrator (after path setup)
-        from agents.drawdocs.orchestrator_agent import run_orchestrator
-        
-        # Set up live progress callback for preparation agent
-        from agents.drawdocs.subagents.preparation_agent.preparation_agent import set_progress_callback, set_log_callback
-        
-        def prep_progress_callback(documents_found=None, documents_processed=None, fields_extracted=None, current_document=None):
-            """Update status file with live progress from preparation agent."""
-            try:
-                writer.update_progress(
-                    run_id=run_id,
-                    documents_found=documents_found,
-                    documents_processed=documents_processed,
-                    fields_extracted=fields_extracted,
-                    current_document=current_document,
-                )
-            except Exception as e:
-                logger.warning(f"Failed to update progress: {e}")
-        
-        def prep_log_callback(message: str, level: str = "info", event_type: str = None, details: dict = None):
-            """Add log entry from preparation agent."""
-            try:
-                writer.add_log(
-                    run_id=run_id,
-                    message=message,
-                    level=level,
-                    agent="preparation",
-                    event_type=event_type,
-                    details=details,
-                )
-            except Exception as e:
-                logger.warning(f"Failed to add log: {e}")
-        
-        set_progress_callback(prep_progress_callback)
-        set_log_callback(prep_log_callback)
-        
-        # Create progress callback using StatusWriter
-        progress_callback = create_status_callback(run_id, output_dir)
-        
-        # Run orchestrator with progress callback
-        results = run_orchestrator(
-            loan_id=loan_id,
-            demo_mode=demo_mode,
-            max_retries=max_retries,
-            document_types=document_types,
-            output_file=str(output_file),
-            progress_callback=progress_callback,
-        )
+        if agent_type == "drawdocs":
+            # Import DrawDocs orchestrator
+            from agents.drawdocs.orchestrator_agent import run_orchestrator
+            
+            # Set up live progress callback for preparation agent
+            from agents.drawdocs.subagents.preparation_agent.preparation_agent import set_progress_callback, set_log_callback
+            
+            def prep_progress_callback(documents_found=None, documents_processed=None, fields_extracted=None, current_document=None):
+                """Update status file with live progress from preparation agent."""
+                try:
+                    writer.update_progress(
+                        run_id=run_id,
+                        documents_found=documents_found,
+                        documents_processed=documents_processed,
+                        fields_extracted=fields_extracted,
+                        current_document=current_document,
+                    )
+                except Exception as e:
+                    logger.warning(f"Failed to update progress: {e}")
+            
+            def prep_log_callback(message: str, level: str = "info", event_type: str = None, details: dict = None):
+                """Add log entry from preparation agent."""
+                try:
+                    writer.add_log(
+                        run_id=run_id,
+                        message=message,
+                        level=level,
+                        agent="preparation",
+                        event_type=event_type,
+                        details=details,
+                    )
+                except Exception as e:
+                    logger.warning(f"Failed to add log: {e}")
+            
+            set_progress_callback(prep_progress_callback)
+            set_log_callback(prep_log_callback)
+            
+            # Create progress callback using StatusWriter
+            progress_callback = create_status_callback(run_id, output_dir)
+            
+            # Run DrawDocs orchestrator
+            results = run_orchestrator(
+                loan_id=loan_id,
+                demo_mode=demo_mode,
+                max_retries=max_retries,
+                document_types=document_types,
+                output_file=str(output_file),
+                progress_callback=progress_callback,
+            )
+            
+            # Clear callbacks
+            set_progress_callback(None)
+            set_log_callback(None)
+            
+        elif agent_type == "disclosure":
+            # Import Disclosure orchestrator
+            from agents.disclosure.orchestrator_agent import run_disclosure_orchestrator
+            
+            # Create progress callback using StatusWriter
+            progress_callback = create_status_callback(run_id, output_dir)
+            
+            # Run Disclosure orchestrator
+            results = run_disclosure_orchestrator(
+                loan_id=loan_id,
+                demo_mode=demo_mode,
+                max_retries=max_retries,
+                progress_callback=progress_callback,
+            )
+            
+        elif agent_type == "loa":
+            # LOA not yet implemented
+            raise NotImplementedError(f"Agent type '{agent_type}' is not yet implemented")
+            
+        else:
+            raise ValueError(f"Unknown agent type: {agent_type}")
         
         # Finalize the run with summary information
-        # Note: Don't include json_output as it would duplicate data already 
-        # maintained by StatusWriter callbacks
         writer.finalize_run(
             run_id=run_id,
             summary=results.get("summary", {}),
-            summary_text=results.get("summary_text"),
+            summary_text=results.get("summary_text") or results.get("summary"),
         )
         
-        # Clear callbacks
-        set_progress_callback(None)
-        set_log_callback(None)
-        
-        logger.info(f"Agent run completed for loan {loan_id}")
+        logger.info(f"{agent_type} agent run completed for loan {loan_id}")
         
     except Exception as e:
-        logger.error(f"Agent run failed: {e}")
+        logger.error(f"{agent_type} agent run failed: {e}")
         
         # Update status file to reflect failure using StatusWriter
         try:
             # Read current data to find which agent was running
             data = writer.get_run_data(run_id)
+            sub_agents = agent_type_sub_agents.get(agent_type, agent_type_sub_agents["drawdocs"])
             
             if data:
                 # Find which agent was running and mark it as failed
-                for agent_name in ["preparation", "drawcore", "verification", "orderdocs"]:
+                for agent_name in sub_agents:
                     agent_data = data.get("agents", {}).get(agent_name, {})
                     if agent_data.get("status") == "running":
                         writer.mark_agent_failed(
@@ -360,10 +397,11 @@ def run_agent(
             else:
                 # Status file doesn't exist - create a minimal failure record
                 logger.warning(f"Status file not found for run {run_id}, creating failure record")
-                writer.initialize_run(run_id, loan_id, demo_mode)
+                first_agent = sub_agents[0] if sub_agents else "preparation"
+                writer.initialize_run(run_id, loan_id, demo_mode, agent_type=agent_type)
                 writer.mark_agent_failed(
                     run_id=run_id,
-                    agent_name="preparation",
+                    agent_name=first_agent,
                     attempts=1,
                     elapsed_seconds=0,
                     error=str(e),
@@ -378,12 +416,18 @@ def run_agent(
 def main():
     """Main entry point for the agent runner."""
     parser = argparse.ArgumentParser(
-        description="Run the DrawDoc agent orchestrator with live status updates"
+        description="Run multi-agent orchestrators (DrawDocs, Disclosure, LOA) with live status updates"
     )
     parser.add_argument(
         "--loan-id",
         required=True,
         help="Encompass loan GUID"
+    )
+    parser.add_argument(
+        "--agent-type",
+        choices=["drawdocs", "disclosure", "loa"],
+        default="drawdocs",
+        help="Type of agent pipeline to run (default: drawdocs)"
     )
     parser.add_argument(
         "--output",
@@ -403,7 +447,7 @@ def main():
     )
     parser.add_argument(
         "--document-types",
-        help="Comma-separated list of document types to process"
+        help="Comma-separated list of document types to process (DrawDocs only)"
     )
     
     args = parser.parse_args()
@@ -416,6 +460,7 @@ def main():
     # Run the agent
     run_agent(
         loan_id=args.loan_id,
+        agent_type=args.agent_type,
         output_file=Path(args.output),
         demo_mode=not args.production,
         max_retries=args.max_retries,

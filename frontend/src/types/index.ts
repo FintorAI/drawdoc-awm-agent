@@ -1,9 +1,12 @@
 /**
- * DrawDoc Agent Types
+ * Multi-Agent Dashboard Types
  * 
- * Core data types for the DrawDoc verification agent system.
- * Matches the backend orchestrator_agent.py configuration structure.
+ * Core data types for the multi-agent verification system.
+ * Supports DrawDocs, Disclosure, and LOA pipelines.
  */
+
+// Re-export agent types
+export * from "./agents";
 
 // =============================================================================
 // RUN CONFIGURATION
@@ -38,7 +41,7 @@ export interface RunConfig {
 // AGENT RUN STATUS
 // =============================================================================
 
-export type RunStatus = 'pending' | 'running' | 'success' | 'failed';
+export type RunStatus = 'pending' | 'running' | 'success' | 'failed' | 'blocked';
 
 /**
  * Result from an individual agent (Preparation, Drawcore, Verification, or OrderDocs)

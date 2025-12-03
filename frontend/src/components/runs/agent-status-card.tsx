@@ -5,17 +5,18 @@ import { cn } from "@/lib/utils";
 import { AgentIcon } from "@/components/ui/agent-icon";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle, CheckCircle2, Clock, Loader2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock, Loader2, ShieldAlert } from "lucide-react";
 import type { AgentResultDetail } from "@/lib/api";
+import { type AgentType as PipelineAgentType, getSubAgents, AGENT_TYPE_SUB_AGENTS } from "@/types/agents";
 
 // =============================================================================
 // TYPES
 // =============================================================================
 
-type AgentType = "preparation" | "drawcore" | "verification" | "orderdocs";
+type SubAgentId = string;
 
 interface AgentStatusCardProps {
-  agent: AgentType;
+  agent: SubAgentId;
   result: AgentResultDetail | undefined;
   isLoading?: boolean;
   isActive?: boolean;
@@ -23,25 +24,56 @@ interface AgentStatusCardProps {
   className?: string;
   /** Run execution timestamp for live duration calculation */
   executionTimestamp?: string;
+  /** Agent pipeline type to get proper names/descriptions */
+  pipelineType?: PipelineAgentType;
 }
 
 // =============================================================================
 // HELPERS
 // =============================================================================
 
-const agentNames: Record<AgentType, string> = {
+// Default names for DrawDocs (backwards compatibility)
+const defaultAgentNames: Record<string, string> = {
   preparation: "Preparation",
   drawcore: "Drawcore",
   verification: "Verification",
   orderdocs: "OrderDocs",
+  // Disclosure agents
+  send: "Send",
+  // LOA agents
+  generation: "Generation",
+  delivery: "Delivery",
 };
 
-const agentDescriptions: Record<AgentType, string> = {
+const defaultAgentDescriptions: Record<string, string> = {
   preparation: "Extract data from documents",
   drawcore: "Update Encompass fields in bulk",
   verification: "Verify against SOP rules",
   orderdocs: "Mavent check & order docs",
+  // Disclosure agents
+  send: "Mavent, ATR/QM, eDisclosures",
+  // LOA agents
+  generation: "Generate LOA document",
+  delivery: "Send to parties",
 };
+
+function getAgentName(agentId: string, pipelineType?: PipelineAgentType): string {
+  if (pipelineType) {
+    const subAgents = getSubAgents(pipelineType);
+    const agent = subAgents.find(a => a.id === agentId);
+    if (agent) return agent.name;
+  }
+  return defaultAgentNames[agentId] || agentId;
+}
+
+function getAgentDescription(agentId: string, pipelineType?: PipelineAgentType): string {
+  if (pipelineType) {
+    const subAgents = getSubAgents(pipelineType);
+    const agent = subAgents.find(a => a.id === agentId);
+    if (agent) return agent.description;
+  }
+  return defaultAgentDescriptions[agentId] || "";
+}
 
 function formatDuration(seconds: number): string {
   if (seconds < 60) {
@@ -111,6 +143,8 @@ function StatusIcon({ status, className }: StatusIconProps) {
       return <Loader2 className={cn("h-5 w-5 text-blue-500 animate-spin", className)} />;
     case "failed":
       return <AlertCircle className={cn("h-5 w-5 text-red-500", className)} />;
+    case "blocked":
+      return <ShieldAlert className={cn("h-5 w-5 text-amber-500", className)} />;
     case "pending":
     default:
       return <Clock className={cn("h-5 w-5 text-slate-400", className)} />;
@@ -154,6 +188,7 @@ function AgentStatusCardSkeleton({ className }: { className?: string }) {
     onClick,
     className,
     executionTimestamp,
+    pipelineType,
   }: AgentStatusCardProps) {
     if (isLoading) {
       return <AgentStatusCardSkeleton className={className} />;
@@ -164,6 +199,7 @@ function AgentStatusCardSkeleton({ className }: { className?: string }) {
     const isRunning = status === "running";
     const isSuccess = status === "success";
     const isFailed = status === "failed";
+    const isBlocked = status === "blocked";
   
     return (
       <button
@@ -179,6 +215,7 @@ function AgentStatusCardSkeleton({ className }: { className?: string }) {
           isRunning && "border-blue-200 bg-blue-50/30 shadow-sm",
           isSuccess && "border-emerald-200 bg-emerald-50/30",
           isFailed && "border-red-200 bg-red-50/30",
+          isBlocked && "border-amber-200 bg-amber-50/30",
           // Active state
           isActive && "ring-2 ring-primary ring-offset-2",
           className
@@ -189,10 +226,10 @@ function AgentStatusCardSkeleton({ className }: { className?: string }) {
           <AgentIcon type={agent} showBackground size="lg" />
           <div className="flex-1 min-w-0">
             <h3 className="font-medium text-sm text-foreground">
-              {agentNames[agent]}
+              {getAgentName(agent, pipelineType)}
             </h3>
             <p className="text-xs text-muted-foreground truncate">
-              {agentDescriptions[agent]}
+              {getAgentDescription(agent, pipelineType)}
             </p>
           </div>
           <StatusIcon status={status} />
@@ -205,6 +242,7 @@ function AgentStatusCardSkeleton({ className }: { className?: string }) {
               isSuccess ? "success" :
               isRunning ? "processing" :
               isFailed ? "error" :
+              isBlocked ? "warning" :
               "pending"
             }
             size="sm"
@@ -212,6 +250,7 @@ function AgentStatusCardSkeleton({ className }: { className?: string }) {
             {isSuccess && "Complete"}
             {isRunning && "Running"}
             {isFailed && "Failed"}
+            {isBlocked && "Blocked"}
             {isPending && "Pending"}
           </StatusBadge>
   
@@ -256,15 +295,13 @@ function AgentStatusCardSkeleton({ className }: { className?: string }) {
   // =============================================================================
   
   interface AgentStatusCardsProps {
-    agents: {
-      preparation?: AgentResultDetail;
-      drawcore?: AgentResultDetail;
-      verification?: AgentResultDetail;
-      orderdocs?: AgentResultDetail;
-    } | undefined;
+    /** Agents dict - keys depend on agentType */
+    agents: Record<string, AgentResultDetail> | undefined;
+    /** Pipeline type (drawdocs, disclosure, loa) */
+    agentType?: PipelineAgentType;
     isLoading?: boolean;
-    activeAgent?: AgentType | null;
-    onAgentClick?: (agent: AgentType) => void;
+    activeAgent?: string | null;
+    onAgentClick?: (agent: string) => void;
     className?: string;
     /** Run execution timestamp for live duration calculation */
     executionTimestamp?: string;
@@ -272,25 +309,29 @@ function AgentStatusCardSkeleton({ className }: { className?: string }) {
   
   export function AgentStatusCards({
     agents,
+    agentType = "drawdocs",
     isLoading = false,
     activeAgent,
     onAgentClick,
     className,
     executionTimestamp,
   }: AgentStatusCardsProps) {
-    const agentTypes: AgentType[] = ["preparation", "drawcore", "verification", "orderdocs"];
+    // Get sub-agents for this pipeline type
+    const subAgentIds = AGENT_TYPE_SUB_AGENTS[agentType].map(a => a.id);
+    const gridCols = subAgentIds.length === 3 ? "sm:grid-cols-3" : "sm:grid-cols-4";
   
     return (
-      <div className={cn("grid grid-cols-1 sm:grid-cols-4 gap-4", className)}>
-        {agentTypes.map((agentType) => (
+      <div className={cn("grid grid-cols-1 gap-4", gridCols, className)}>
+        {subAgentIds.map((subAgentId) => (
           <AgentStatusCard
-            key={agentType}
-            agent={agentType}
-            result={agents?.[agentType]}
+            key={subAgentId}
+            agent={subAgentId}
+            result={agents?.[subAgentId]}
             isLoading={isLoading}
-            isActive={activeAgent === agentType}
-            onClick={() => onAgentClick?.(agentType)}
+            isActive={activeAgent === subAgentId}
+            onClick={() => onAgentClick?.(subAgentId)}
             executionTimestamp={executionTimestamp}
+            pipelineType={agentType}
           />
         ))}
       </div>

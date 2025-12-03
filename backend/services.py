@@ -15,10 +15,11 @@ from typing import Optional
 from models import (
     RunData,
     RunSummary,
-    AgentSummary,
     AgentStatus,
     RunStatus,
     CreateRunRequest,
+    AgentType,
+    AGENT_TYPE_SUB_AGENTS,
 )
 
 # Add project root to path for status_writer import
@@ -85,23 +86,30 @@ def parse_run_id(filename: str) -> Optional[tuple[str, str, int]]:
     return (base, loan_id, timestamp)
 
 
-def derive_overall_status(agents: dict) -> RunStatus:
+def derive_overall_status(agents: dict, agent_type: AgentType = AgentType.DRAWDOCS) -> RunStatus:
     """
     Derive overall run status from agent statuses.
     
     Rules:
     - All success → "success"
     - Any failed → "failed"
+    - Any blocked → "blocked" (disclosure)
     - Any running → "running"
     """
+    sub_agents = AGENT_TYPE_SUB_AGENTS.get(agent_type, AGENT_TYPE_SUB_AGENTS[AgentType.DRAWDOCS])
+    
     statuses = []
-    for agent_name in ["preparation", "drawcore", "verification", "orderdocs"]:
+    for agent_name in sub_agents:
         agent_data = agents.get(agent_name, {})
         if isinstance(agent_data, dict):
             status = agent_data.get("status", "pending")
         else:
             status = getattr(agent_data, "status", "pending")
         statuses.append(status)
+    
+    # Check for any blocked (disclosure-specific)
+    if any(s == "blocked" for s in statuses):
+        return RunStatus.BLOCKED
     
     # Check for any failed
     if any(s == "failed" for s in statuses):
@@ -119,10 +127,12 @@ def derive_overall_status(agents: dict) -> RunStatus:
     return RunStatus.RUNNING
 
 
-def calculate_duration(agents: dict) -> float:
+def calculate_duration(agents: dict, agent_type: AgentType = AgentType.DRAWDOCS) -> float:
     """Calculate total duration from agent elapsed times."""
+    sub_agents = AGENT_TYPE_SUB_AGENTS.get(agent_type, AGENT_TYPE_SUB_AGENTS[AgentType.DRAWDOCS])
+    
     total = 0.0
-    for agent_name in ["preparation", "drawcore", "verification", "orderdocs"]:
+    for agent_name in sub_agents:
         agent_data = agents.get(agent_name, {})
         if isinstance(agent_data, dict):
             elapsed = agent_data.get("elapsed_seconds", 0) or 0
@@ -150,8 +160,10 @@ def extract_document_counts(agents: dict) -> tuple[int, int]:
     return (docs_processed, docs_found)
 
 
-def build_agent_summary(agents: dict) -> AgentSummary:
-    """Build agent summary from agents dict."""
+def build_agent_summary(agents: dict, agent_type: AgentType = AgentType.DRAWDOCS) -> dict[str, AgentStatus]:
+    """Build agent summary dict from agents data based on agent type."""
+    sub_agents = AGENT_TYPE_SUB_AGENTS.get(agent_type, AGENT_TYPE_SUB_AGENTS[AgentType.DRAWDOCS])
+    
     def get_status(agent_name: str) -> AgentStatus:
         agent_data = agents.get(agent_name, {})
         if isinstance(agent_data, dict):
@@ -164,12 +176,7 @@ def build_agent_summary(agents: dict) -> AgentSummary:
         except ValueError:
             return AgentStatus.PENDING
     
-    return AgentSummary(
-        preparation=get_status("preparation"),
-        drawcore=get_status("drawcore"),
-        verification=get_status("verification"),
-        orderdocs=get_status("orderdocs"),
-    )
+    return {agent_name: get_status(agent_name) for agent_name in sub_agents}
 
 
 def load_run_data(file_path: Path) -> Optional[dict]:
@@ -187,9 +194,12 @@ def save_run_data(file_path: Path, data: dict) -> None:
         json.dump(data, f, indent=2, default=str)
 
 
-def list_all_runs() -> list[RunSummary]:
+def list_all_runs(agent_type_filter: Optional[AgentType] = None) -> list[RunSummary]:
     """
     List all runs from the output directory.
+    
+    Args:
+        agent_type_filter: Optional filter to only return runs of a specific agent type
     
     Returns:
         List of RunSummary objects sorted by created_at descending
@@ -212,19 +222,31 @@ def list_all_runs() -> list[RunSummary]:
         if not data:
             continue
         
+        # Determine agent type from data (default to drawdocs for backwards compatibility)
+        agent_type_str = data.get("agent_type", "drawdocs")
+        try:
+            agent_type = AgentType(agent_type_str)
+        except ValueError:
+            agent_type = AgentType.DRAWDOCS
+        
+        # Apply filter if specified
+        if agent_type_filter is not None and agent_type != agent_type_filter:
+            continue
+        
         agents = data.get("agents", {})
         docs_processed, docs_found = extract_document_counts(agents)
         
         run_summary = RunSummary(
             run_id=run_id,
             loan_id=data.get("loan_id", loan_id),
-            status=derive_overall_status(agents),
+            agent_type=agent_type,
+            status=derive_overall_status(agents, agent_type),
             demo_mode=data.get("demo_mode", True),
             created_at=data.get("execution_timestamp", datetime.fromtimestamp(timestamp).isoformat()),
-            duration_seconds=calculate_duration(agents),
+            duration_seconds=calculate_duration(agents, agent_type),
             documents_processed=docs_processed,
             documents_found=docs_found,
-            agents=build_agent_summary(agents),
+            agents=build_agent_summary(agents, agent_type),
         )
         runs.append(run_summary)
     
@@ -248,19 +270,19 @@ def get_run_detail(run_id: str) -> Optional[dict]:
     return load_run_data(file_path)
 
 
-def create_run(request: CreateRunRequest) -> str:
+def create_run(request: CreateRunRequest) -> tuple[str, AgentType]:
     """
     Create a new run.
     
     Creates initial status file using StatusWriter and spawns agent process in background.
-    The initial status file shows preparation as "running" immediately, allowing
+    The initial status file shows the first sub-agent as "running" immediately, allowing
     the frontend to display the run as soon as it starts.
     
     Args:
         request: CreateRunRequest with run configuration
         
     Returns:
-        The generated run_id
+        Tuple of (run_id, agent_type)
     """
     # Use StatusWriter to generate run_id and create initial status file
     output_dir = get_output_dir()
@@ -268,30 +290,33 @@ def create_run(request: CreateRunRequest) -> str:
     
     run_id = writer.generate_run_id(request.loan_id)
     
-    # Initialize run with status file - preparation is set to "running" immediately
+    # Initialize run with status file - first sub-agent is set to "running" immediately
     writer.initialize_run(
         run_id=run_id,
         loan_id=request.loan_id,
         demo_mode=request.demo_mode,
         document_types=request.document_types,
         max_retries=request.max_retries,
+        agent_type=request.agent_type.value,
     )
     
     # Spawn agent process in background
     spawn_agent_process(
         run_id=run_id,
         loan_id=request.loan_id,
+        agent_type=request.agent_type,
         demo_mode=request.demo_mode,
         max_retries=request.max_retries,
         document_types=request.document_types,
     )
     
-    return run_id
+    return run_id, request.agent_type
 
 
 def spawn_agent_process(
     run_id: str,
     loan_id: str,
+    agent_type: AgentType,
     demo_mode: bool,
     max_retries: int,
     document_types: Optional[list[str]],
@@ -302,6 +327,7 @@ def spawn_agent_process(
     Args:
         run_id: Unique run identifier
         loan_id: Encompass loan GUID
+        agent_type: Type of agent pipeline to run
         demo_mode: Whether to run in demo mode
         max_retries: Number of retry attempts
         document_types: Optional list of document types to process
@@ -316,6 +342,7 @@ def spawn_agent_process(
         sys.executable,
         str(runner_script),
         "--loan-id", loan_id,
+        "--agent-type", agent_type.value,
         "--output", str(output_file),
         "--max-retries", str(max_retries),
     ]

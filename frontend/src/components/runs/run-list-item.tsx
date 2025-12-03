@@ -15,6 +15,8 @@ import type { RunSummary, RunStatusValue } from "@/lib/api";
 interface RunListItemProps {
   run: RunSummary;
   className?: string;
+  /** Base path for run detail links (default: "/runs") */
+  basePath?: string;
 }
 
 // =============================================================================
@@ -69,7 +71,7 @@ function formatRelativeTime(isoString: string): string {
 /**
  * Map run status to StatusBadge variant.
  */
-function getStatusVariant(status: RunStatusValue): "success" | "processing" | "error" {
+function getStatusVariant(status: RunStatusValue): "success" | "processing" | "error" | "warning" {
   switch (status) {
     case "success":
       return "success";
@@ -77,6 +79,8 @@ function getStatusVariant(status: RunStatusValue): "success" | "processing" | "e
       return "processing";
     case "failed":
       return "error";
+    case "blocked":
+      return "warning";
     default:
       return "processing";
   }
@@ -180,10 +184,10 @@ function LiveDuration({ startTime }: LiveDurationProps) {
  * - Duration (live counter if running)
  * - Started (relative time)
  */
-export function RunListItem({ run, className }: RunListItemProps) {
+export function RunListItem({ run, className, basePath = "/runs" }: RunListItemProps) {
   return (
     <Link
-      href={`/runs/${run.run_id}`}
+      href={`${basePath}/${run.run_id}`}
       className={cn(
         "flex items-center gap-4 p-4 rounded-lg border border-border",
         "hover:bg-muted/50 hover:border-muted-foreground/20 transition-all",
@@ -210,6 +214,7 @@ export function RunListItem({ run, className }: RunListItemProps) {
         {run.status === "success" && "Success"}
         {run.status === "running" && "Running"}
         {run.status === "failed" && "Failed"}
+        {run.status === "blocked" && "Blocked"}
       </StatusBadge>
 
       {/* Agent Progress */}
@@ -252,10 +257,10 @@ export function RunListItem({ run, className }: RunListItemProps) {
 // CARD VARIANT (for mobile)
 // =============================================================================
 
-export function RunListItemCard({ run, className }: RunListItemProps) {
+export function RunListItemCard({ run, className, basePath = "/runs" }: RunListItemProps) {
   return (
     <Link
-      href={`/runs/${run.run_id}`}
+      href={`${basePath}/${run.run_id}`}
       className={cn(
         "block p-4 rounded-lg border border-border",
         "hover:bg-muted/50 hover:border-muted-foreground/20 transition-all",
@@ -276,6 +281,7 @@ export function RunListItemCard({ run, className }: RunListItemProps) {
           {run.status === "success" && "Success"}
           {run.status === "running" && "Running"}
           {run.status === "failed" && "Failed"}
+          {run.status === "blocked" && "Blocked"}
         </StatusBadge>
       </div>
 

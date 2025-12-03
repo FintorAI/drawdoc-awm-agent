@@ -5,27 +5,18 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
   LayoutDashboard, 
-  Play, 
   FileStack, 
   ChevronLeft, 
   ChevronRight,
-  FileSearch
+  FileSearch,
+  Shield,
+  FileText,
+  Mail,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-
-interface NavItem {
-  label: string;
-  href: string;
-  icon: React.ElementType;
-}
-
-const navItems: NavItem[] = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Runs", href: "/runs", icon: Play },
-  { label: "Documents", href: "/documents", icon: FileStack },
-];
+import { NavSection } from "./nav-section";
 
 interface SidebarProps {
   defaultCollapsed?: boolean;
@@ -47,54 +38,82 @@ export function Sidebar({ defaultCollapsed = false }: SidebarProps) {
         "flex items-center h-16 px-4 border-b border-border",
         isCollapsed ? "justify-center" : "justify-start"
       )}>
-        <div className="flex items-center gap-2">
+        <Link href="/dashboard" className="flex items-center gap-2">
           <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary">
             <FileSearch className="h-4 w-4 text-white" />
           </div>
           {!isCollapsed && (
             <span className="font-semibold text-foreground text-lg">
-              DrawDoc
+              AWM Pilot
             </span>
           )}
-        </div>
+        </Link>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 py-4">
+      <nav className="flex-1 py-4 overflow-y-auto">
         <ul className="space-y-1 px-2">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
-            const Icon = item.icon;
+          {/* Dashboard (Agent Hub) */}
+          <li>
+            <NavSection
+              label="Dashboard"
+              href="/dashboard"
+              icon={LayoutDashboard}
+              isCollapsed={isCollapsed}
+            />
+          </li>
 
-            return (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  className={cn(
-                    "relative flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
-                    isCollapsed && "justify-center px-0",
-                    isActive
-                      ? "bg-primary-light text-primary-dark font-medium"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  )}
-                >
-                  {/* Active indicator */}
-                  {isActive && (
-                    <span className="nav-indicator" />
-                  )}
-                  
-                  <Icon className={cn(
-                    "h-5 w-5 shrink-0",
-                    isActive ? "text-primary" : "text-muted-foreground"
-                  )} />
-                  
-                  {!isCollapsed && (
-                    <span className="text-sm">{item.label}</span>
-                  )}
-                </Link>
-              </li>
-            );
-          })}
+          {/* Disclosure Agent */}
+          <li>
+            <NavSection
+              label="Disclosure"
+              href="/disclosure"
+              icon={Shield}
+              isCollapsed={isCollapsed}
+              subItems={[
+                { label: "Overview", href: "/disclosure" },
+                { label: "Runs", href: "/disclosure/runs" },
+              ]}
+            />
+          </li>
+
+          {/* DrawDocs Agent */}
+          <li>
+            <NavSection
+              label="DrawDocs"
+              href="/drawdocs"
+              icon={FileText}
+              isCollapsed={isCollapsed}
+              subItems={[
+                { label: "Overview", href: "/drawdocs" },
+                { label: "Runs", href: "/drawdocs/runs" },
+              ]}
+            />
+          </li>
+
+          {/* LOA Agent */}
+          <li>
+            <NavSection
+              label="LOA"
+              href="/loa"
+              icon={Mail}
+              isCollapsed={isCollapsed}
+              subItems={[
+                { label: "Overview", href: "/loa" },
+                { label: "Runs", href: "/loa/runs" },
+              ]}
+            />
+          </li>
+
+          {/* Documents */}
+          <li>
+            <NavSection
+              label="Documents"
+              href="/documents"
+              icon={FileStack}
+              isCollapsed={isCollapsed}
+            />
+          </li>
         </ul>
       </nav>
 
@@ -119,4 +138,3 @@ export function Sidebar({ defaultCollapsed = false }: SidebarProps) {
     </aside>
   );
 }
-

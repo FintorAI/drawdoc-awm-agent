@@ -1,15 +1,16 @@
 """
-DrawDoc Agent API
+Multi-Agent Dashboard API
 
-FastAPI application for managing agent runs.
+FastAPI application for managing multi-agent runs (DrawDocs, Disclosure, LOA).
 
 Endpoints:
-- GET /api/runs - List all runs
+- GET /api/runs - List all runs (with optional agent_type filter)
 - GET /api/runs/{run_id} - Get run detail
 - POST /api/runs - Start a new run
 """
 
 import os
+from typing import Optional
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -17,10 +18,10 @@ from dotenv import load_dotenv
 project_root = Path(__file__).parent.parent
 load_dotenv(project_root / ".env")
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
-from models import CreateRunRequest, CreateRunResponse, RunSummary
+from models import CreateRunRequest, CreateRunResponse, RunSummary, AgentType
 from services import list_all_runs, get_run_detail, create_run
 
 
@@ -29,9 +30,9 @@ from services import list_all_runs, get_run_detail, create_run
 # =============================================================================
 
 app = FastAPI(
-    title="DrawDoc Agent API",
-    description="API for managing DrawDoc verification agent runs",
-    version="1.0.0",
+    title="Multi-Agent Dashboard API",
+    description="API for managing DrawDocs, Disclosure, and LOA agent runs",
+    version="2.0.0",
 )
 
 # CORS configuration - allow Next.js dev server
@@ -63,14 +64,22 @@ async def health_check():
 # =============================================================================
 
 @app.get("/api/runs", response_model=list[RunSummary])
-async def get_runs():
+async def get_runs(
+    agent_type: Optional[AgentType] = Query(
+        default=None,
+        description="Filter runs by agent type (drawdocs, disclosure, loa)"
+    )
+):
     """
     Get list of all runs (in-progress and completed).
+    
+    Args:
+        agent_type: Optional filter to only return runs of a specific agent type
     
     Returns:
         List of run summaries sorted by created_at descending
     """
-    return list_all_runs()
+    return list_all_runs(agent_type_filter=agent_type)
 
 
 @app.get("/api/runs/{run_id}")
@@ -104,16 +113,16 @@ async def start_run(request: CreateRunRequest):
     Start a new agent run.
     
     Creates initial status file and spawns agent process in background.
-    Returns immediately with the run_id.
+    Returns immediately with the run_id and agent_type.
     
     Args:
-        request: Run configuration
+        request: Run configuration (includes agent_type)
         
     Returns:
-        Object containing the generated run_id
+        Object containing the generated run_id and agent_type
     """
-    run_id = create_run(request)
-    return CreateRunResponse(run_id=run_id)
+    run_id, agent_type = create_run(request)
+    return CreateRunResponse(run_id=run_id, agent_type=agent_type)
 
 
 # =============================================================================

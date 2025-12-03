@@ -1,10 +1,15 @@
 """
-Status Writer - Manages run status files for the DrawDocs agent orchestrator.
+Status Writer - Manages run status files for multi-agent orchestrators.
 
 This utility class handles:
 - Initializing run status files when a run starts
 - Updating agent status as each sub-agent progresses
 - Finalizing runs when complete
+
+Supports multiple agent types:
+- DrawDocs: preparation → drawcore → verification → orderdocs
+- Disclosure: verification → preparation → send
+- LOA: verification → generation → delivery
 
 File naming convention:
 - Status files: {OUTPUT_DIR}/{run_id}_results.json
@@ -14,6 +19,7 @@ Status transitions per agent:
 - "pending" → "running" (when agent starts)
 - "running" → "success" (when agent completes successfully)
 - "running" → "failed" (when agent errors after all retries)
+- "running" → "blocked" (for disclosure when compliance blocks)
 """
 
 import json
@@ -26,6 +32,14 @@ from typing import Any, Dict, List, Optional, Union
 logger = logging.getLogger(__name__)
 
 
+# Agent type configurations
+AGENT_TYPE_SUB_AGENTS = {
+    "drawdocs": ["preparation", "drawcore", "verification", "orderdocs"],
+    "disclosure": ["verification", "preparation", "send"],
+    "loa": ["verification", "generation", "delivery"],
+}
+
+
 class StatusWriter:
     """
     Manages run status files for live frontend updates.
@@ -35,7 +49,7 @@ class StatusWriter:
         
         # Initialize run
         run_id = writer.generate_run_id(loan_id)
-        writer.initialize_run(run_id, loan_id, demo_mode=True)
+        writer.initialize_run(run_id, loan_id, demo_mode=True, agent_type="drawdocs")
         
         # Update agent status
         writer.update_agent_status(run_id, "preparation", "running")
@@ -46,7 +60,7 @@ class StatusWriter:
         writer.finalize_run(run_id)
     """
     
-    # Agent names in execution order
+    # Default agent names (DrawDocs) - kept for backwards compatibility
     AGENTS = ["preparation", "drawcore", "verification", "orderdocs"]
     
     def __init__(self, output_dir: Optional[Union[str, Path]] = None):
@@ -105,12 +119,13 @@ class StatusWriter:
         demo_mode: bool = True,
         document_types: Optional[list] = None,
         max_retries: int = 2,
+        agent_type: str = "drawdocs",
     ) -> Dict[str, Any]:
         """
         Initialize a run status file.
         
         Creates the initial status JSON immediately when run starts.
-        The first agent (preparation) is set to "running" status.
+        The first sub-agent is set to "running" status.
         
         Args:
             run_id: Unique run identifier
@@ -118,13 +133,29 @@ class StatusWriter:
             demo_mode: Whether running in demo mode (no writes to Encompass)
             document_types: Optional list of document types to process
             max_retries: Number of retry attempts per agent
+            agent_type: Type of agent pipeline ("drawdocs", "disclosure", "loa")
             
         Returns:
             The initial status data dict
         """
+        # Get sub-agents for this agent type
+        sub_agents = AGENT_TYPE_SUB_AGENTS.get(agent_type, AGENT_TYPE_SUB_AGENTS["drawdocs"])
+        
+        # Build agents dict - first agent is running, rest are pending
+        agents = {}
+        for i, agent_name in enumerate(sub_agents):
+            agents[agent_name] = {
+                "status": "running" if i == 0 else "pending",
+                "attempts": 0,
+                "elapsed_seconds": 0,
+                "output": None,
+                "error": None,
+            }
+        
         initial_data = {
             "loan_id": loan_id,
             "run_id": run_id,
+            "agent_type": agent_type,
             "execution_timestamp": datetime.now().isoformat(),
             "demo_mode": demo_mode,
             "config": {
@@ -132,42 +163,13 @@ class StatusWriter:
                 "max_retries": max_retries,
             },
             "summary": {},
-            "agents": {
-                "preparation": {
-                    "status": "running",
-                    "attempts": 0,
-                    "elapsed_seconds": 0,
-                    "output": None,
-                    "error": None,
-                },
-                "drawcore": {
-                    "status": "pending",
-                    "attempts": 0,
-                    "elapsed_seconds": 0,
-                    "output": None,
-                    "error": None,
-                },
-                "verification": {
-                    "status": "pending",
-                    "attempts": 0,
-                    "elapsed_seconds": 0,
-                    "output": None,
-                    "error": None,
-                },
-                "orderdocs": {
-                    "status": "pending",
-                    "attempts": 0,
-                    "elapsed_seconds": 0,
-                    "output": None,
-                    "error": None,
-                },
-            },
+            "agents": agents,
             "logs": [
                 {
                     "timestamp": datetime.now().isoformat(),
                     "level": "info",
                     "agent": "orchestrator",
-                    "message": f"Starting orchestrator for loan {loan_id}",
+                    "message": f"Starting {agent_type} orchestrator for loan {loan_id}",
                 }
             ],
             "progress": {
@@ -176,13 +178,19 @@ class StatusWriter:
                 "fields_extracted": 0,
                 "current_document": None,
             },
+            # Disclosure-specific fields (safe to include for all types)
+            "blocking_issues": [],
+            "tracking_id": None,
         }
+        
+        # Update instance agents list to match this run's agent type
+        self._current_agents = sub_agents
         
         # Write to file
         file_path = self.get_file_path(run_id)
         self._write_json(file_path, initial_data)
         
-        logger.info(f"Initialized run status file: {file_path.name}")
+        logger.info(f"Initialized {agent_type} run status file: {file_path.name}")
         return initial_data
     
     def update_agent_status(
@@ -237,9 +245,13 @@ class StatusWriter:
         
         # If agent succeeded and set_next_running is True, set next agent to "running"
         if status == "success" and set_next_running:
-            agent_idx = self.AGENTS.index(agent_name) if agent_name in self.AGENTS else -1
-            if agent_idx >= 0 and agent_idx < len(self.AGENTS) - 1:
-                next_agent = self.AGENTS[agent_idx + 1]
+            # Get the agents list for this run (from file data or default)
+            agent_type = data.get("agent_type", "drawdocs")
+            agents_list = AGENT_TYPE_SUB_AGENTS.get(agent_type, self.AGENTS)
+            
+            agent_idx = agents_list.index(agent_name) if agent_name in agents_list else -1
+            if agent_idx >= 0 and agent_idx < len(agents_list) - 1:
+                next_agent = agents_list[agent_idx + 1]
                 if data["agents"].get(next_agent, {}).get("status") == "pending":
                     data["agents"][next_agent]["status"] = "running"
                     logger.debug(f"Set {next_agent} status to 'running'")
@@ -654,11 +666,14 @@ class StatusWriter:
         if json_output:
             data["json_output"] = json_output
         
+        # Get agent type for status calculation
+        agent_type = data.get("agent_type", "drawdocs")
+        
         # Calculate overall status
-        data["overall_status"] = self._derive_overall_status(data.get("agents", {}))
+        data["overall_status"] = self._derive_overall_status(data.get("agents", {}), agent_type)
         
         # Calculate total duration
-        data["total_duration_seconds"] = self._calculate_duration(data.get("agents", {}))
+        data["total_duration_seconds"] = self._calculate_duration(data.get("agents", {}), agent_type)
         
         # Add completion timestamp (useful for debugging/analytics)
         data["completed_at"] = datetime.now().isoformat()
@@ -715,21 +730,25 @@ class StatusWriter:
                 pass
             raise
     
-    def _derive_overall_status(self, agents: Dict[str, Any]) -> str:
+    def _derive_overall_status(self, agents: Dict[str, Any], agent_type: str = "drawdocs") -> str:
         """
         Derive overall run status from agent statuses.
         
         Rules:
+        - Any blocked → "blocked" (disclosure-specific)
         - Any failed → "failed"
         - Any running → "running"
         - All success → "success"
         - Otherwise → "running" (some pending)
         """
+        agents_list = AGENT_TYPE_SUB_AGENTS.get(agent_type, self.AGENTS)
         statuses = [
             agents.get(name, {}).get("status", "pending")
-            for name in self.AGENTS
+            for name in agents_list
         ]
         
+        if any(s == "blocked" for s in statuses):
+            return "blocked"
         if any(s == "failed" for s in statuses):
             return "failed"
         if any(s == "running" for s in statuses):
@@ -738,10 +757,11 @@ class StatusWriter:
             return "success"
         return "running"
     
-    def _calculate_duration(self, agents: Dict[str, Any]) -> float:
+    def _calculate_duration(self, agents: Dict[str, Any], agent_type: str = "drawdocs") -> float:
         """Calculate total duration from agent elapsed times."""
+        agents_list = AGENT_TYPE_SUB_AGENTS.get(agent_type, self.AGENTS)
         total = 0.0
-        for name in self.AGENTS:
+        for name in agents_list:
             elapsed = agents.get(name, {}).get("elapsed_seconds", 0) or 0
             total += float(elapsed)
         return round(total, 2)

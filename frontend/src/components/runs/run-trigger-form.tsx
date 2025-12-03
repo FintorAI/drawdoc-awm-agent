@@ -18,6 +18,7 @@ import {
   DOCUMENT_TYPES,
   validateLoanId,
   DEFAULT_RUN_CONFIG,
+  type AgentType,
 } from "@/types";
 
 // =============================================================================
@@ -29,13 +30,25 @@ interface RunTriggerFormProps {
   onSuccess?: (runId: string) => void;
   /** Called when form submission fails */
   onError?: (error: Error) => void;
+  /** Agent type for this form (default: "drawdocs") */
+  agentType?: AgentType;
   /** Additional className for the card container */
   className?: string;
 }
 
-export function RunTriggerForm({ onSuccess, onError, className }: RunTriggerFormProps) {
+export function RunTriggerForm({ onSuccess, onError, agentType = "drawdocs", className }: RunTriggerFormProps) {
   const router = useRouter();
   const { addToast } = useToast();
+  
+  // Get agent-specific route
+  const getAgentRoute = (runId: string) => {
+    const routes: Record<AgentType, string> = {
+      drawdocs: `/drawdocs/runs/${runId}`,
+      disclosure: `/disclosure/runs/${runId}`,
+      loa: `/loa/runs/${runId}`,
+    };
+    return routes[agentType];
+  };
   
   // Form state
   const [loanId, setLoanId] = React.useState("");
@@ -57,7 +70,7 @@ export function RunTriggerForm({ onSuccess, onError, className }: RunTriggerForm
         variant: "success",
       });
       onSuccess?.(data.run_id);
-      router.push(`/runs/${data.run_id}`);
+      router.push(getAgentRoute(data.run_id));
     },
     onError: (error) => {
       addToast({
@@ -133,6 +146,7 @@ export function RunTriggerForm({ onSuccess, onError, className }: RunTriggerForm
     // Build config and submit
     createRunMutation.mutate({
       loan_id: loanId.trim(),
+      agent_type: agentType,
       demo_mode: demoMode,
       max_retries: maxRetries,
       document_types: allDocuments ? null : selectedDocTypes.length > 0 ? selectedDocTypes : null,
