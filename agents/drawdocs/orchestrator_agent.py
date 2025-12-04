@@ -321,7 +321,7 @@ class OrchestratorAgent:
             order_type="closing",
             delivery_method="eFolder",
             dry_run=self.config.demo_mode
-        )
+                )
         
         return orderdocs_result
     
