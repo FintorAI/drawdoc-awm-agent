@@ -72,15 +72,16 @@ function AgentIcon({
   className, 
   ...props 
 }: AgentIconProps) {
-  // Try to get icon from pipeline-specific config if pipelineType is provided
-  let Icon = defaultAgentIconMap[type];
-  let colorClass = defaultAgentColorMap[type];
-  let bgClass = defaultAgentBgMap[type];
+  // Default fallback values
+  let Icon: LucideIcon = defaultAgentIconMap[type] ?? FileSearch;
+  let colorClass = defaultAgentColorMap[type] ?? "text-slate-600";
+  let bgClass = defaultAgentBgMap[type] ?? "bg-slate-100";
   
+  // Try to get icon from pipeline-specific config if pipelineType is provided
   if (pipelineType) {
     const subAgents = AGENT_TYPE_SUB_AGENTS[pipelineType];
-    const agentConfig = subAgents?.find((a: any) => a.id === type);
-    if (agentConfig) {
+    const agentConfig = subAgents?.find((a) => a.id === type);
+    if (agentConfig?.icon) {
       Icon = agentConfig.icon;
       // Use the color from config
       const color = agentConfig.color;
