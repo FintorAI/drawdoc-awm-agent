@@ -39,11 +39,12 @@ interface FinalReportTabProps {
   runDetail: RunDetail | undefined;
   isLoading: boolean;
   className?: string;
+  agentType?: "drawdocs" | "disclosure" | "loa";
 }
 
 interface FlaggedItem {
   id: string;
-  agent: "preparation" | "drawcore" | "verification" | "orderdocs";
+  agent: "preparation" | "drawcore" | "verification" | "orderdocs" | "send" | "pre_check" | "system" | "orchestrator";
   severity: "error" | "warning" | "info";
   field?: string;
   fieldId?: string;
@@ -68,71 +69,104 @@ function extractFlaggedItems(runDetail: RunDetail): FlaggedItem[] {
   const items: FlaggedItem[] = [];
   let idCounter = 0;
 
-  // Extract from logs
-  if (runDetail.logs) {
-    runDetail.logs.forEach(log => {
-      if (log.level === "error" || log.level === "warning") {
-        items.push({
-          id: `log-${idCounter++}`,
-          agent: log.agent as FlaggedItem["agent"],
-          severity: log.level as "error" | "warning",
-          message: log.message,
-          details: log.details ? JSON.stringify(log.details) : undefined,
-        });
-      }
-    });
+  // Safely extract from logs
+  try {
+    if (runDetail?.logs && Array.isArray(runDetail.logs)) {
+      runDetail.logs.forEach(log => {
+        if (log?.level === "error" || log?.level === "warning") {
+          items.push({
+            id: `log-${idCounter++}`,
+            agent: (log.agent || "system") as FlaggedItem["agent"],
+            severity: log.level as "error" | "warning",
+            message: log.message || "Unknown error",
+            details: log.details ? JSON.stringify(log.details) : undefined,
+          });
+        }
+      });
+    }
+  } catch (error) {
+    console.error("Error extracting flagged items from logs:", error);
   }
 
   // Extract from agent outputs - Drawcore issues
-  const drawcoreOutput = runDetail.agents.drawcore?.output as {
-    phases?: Record<string, { issues?: Array<{ type: string; message: string }> }>;
-  };
-  if (drawcoreOutput?.phases) {
-    Object.entries(drawcoreOutput.phases).forEach(([phaseName, phase]) => {
-      phase.issues?.forEach((issue, idx) => {
-        items.push({
-          id: `drawcore-${phaseName}-${idx}`,
-          agent: "drawcore",
-          severity: issue.type === "error" ? "error" : "warning",
-          message: issue.message,
-          details: `Phase: ${phaseName}`,
+  try {
+    const drawcoreOutput = runDetail?.agents?.drawcore?.output as {
+      phases?: Record<string, { issues?: Array<{ type: string; message: string }> }>;
+    };
+    if (drawcoreOutput?.phases) {
+      Object.entries(drawcoreOutput.phases).forEach(([phaseName, phase]) => {
+        phase?.issues?.forEach((issue, idx) => {
+          items.push({
+            id: `drawcore-${phaseName}-${idx}`,
+            agent: "drawcore",
+            severity: issue.type === "error" ? "error" : "warning",
+            message: issue.message || "Unknown issue",
+            details: `Phase: ${phaseName}`,
+          });
         });
       });
-    });
+    }
+  } catch (error) {
+    console.error("Error extracting drawcore issues:", error);
   }
 
   // Extract from verification corrections
-  const verificationOutput = runDetail.agents.verification?.output as {
-    corrections?: Array<{ field_id: string; field_name: string; reason: string }>;
-  };
-  if (verificationOutput?.corrections) {
-    verificationOutput.corrections.forEach((correction, idx) => {
-      items.push({
-        id: `verification-correction-${idx}`,
-        agent: "verification",
-        severity: "info",
-        field: correction.field_name,
-        fieldId: correction.field_id,
-        message: `Field correction identified: ${correction.field_name}`,
-        details: correction.reason,
+  try {
+    const verificationOutput = runDetail?.agents?.verification?.output as {
+      corrections?: Array<{ field_id: string; field_name: string; reason: string }>;
+    };
+    if (verificationOutput?.corrections && Array.isArray(verificationOutput.corrections)) {
+      verificationOutput.corrections.forEach((correction, idx) => {
+        items.push({
+          id: `verification-correction-${idx}`,
+          agent: "verification",
+          severity: "info",
+          field: correction.field_name,
+          fieldId: correction.field_id,
+          message: `Field correction identified: ${correction.field_name}`,
+          details: correction.reason,
+        });
       });
-    });
+    }
+  } catch (error) {
+    console.error("Error extracting verification corrections:", error);
   }
 
   // Extract from OrderDocs preflight warnings (loan readiness issues)
-  const orderdocsOutput = runDetail.agents.orderdocs?.output as {
-    preflight_warnings?: Array<{ flag: string; name: string; message: string }>;
-  };
-  if (orderdocsOutput?.preflight_warnings) {
-    orderdocsOutput.preflight_warnings.forEach((warning, idx) => {
-      items.push({
-        id: `orderdocs-preflight-${idx}`,
-        agent: "orderdocs",
-        severity: "warning",
-        message: `⚠️ ${warning.name}: Not Complete`,
-        details: warning.message,
+  try {
+    const orderdocsOutput = runDetail?.agents?.orderdocs?.output as {
+      preflight_warnings?: Array<{ flag: string; name: string; message: string }>;
+    };
+    if (orderdocsOutput?.preflight_warnings && Array.isArray(orderdocsOutput.preflight_warnings)) {
+      orderdocsOutput.preflight_warnings.forEach((warning, idx) => {
+        items.push({
+          id: `orderdocs-preflight-${idx}`,
+          agent: "orderdocs",
+          severity: "warning",
+          message: `⚠️ ${warning.name}: Not Complete`,
+          details: warning.message,
+        });
       });
-    });
+    }
+  } catch (error) {
+    console.error("Error extracting orderdocs warnings:", error);
+  }
+
+  // Extract from disclosure blocking issues
+  try {
+    const blockingIssues = (runDetail as any)?.blocking_issues;
+    if (blockingIssues && Array.isArray(blockingIssues)) {
+      blockingIssues.forEach((issue, idx) => {
+        items.push({
+          id: `blocking-${idx}`,
+          agent: "verification",
+          severity: "error",
+          message: String(issue),
+        });
+      });
+    }
+  } catch (error) {
+    console.error("Error extracting blocking issues:", error);
   }
 
   return items;
@@ -142,45 +176,72 @@ function extractFieldChanges(runDetail: RunDetail): FieldChange[] {
   const changes: FieldChange[] = [];
 
   // Extract from preparation output
-  const prepOutput = runDetail.agents.preparation?.output as {
-    results?: {
-      field_mappings?: Record<string, { value: string; attachment_id?: string }>;
+  try {
+    const prepOutput = runDetail?.agents?.preparation?.output as {
+      results?: {
+        field_mappings?: Record<string, { value: string; attachment_id?: string }>;
+      };
     };
-  };
-  if (prepOutput?.results?.field_mappings) {
-    Object.entries(prepOutput.results.field_mappings).forEach(([fieldId, mapping]) => {
-      if (mapping.value && mapping.value !== "" && mapping.value !== "0") {
-        changes.push({
-          fieldId,
-          fieldName: fieldId, // Could map to friendly names
-          oldValue: null,
-          newValue: String(mapping.value),
-          source: mapping.attachment_id || "Document",
-          agent: "preparation",
-        });
-      }
-    });
+    if (prepOutput?.results?.field_mappings) {
+      Object.entries(prepOutput.results.field_mappings).forEach(([fieldId, mapping]) => {
+        if (mapping?.value && mapping.value !== "" && mapping.value !== "0") {
+          changes.push({
+            fieldId,
+            fieldName: fieldId, // Could map to friendly names
+            oldValue: null,
+            newValue: String(mapping.value),
+            source: mapping.attachment_id || "Document",
+            agent: "preparation",
+          });
+        }
+      });
+    }
+  } catch (error) {
+    console.error("Error extracting field changes from preparation:", error);
   }
 
   // Extract from corrected_fields_summary
-  if (runDetail.corrected_fields_summary) {
-    runDetail.corrected_fields_summary.forEach(field => {
-      // Check if already in changes
-      const existingIdx = changes.findIndex(c => c.fieldId === field.field_id);
-      if (existingIdx >= 0) {
-        changes[existingIdx].newValue = field.corrected_value;
-        changes[existingIdx].agent = "verification";
-      } else {
+  try {
+    if (runDetail?.corrected_fields_summary && Array.isArray(runDetail.corrected_fields_summary)) {
+      runDetail.corrected_fields_summary.forEach(field => {
+        // Check if already in changes
+        const existingIdx = changes.findIndex(c => c.fieldId === field.field_id);
+        if (existingIdx >= 0) {
+          changes[existingIdx].newValue = field.corrected_value;
+          changes[existingIdx].agent = "verification";
+        } else {
+          changes.push({
+            fieldId: field.field_id,
+            fieldName: field.field_name,
+            oldValue: null,
+            newValue: field.corrected_value,
+            source: field.document_filename || "Verification",
+            agent: "verification",
+          });
+        }
+      });
+    }
+  } catch (error) {
+    console.error("Error extracting corrected fields summary:", error);
+  }
+
+  // Extract from disclosure RegZ-LE updates
+  try {
+    const regzLeResult = (runDetail?.agents?.preparation?.output as any)?.regz_le_result;
+    if (regzLeResult?.updates_made) {
+      Object.entries(regzLeResult.updates_made).forEach(([fieldId, value]) => {
         changes.push({
-          fieldId: field.field_id,
-          fieldName: field.field_name,
+          fieldId,
+          fieldName: fieldId,
           oldValue: null,
-          newValue: field.corrected_value,
-          source: field.document_filename || "Verification",
-          agent: "verification",
+          newValue: String(value),
+          source: "RegZ-LE",
+          agent: "preparation",
         });
-      }
-    });
+      });
+    }
+  } catch (error) {
+    console.error("Error extracting RegZ-LE updates:", error);
   }
 
   return changes;
@@ -212,38 +273,75 @@ function SummaryCard({ runDetail, flaggedItems, fieldChanges }: SummaryCardProps
   const warningCount = flaggedItems.filter(i => i.severity === "warning").length;
   const infoCount = flaggedItems.filter(i => i.severity === "info").length;
   
+  const agentType = runDetail.agent_type || "drawdocs";
   const prepOutput = runDetail.agents.preparation?.output as {
     documents_processed?: number;
     total_documents_found?: number;
   };
+  const verificationOutput = runDetail.agents.verification?.output as any;
+  const sendOutput = runDetail.agents.send?.output as any;
 
-  const stats = [
-    {
-      label: "Documents Processed",
-      value: prepOutput?.documents_processed || 0,
-      total: prepOutput?.total_documents_found,
-      icon: FileText,
-      color: "text-blue-600",
-    },
-    {
-      label: "Fields Updated",
-      value: fieldChanges.length,
-      icon: Pencil,
-      color: "text-emerald-600",
-    },
-    {
-      label: "Errors",
-      value: errorCount,
-      icon: XCircle,
-      color: errorCount > 0 ? "text-red-600" : "text-slate-400",
-    },
-    {
-      label: "Warnings",
-      value: warningCount,
-      icon: AlertTriangle,
-      color: warningCount > 0 ? "text-amber-600" : "text-slate-400",
-    },
-  ];
+  // Disclosure-specific stats
+  const tridCompliant = verificationOutput?.trid_compliance?.compliant === true;
+  const formsChecked = verificationOutput?.form_validation?.forms_checked || 0;
+  const formsPassed = verificationOutput?.form_validation?.forms_passed || 0;
+  const maventPassed = sendOutput?.mavent_result?.passed === true;
+
+  const stats = agentType === "disclosure"
+    ? [
+        {
+          label: "TRID Compliant",
+          value: tridCompliant ? 1 : 0,
+          icon: CheckCircle2,
+          color: tridCompliant ? "text-emerald-600" : "text-red-600",
+        },
+        {
+          label: "Forms Passed",
+          value: formsPassed,
+          total: formsChecked,
+          icon: FileText,
+          color: "text-blue-600",
+        },
+        {
+          label: "Mavent Status",
+          value: maventPassed ? 1 : 0,
+          icon: CheckCircle2,
+          color: maventPassed ? "text-emerald-600" : "text-amber-600",
+        },
+        {
+          label: "Warnings",
+          value: warningCount,
+          icon: AlertTriangle,
+          color: warningCount > 0 ? "text-amber-600" : "text-slate-400",
+        },
+      ]
+    : [
+        {
+          label: "Documents Processed",
+          value: prepOutput?.documents_processed || 0,
+          total: prepOutput?.total_documents_found,
+          icon: FileText,
+          color: "text-blue-600",
+        },
+        {
+          label: "Fields Updated",
+          value: fieldChanges.length,
+          icon: Pencil,
+          color: "text-emerald-600",
+        },
+        {
+          label: "Errors",
+          value: errorCount,
+          icon: XCircle,
+          color: errorCount > 0 ? "text-red-600" : "text-slate-400",
+        },
+        {
+          label: "Warnings",
+          value: warningCount,
+          icon: AlertTriangle,
+          color: warningCount > 0 ? "text-amber-600" : "text-slate-400",
+        },
+      ];
 
   return (
     <Card>
@@ -744,6 +842,261 @@ function DrawcorePhasesCard({ runDetail }: DrawcorePhasesCardProps) {
 }
 
 // =============================================================================
+// DISCLOSURE DETAILS CARDS
+// =============================================================================
+
+interface DisclosureDetailsCardsProps {
+  runDetail: RunDetail;
+}
+
+function DisclosureDetailsCards({ runDetail }: DisclosureDetailsCardsProps) {
+  const verificationOutput = runDetail?.agents?.verification?.output as any;
+  const preparationOutput = runDetail?.agents?.preparation?.output as any;
+  const sendOutput = runDetail?.agents?.send?.output as any;
+
+  const tridCompliance = verificationOutput?.trid_compliance || {};
+  const formValidation = verificationOutput?.form_validation || {};
+  const miResult = preparationOutput?.mi_result || {};
+  const ctcResult = preparationOutput?.ctc_result || {};
+  const regzLeResult = preparationOutput?.regz_le_result || {};
+  const maventResult = sendOutput?.mavent_result || {};
+  const atrQmResult = sendOutput?.atr_qm_result || {};
+  const orderResult = sendOutput?.order_result || {};
+  
+  // Handle missing data gracefully
+  if (!verificationOutput && !preparationOutput && !sendOutput) {
+    return (
+      <Card>
+        <CardContent className="py-8 text-center text-muted-foreground">
+          <p>No disclosure data available yet.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {/* TRID Compliance Card */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <ShieldCheck className="h-4 w-4 text-blue-500" />
+            TRID Compliance
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            <div className={cn(
+              "p-3 rounded-lg border",
+              tridCompliance.compliant ? "bg-emerald-50 border-emerald-200" : "bg-red-50 border-red-200"
+            )}>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Status</span>
+                <span className={cn(
+                  "text-sm font-semibold",
+                  tridCompliance.compliant ? "text-emerald-600" : "text-red-600"
+                )}>
+                  {tridCompliance.compliant ? "✓ Compliant" : "✗ Non-Compliant"}
+                </span>
+              </div>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Application Date:</span>
+                <span className="font-mono">{tridCompliance.application_date || "—"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">LE Due Date:</span>
+                <span className="font-mono">{tridCompliance.le_due_date || "—"}</span>
+              </div>
+              {tridCompliance.days_remaining !== undefined && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Days Remaining:</span>
+                  <span className={cn(
+                    "font-semibold",
+                    tridCompliance.days_remaining > 0 ? "text-emerald-600" : "text-red-600"
+                  )}>
+                    {tridCompliance.days_remaining}
+                  </span>
+                </div>
+              )}
+              {tridCompliance.action && (
+                <p className="text-xs text-muted-foreground pt-2 border-t">
+                  {tridCompliance.action}
+                </p>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Form Validation Card */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <FileText className="h-4 w-4 text-blue-500" />
+            Form Validation
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            <div className="grid grid-cols-3 gap-2">
+              <div className="text-center p-2 bg-muted/50 rounded">
+                <p className="text-lg font-bold">{formValidation.forms_checked || 0}</p>
+                <p className="text-xs text-muted-foreground">Checked</p>
+              </div>
+              <div className="text-center p-2 bg-emerald-50 rounded">
+                <p className="text-lg font-bold text-emerald-600">{formValidation.forms_passed || 0}</p>
+                <p className="text-xs text-muted-foreground">Passed</p>
+              </div>
+              <div className="text-center p-2 bg-amber-50 rounded">
+                <p className="text-lg font-bold text-amber-600">
+                  {(formValidation.forms_checked || 0) - (formValidation.forms_passed || 0)}
+                </p>
+                <p className="text-xs text-muted-foreground">Issues</p>
+              </div>
+            </div>
+            {formValidation.missing_fields && formValidation.missing_fields.length > 0 && (
+              <div className="pt-2 border-t">
+                <p className="text-xs font-medium text-muted-foreground mb-1">
+                  Missing Fields ({formValidation.missing_fields.length}):
+                </p>
+                <div className="space-y-1">
+                  {formValidation.missing_fields.slice(0, 3).map((field: string, i: number) => (
+                    <p key={i} className="text-xs font-mono text-amber-700 bg-amber-50 px-2 py-1 rounded">
+                      {field}
+                    </p>
+                  ))}
+                  {formValidation.missing_fields.length > 3 && (
+                    <p className="text-xs text-muted-foreground">
+                      +{formValidation.missing_fields.length - 3} more
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* MI Calculation Card */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <Package className="h-4 w-4 text-amber-500" />
+            MI Calculation
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            <div className={cn(
+              "p-3 rounded-lg border text-center",
+              miResult.requires_mi ? "bg-amber-50 border-amber-200" : "bg-slate-50 border-slate-200"
+            )}>
+              <p className="text-sm text-muted-foreground">MI Required</p>
+              <p className={cn(
+                "text-2xl font-bold",
+                miResult.requires_mi ? "text-amber-600" : "text-slate-500"
+              )}>
+                {miResult.requires_mi ? "Yes" : "No"}
+              </p>
+            </div>
+            {miResult.requires_mi && (
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">LTV Ratio:</span>
+                  <span className="font-mono">{miResult.ltv_ratio?.toFixed(2)}%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Monthly MI:</span>
+                  <span className="font-mono">${miResult.monthly_amount?.toFixed(2) || "0.00"}</span>
+                </div>
+                {miResult.upfront_amount > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Upfront MI:</span>
+                    <span className="font-mono">${miResult.upfront_amount?.toFixed(2)}</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Mavent Compliance Card */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <ShieldCheck className="h-4 w-4 text-emerald-500" />
+            Mavent Compliance
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            <div className={cn(
+              "p-3 rounded-lg border",
+              maventResult.passed ? "bg-emerald-50 border-emerald-200" : "bg-amber-50 border-amber-200"
+            )}>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Status</span>
+                <span className={cn(
+                  "text-sm font-semibold",
+                  maventResult.passed ? "text-emerald-600" : "text-amber-600"
+                )}>
+                  {maventResult.passed ? "✓ Passed" : "⚠ Issues Found"}
+                </span>
+              </div>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Total Issues:</span>
+                <span className="font-semibold">{maventResult.total_issues || 0}</span>
+              </div>
+              {maventResult.audit_id && (
+                <div className="pt-2 border-t">
+                  <p className="text-xs text-muted-foreground">Audit ID:</p>
+                  <p className="text-xs font-mono text-muted-foreground break-all">
+                    {maventResult.audit_id}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* RegZ-LE Updates Card */}
+      {regzLeResult.updates_made && Object.keys(regzLeResult.updates_made).length > 0 && (
+        <Card className="lg:col-span-2">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium flex items-center gap-2">
+              <Pencil className="h-4 w-4 text-emerald-500" />
+              RegZ-LE Updates
+              <span className="ml-auto text-xs font-normal text-muted-foreground">
+                {Object.keys(regzLeResult.updates_made).length} fields
+              </span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="h-[200px]">
+              <div className="space-y-1 pr-3">
+                {Object.entries(regzLeResult.updates_made).map(([fieldId, value]: [string, any], idx: number) => (
+                  <div key={idx} className="flex items-center justify-between gap-2 text-xs p-2 rounded bg-muted/50">
+                    <span className="font-mono text-muted-foreground">{fieldId}</span>
+                    <ArrowRight className="h-3 w-3 flex-shrink-0" />
+                    <span className="font-medium text-emerald-700 truncate">{String(value)}</span>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+// =============================================================================
 // ORDERDOCS STEPS CARD
 // =============================================================================
 
@@ -1116,14 +1469,14 @@ function ReportSkeleton() {
 // MAIN COMPONENT
 // =============================================================================
 
-export function FinalReportTab({ runDetail, isLoading, className }: FinalReportTabProps) {
+export function FinalReportTab({ runDetail, isLoading, className, agentType: agentTypeProp }: FinalReportTabProps) {
   if (isLoading || !runDetail) {
     return <ReportSkeleton />;
   }
 
   const flaggedItems = extractFlaggedItems(runDetail);
   const fieldChanges = extractFieldChanges(runDetail);
-  const agentType = runDetail.agent_type || "drawdocs";
+  const agentType = agentTypeProp || runDetail.agent_type || "drawdocs";
 
   return (
     <div className={cn("space-y-4", className)}>
@@ -1149,11 +1502,18 @@ export function FinalReportTab({ runDetail, isLoading, className }: FinalReportT
       <AgentStatusSummary runDetail={runDetail} agentType={agentType} />
 
       {/* Agent-Specific Details - 3 column grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <DrawcorePhasesCard runDetail={runDetail} />
-        <VerificationSummaryCard runDetail={runDetail} />
-        <OrderDocsStepsCard runDetail={runDetail} />
-      </div>
+      {agentType === "drawdocs" && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <DrawcorePhasesCard runDetail={runDetail} />
+          <VerificationSummaryCard runDetail={runDetail} />
+          <OrderDocsStepsCard runDetail={runDetail} />
+        </div>
+      )}
+      
+      {/* Disclosure-Specific Details */}
+      {agentType === "disclosure" && (
+        <DisclosureDetailsCards runDetail={runDetail} />
+      )}
 
       {/* Two Column Layout for Flagged Items and Field Changes */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

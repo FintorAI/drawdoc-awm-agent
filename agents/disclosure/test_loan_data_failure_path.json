@@ -1,29 +1,45 @@
 {
   "_metadata": {
-    "description": "Happy Path Test Data for Disclosure Agent v2 - Curated from master_field_data.csv",
+    "description": "Failure Path Test Data for Disclosure Agent v2 - Intentional blocking conditions",
     "version": "2.0",
-    "scope": "Conventional loan, CA property, Purchase transaction - MVP only",
+    "scope": "Test data designed to FAIL - triggers multiple blocking conditions",
     "date_created": "2025-12-04",
     "source": "master_field_data.csv field mappings",
-    "test_type": "happy_path",
-    "current_date": "2025-12-04"
+    "test_type": "failure_path",
+    "current_date": "2025-12-04",
+    "expected_outcome": "BLOCKED - should not proceed past verification"
   },
-  
-  "_comment_mvp_eligibility": "=== MVP ELIGIBILITY (REQUIRED - MUST PASS) ===",
+
+  "loan_id": "failure-test-loan-001",
+
+  "_comment_failures": "=== INTENTIONAL FAILURES ===",
+  "intentional_failures": [
+    "Missing borrower phone (FE0117) - HARD STOP (G1)",
+    "Missing borrower email (1240) - HARD STOP (G1)",
+    "LE due date passed - Should escalate to supervisor",
+    "Closing date < 15 days - Violates 15-day rule (G8)",
+    "ATR/QM flags RED - Blocking compliance issue",
+    "FHA loan type - Non-MVP (not Conventional)",
+    "Texas property - Excluded from MVP"
+  ],
+
+  "_comment_mvp_eligibility": "=== MVP ELIGIBILITY (WILL FAIL) ===",
   "mvp_eligibility": {
     "1172": {
       "field_name": "Loan Type",
-      "value": "Conventional",
+      "value": "FHA",
       "rule": "MUST be 'Conventional' (FHA/VA/USDA excluded from MVP)",
       "category": "Loan",
-      "csv_verified": true
+      "csv_verified": true,
+      "failure_reason": "FHA is not supported in MVP - only Conventional"
     },
     "14": {
       "field_name": "Subject Property State",
-      "value": "CA",
+      "value": "TX",
       "rule": "MUST be 'CA' or 'NV' (Texas excluded from MVP)",
       "category": "Loan",
-      "csv_verified": true
+      "csv_verified": true,
+      "failure_reason": "Texas has special rules and is excluded from MVP"
     },
     "19": {
       "field_name": "Loan Purpose",
@@ -34,16 +50,17 @@
     }
   },
 
-  "_comment_trid": "=== TRID COMPLIANCE FIELDS ===",
+  "_comment_trid": "=== TRID COMPLIANCE FIELDS (WILL FAIL) ===",
   "trid_fields": {
     "745": {
       "field_name": "Application Date",
-      "value": "2025-12-01",
+      "value": "2025-11-20",
       "rule": "Must be set; LE due within 3 business days",
       "category": "Database",
       "action": "READ",
       "csv_verified": true,
-      "note": "Dec 1 (Mon) + 3 biz days = Dec 4 (Thu)"
+      "note": "14 days ago - LE due date has passed",
+      "failure_reason": "Application date is too old, LE due date passed"
     },
     "LE1.X1": {
       "field_name": "Loan Estimate - LE Date Issued",
@@ -56,16 +73,17 @@
     },
     "3152": {
       "field_name": "TIL Intl Disclosure Provided Date",
-      "value": "2025-12-04",
+      "value": "2025-11-25",
       "rule": "LE Due Date - Calculated: App Date + 3 business days (excludes Sundays, holidays)",
       "category": "Database",
       "action": "READ",
       "csv_verified": true,
-      "note": "Due date is today - still within window"
+      "note": "Due date was 9 days ago - PASSED",
+      "failure_reason": "LE due date has passed - should escalate to supervisor"
     },
     "761": {
       "field_name": "Lock Date",
-      "value": "2025-12-01",
+      "value": "2025-11-20",
       "rule": "If locked, Case 1 flow applies",
       "category": "Database",
       "action": "READ",
@@ -73,12 +91,11 @@
     },
     "762": {
       "field_name": "Lock Expiration Date",
-      "value": "2025-12-31",
+      "value": "2025-12-20",
       "rule": "For locked loans",
       "category": "Loan",
       "action": "READ",
-      "csv_verified": true,
-      "note": "30-day lock"
+      "csv_verified": true
     },
     "2400": {
       "field_name": "Closing Loan Info Loan is Locked",
@@ -90,20 +107,21 @@
     },
     "748": {
       "field_name": "Closing Date",
-      "value": "2025-12-20",
+      "value": "2025-12-10",
       "rule": "MUST be >= 15 days from Application Date (or Lock Date if locked)",
       "category": "Loan",
       "action": "READ",
       "csv_verified": true,
-      "note": "19 days from app date - meets 15-day rule (G8)"
+      "note": "Only 6 days from today - violates 15-day rule",
+      "failure_reason": "Closing date is only 6 days away - violates 15-day rule (G8)"
     }
   },
 
-  "_comment_borrower": "=== BORROWER INFO (1003 URLA) ===",
+  "_comment_borrower": "=== BORROWER INFO (MISSING HARD STOPS) ===",
   "borrower_fields": {
     "4000": {
       "field_name": "Borrower First Name",
-      "value": "ATHENA",
+      "value": "JOHN",
       "category": "Borrowers",
       "action": "READ",
       "required": true,
@@ -111,7 +129,7 @@
     },
     "4002": {
       "field_name": "Borrower Last Name",
-      "value": "WHITE",
+      "value": "FAILURE",
       "category": "Borrowers",
       "action": "READ",
       "required": true,
@@ -119,7 +137,7 @@
     },
     "65": {
       "field_name": "Borr SSN",
-      "value": "900-88-7799",
+      "value": "999-99-9999",
       "category": "Borrowers",
       "action": "READ",
       "required": true,
@@ -127,27 +145,29 @@
     },
     "1240": {
       "field_name": "Borr Email",
-      "value": "toktok8calabarzon@gmail.com",
+      "value": null,
       "category": "Database",
       "action": "READ",
       "required": true,
       "hard_stop": true,
       "rule": "HARD STOP if missing - required for eDisclosures (G1)",
-      "csv_verified": true
+      "csv_verified": true,
+      "failure_reason": "EMAIL MISSING - HARD STOP (G1)"
     },
     "FE0117": {
       "field_name": "Borr Business Phone",
-      "value": "714-488-2888",
+      "value": null,
       "category": "Borrowers",
       "action": "READ",
       "required": true,
       "hard_stop": true,
       "rule": "HARD STOP if missing (G1)",
-      "csv_verified": true
+      "csv_verified": true,
+      "failure_reason": "PHONE MISSING - HARD STOP (G1)"
     },
     "1402": {
       "field_name": "Borr DOB",
-      "value": "1978-08-08",
+      "value": "1985-01-01",
       "category": "Database",
       "action": "READ",
       "required": true,
@@ -155,11 +175,11 @@
     }
   },
 
-  "_comment_property": "=== PROPERTY INFO ===",
+  "_comment_property": "=== PROPERTY INFO (Texas - MVP Excluded) ===",
   "property_fields": {
     "11": {
       "field_name": "Subject Property Address",
-      "value": "8080 BALLER ST",
+      "value": "123 FAILURE ST",
       "category": "Loan",
       "action": "READ",
       "required": true,
@@ -167,7 +187,7 @@
     },
     "12": {
       "field_name": "Subject Property City",
-      "value": "Garden Grove",
+      "value": "Houston",
       "category": "Loan",
       "action": "READ",
       "required": true,
@@ -175,15 +195,16 @@
     },
     "14": {
       "field_name": "Subject Property State",
-      "value": "CA",
+      "value": "TX",
       "category": "Loan",
       "action": "READ",
       "required": true,
-      "csv_verified": true
+      "csv_verified": true,
+      "failure_reason": "Texas property - excluded from MVP due to special state rules"
     },
     "15": {
       "field_name": "Subject Property Zip",
-      "value": "92840",
+      "value": "77001",
       "category": "Loan",
       "action": "READ",
       "required": true,
@@ -211,7 +232,7 @@
   "loan_fields": {
     "1109": {
       "field_name": "Loan Amount",
-      "value": 968877.00,
+      "value": 500000.00,
       "category": "Loan",
       "action": "READ",
       "required": true,
@@ -219,7 +240,7 @@
     },
     "3": {
       "field_name": "Note Rate",
-      "value": 6.0,
+      "value": 7.5,
       "category": "Loan",
       "action": "READ",
       "required": true,
@@ -236,7 +257,7 @@
     },
     "353": {
       "field_name": "LTV",
-      "value": 98.865,
+      "value": 95.0,
       "category": "Ratios",
       "action": "READ",
       "rule": "If > 80%, MI calculation required for Conventional",
@@ -245,7 +266,7 @@
     },
     "976": {
       "field_name": "Combined LTV",
-      "value": 98.865,
+      "value": 95.0,
       "category": "Ratios",
       "action": "READ",
       "required": true,
@@ -253,7 +274,7 @@
     },
     "356": {
       "field_name": "Appraised Value",
-      "value": 980000,
+      "value": 526315,
       "category": "Loan",
       "action": "READ",
       "required": true,
@@ -261,7 +282,7 @@
     },
     "136": {
       "field_name": "Subject Property Purchase Price",
-      "value": 980000.00,
+      "value": 526315.00,
       "category": "Loan",
       "action": "READ",
       "required": true,
@@ -281,9 +302,10 @@
     },
     "1176": {
       "field_name": "Interest Days Per Year",
-      "value": "360/360",
+      "value": null,
       "action": "WRITE",
-      "rule": "Per SOP"
+      "rule": "Per SOP",
+      "note": "Not set - will need to be set by agent"
     },
     "3514": {
       "field_name": "0% Payment Option",
@@ -299,27 +321,31 @@
     },
     "3516": {
       "field_name": "Biweekly/Interim Interest Days",
-      "value": 365,
+      "value": null,
       "action": "WRITE",
-      "rule": "Per SOP"
+      "rule": "Per SOP",
+      "note": "Not set - will need to be set by agent"
     },
     "672": {
       "field_name": "Late Charge Days",
-      "value": 15,
+      "value": null,
       "action": "WRITE",
-      "rule": "Conventional = 15 days"
+      "rule": "Conventional = 15 days",
+      "note": "Not set - but loan is FHA anyway"
     },
     "673": {
       "field_name": "Late Charge Percent",
-      "value": 5.0,
+      "value": null,
       "action": "WRITE",
-      "rule": "Conventional = 5% (FHA/VA = 4%, NC = 4% all)"
+      "rule": "Conventional = 5% (FHA/VA = 4%, NC = 4% all)",
+      "note": "Not set - FHA should be 4%"
     },
     "3517": {
       "field_name": "Assumption Text",
-      "value": "may not",
+      "value": null,
       "action": "WRITE",
-      "rule": "Conventional = 'may not', FHA/VA = 'may, subject to conditions'"
+      "rule": "Conventional = 'may not', FHA/VA = 'may, subject to conditions'",
+      "note": "Not set - FHA should be 'may, subject to conditions'"
     },
     "1751": {
       "field_name": "Buydown Marked",
@@ -345,21 +371,24 @@
     "purchase_settings": {
       "NEWHUD2.X55": {
         "field_name": "Use Actual Down Payment",
-        "value": true,
+        "value": false,
         "action": "WRITE",
-        "applies_to": "Purchase loans"
+        "applies_to": "Purchase loans",
+        "note": "Not set correctly"
       },
       "NEWHUD2.X56": {
         "field_name": "Closing Costs Financed",
-        "value": true,
+        "value": false,
         "action": "WRITE",
-        "applies_to": "Purchase loans"
+        "applies_to": "Purchase loans",
+        "note": "Not set correctly"
       },
       "NEWHUD2.X57": {
         "field_name": "Include Payoffs in Adjustments",
-        "value": true,
+        "value": false,
         "action": "WRITE",
-        "applies_to": "Purchase loans"
+        "applies_to": "Purchase loans",
+        "note": "Not set correctly"
       }
     },
     "refinance_settings": {
@@ -373,82 +402,90 @@
     },
     "LE1.X77": {
       "field_name": "Displayed CTC (LE Page 2)",
-      "value": 44690.00,
+      "value": 25000.00,
       "action": "READ",
-      "rule": "Must match calculated CTC"
+      "rule": "Must match calculated CTC",
+      "note": "May not match calculated - potential mismatch"
     }
   },
 
-  "_comment_atr_qm": "=== ATR/QM FIELDS (Mandatory Compliance) ===",
+  "_comment_atr_qm": "=== ATR/QM FIELDS (FAILING - RED FLAGS) ===",
   "atr_qm_fields": {
     "ATRQM.X1": {
       "field_name": "Loan Features Flag",
-      "value": "Meets Standard",
-      "expected_color": "Green",
+      "value": "Does Not Meet",
+      "expected_color": "Red",
       "action": "READ",
       "rule": "MUST BE GREEN - Blocking if Red",
       "required": true,
-      "happy_path_value": "Green"
+      "happy_path_value": "Green",
+      "failure_reason": "RED FLAG - Loan features do not meet ATR/QM standards - BLOCKING"
     },
     "ATRQM.X2": {
       "field_name": "Points and Fees Flag",
-      "value": "Meets Standard",
-      "expected_color": "Green",
+      "value": "Does Not Meet",
+      "expected_color": "Red",
       "action": "READ",
       "rule": "MUST BE GREEN - Blocking if Red",
       "required": true,
-      "happy_path_value": "Green"
+      "happy_path_value": "Green",
+      "failure_reason": "RED FLAG - Points and fees exceed limits - BLOCKING"
     },
     "ATRQM.X3": {
       "field_name": "Price Limit Flag",
-      "value": "Meets Standard",
-      "expected_color": "Green",
+      "value": "Does Not Meet",
+      "expected_color": "Red",
       "action": "READ",
       "rule": "MUST BE GREEN - Blocking if Red",
       "required": true,
-      "happy_path_value": "Green"
+      "happy_path_value": "Green",
+      "failure_reason": "RED FLAG - Price limit exceeded - BLOCKING"
     }
   },
 
-  "_comment_mavent": "=== MAVENT COMPLIANCE ===",
+  "_comment_mavent": "=== MAVENT COMPLIANCE (FAILING) ===",
   "mavent": {
     "check_via_api": "GET /ecs/v1/compliancereports",
     "expected_result": {
-      "fails": 0,
-      "alerts": 0,
-      "warnings": 0
+      "fails": 5,
+      "alerts": 3,
+      "warnings": 2
     },
     "rule": "MUST have no Fails/Alerts/Warnings - Blocking if any exist",
     "acceptable_exceptions": ["26.4"],
-    "note": "Audit exception 26.4 is acceptable per SOP (G11)"
+    "note": "Has multiple Fails/Alerts/Warnings - BLOCKING",
+    "failure_reason": "Mavent compliance has blocking issues"
   },
 
   "_comment_edisclosures": "=== eDISCLOSURES API ===",
   "edisclosures_api": {
-    "loan_id": "b73fb60d-8f5d-4cbb-a05d-f1f2d1217af6",
+    "loan_id": "failure-test-loan-001",
     "application_id": {
       "source": "GET /encompass/v3/loans/{loanId} -> applications[0].id",
       "expected_format": "UUID",
-      "example": "2a5e4b26-212e-4ce4-a1d5-04b6e353646b",
-      "current_value_in_test_loan": "2a5e4b26-212e-4ce4-a1d5-04b6e353646b"
+      "example": "failure-app-id-001",
+      "current_value_in_test_loan": null,
+      "note": "May not be available for failure test"
     },
     "borrower_info": {
-      "full_name": "ATHENA WHITE",
-      "email": "toktok8calabarzon@gmail.com",
-      "phone": "714-488-2888"
+      "full_name": "JOHN FAILURE",
+      "email": null,
+      "phone": null,
+      "note": "Missing phone and email - HARD STOPS"
     },
     "api_flow": [
       "Step 1: POST /encompassdocs/v1/documentAudits/opening (audit loan)",
       "Step 2: POST /encompassdocs/v1/documentOrders/opening (create doc set)",
       "Step 3: POST /encompassdocs/v1/documentOrders/opening/{docSetId}/delivery (send to borrower)"
-    ]
+    ],
+    "note": "Will not reach this step due to blocking conditions"
   },
 
   "_comment_lo_info": "=== LOAN ORIGINATOR INFO ===",
   "lo_info": {
     "317": {
       "field_name": "Loan Officer",
-      "value": "Loan Officer 1",
+      "value": "Test LO",
       "category": "Loan",
       "action": "READ",
       "required": true,
@@ -456,16 +493,17 @@
     },
     "3238": {
       "field_name": "NMLS Loan Originator ID",
-      "value": "123456",
+      "value": "999999",
       "category": "Database",
       "action": "READ",
       "rule": "Must verify LO is licensed in property state (CA)",
       "required": true,
-      "csv_verified": true
+      "csv_verified": true,
+      "note": "May not be licensed in TX"
     },
     "3330": {
       "field_name": "Income Year 2 Total Variance Joint Income Borr and Co-Borrower",
-      "value": "789012",
+      "value": "999999",
       "category": "Database",
       "action": "READ",
       "note": "This field ID from CSV may not be Company NMLS - verify mapping",
@@ -493,114 +531,80 @@
     }
   },
 
-  "_comment_summary": "=== HAPPY PATH SUMMARY ===",
-  "happy_path_requirements": {
-    "mvp_eligibility": {
-      "loan_type": "Conventional",
-      "property_state": "CA or NV",
-      "not_texas": true,
-      "loan_purpose": "Purchase or Refinance"
-    },
-    "trid": {
-      "application_date": "2025-12-01 (3 days ago)",
-      "le_due_date": "2025-12-04 (today - still within window)",
-      "closing_date": "2025-12-20 (19 days from app - meets 15-day rule)",
-      "compliant": true
-    },
-    "borrower": {
-      "phone": "REQUIRED - HARD STOP if missing (G1)",
-      "email": "REQUIRED - HARD STOP if missing (G1)",
-      "basic_info": "Name, SSN, DOB all populated"
-    },
-    "forms": {
-      "1003_urla": "All critical fields populated",
-      "regz_le": "Updated per SOP rules",
-      "ctc": "Calculated matches displayed"
-    },
-    "compliance": {
-      "mavent": "No Fails/Alerts/Warnings (except 26.4 acceptable)",
-      "atr_qm": "All flags GREEN"
-    },
-    "edisclosures": {
-      "application_id": "Available from loan details",
-      "borrower_email": "Valid for delivery"
-    }
-  },
-
-  "_comment_field_count": "=== FIELD COUNT SUMMARY ===",
-  "field_count_summary": {
-    "mvp_eligibility": 3,
-    "trid": 7,
-    "borrower": 6,
-    "property": 6,
-    "loan_terms": 7,
-    "regz_le": 10,
-    "ctc": 5,
-    "atr_qm": 3,
-    "lo_info": 3,
-    "status": 2,
-    "total_fields": 52,
-    "csv_verified_fields": 33
-  },
-
-  "_comment_notes": "=== IMPLEMENTATION NOTES ===",
-  "implementation_notes": {
-    "data_source": "Curated from master_field_data.csv",
-    "date_context": "Current date: December 4, 2025",
-    "verification_agent": "Reads and validates 47+ fields",
-    "preparation_agent": "Writes RegZ-LE, MI, CTC fields",
-    "send_agent": "Runs Mavent, ATR/QM checks, orders eDisclosures",
-    "blocking_conditions": [
-      "Missing phone (FE0117) or email (1240) - HARD STOP (G1)",
-      "LE Due Date passed - Escalate to Supervisor",
-      "Closing date < 15 days from app/lock date (G8)",
-      "Non-Conventional loan type",
-      "Texas property",
-      "ATR/QM flags RED",
-      "Mavent has Fails/Alerts/Warnings (except 26.4)"
+  "_comment_summary": "=== FAILURE PATH SUMMARY ===",
+  "failure_path_summary": {
+    "expected_blocking_conditions": [
+      {
+        "condition": "Missing phone (FE0117)",
+        "severity": "CRITICAL",
+        "type": "HARD STOP (G1)",
+        "should_block": true
+      },
+      {
+        "condition": "Missing email (1240)",
+        "severity": "CRITICAL",
+        "type": "HARD STOP (G1)",
+        "should_block": true
+      },
+      {
+        "condition": "LE due date passed",
+        "severity": "CRITICAL",
+        "type": "TRID violation",
+        "should_block": true,
+        "action": "Escalate to Supervisor"
+      },
+      {
+        "condition": "Closing date < 15 days",
+        "severity": "CRITICAL",
+        "type": "15-day rule violation (G8)",
+        "should_block": true
+      },
+      {
+        "condition": "Non-Conventional loan (FHA)",
+        "severity": "HIGH",
+        "type": "MVP exclusion",
+        "should_block": true
+      },
+      {
+        "condition": "Texas property",
+        "severity": "HIGH",
+        "type": "MVP exclusion",
+        "should_block": true
+      },
+      {
+        "condition": "ATR/QM flags RED",
+        "severity": "CRITICAL",
+        "type": "Compliance failure",
+        "should_block": true
+      },
+      {
+        "condition": "Mavent has Fails/Alerts/Warnings",
+        "severity": "CRITICAL",
+        "type": "Compliance failure",
+        "should_block": true
+      }
     ],
-    "mvp_scope": "Conventional loans, CA/NV only, Purchase/Refi, Initial LE only",
-    "field_id_verification": "All field IDs cross-referenced with master_field_data.csv"
+    "expected_agent_behavior": {
+      "pre_check": "Should pass (loan is Active)",
+      "verification": "Should FAIL with multiple blocking issues",
+      "preparation": "Should NOT reach this step",
+      "send": "Should NOT reach this step",
+      "overall_status": "BLOCKED - manual processing required"
+    }
   },
 
-  "_comment_agent_workflow": "=== AGENT WORKFLOW ===",
-  "agent_workflow": {
-    "step_0_pre_check": {
-      "checks": [
-        "Milestone status",
-        "Disclosure tracking (LE already sent?)",
-        "Loan eligibility"
-      ],
-      "blocking": "If LE already sent, loan in terminal status"
-    },
-    "step_1_verification": {
-      "checks": [
-        "MVP eligibility (1172, 14, 19)",
-        "TRID compliance (745, 3152, 748)",
-        "Hard stops (FE0117, 1240)",
-        "Form validation (47+ fields)",
-        "Lock status (761, 762, 2400)"
-      ],
-      "blocking": "Hard stops, LE due date passed, closing < 15 days"
-    },
-    "step_2_preparation": {
-      "updates": [
-        "RegZ-LE fields (LE1.X1, 672, 673, 3517, etc.)",
-        "MI calculation (if LTV > 80%)",
-        "CTC matching (NEWHUD2.X55-X58)"
-      ],
-      "blocking": "None - warnings only"
-    },
-    "step_3_send": {
-      "checks": [
-        "Mavent compliance",
-        "ATR/QM flags (ATRQM.X1-X3)",
-        "Audit loan"
-      ],
-      "actions": [
-        "Order disclosure package via eDisclosures API"
-      ],
-      "blocking": "Mavent issues, ATR/QM red flags"
-    }
+  "_comment_test_validation": "=== TEST VALIDATION ===",
+  "test_validation": {
+    "purpose": "Verify disclosure agent correctly identifies and blocks loans with critical issues",
+    "success_criteria": [
+      "Agent detects all 8 blocking conditions",
+      "Agent stops at verification stage",
+      "Agent returns comprehensive error list",
+      "Agent does not attempt to write any fields",
+      "Agent does not call eDisclosures API"
+    ],
+    "failure_count": 8,
+    "expected_execution_time": "< 30 seconds (should fail fast)"
   }
 }
+

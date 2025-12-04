@@ -28,14 +28,30 @@ export function getEventTypeLabel(eventType: string | undefined): string {
     phase_complete: "Phase Complete",
     field_update: "Field Updated",
     
-    // Verification agent events
+    // Verification agent events (Disclosure)
     verification_summary: "Verification Summary",
     correction: "Field Correction",
+    trid_check: "TRID Compliance Check",
+    form_validation: "Form Validation",
+    
+    // Preparation agent events (Disclosure)
+    regz_le_update: "RegZ-LE Update",
+    mi_calculation: "MI Calculation",
+    ctc_match: "CTC Match",
+    
+    // Send agent events (Disclosure)
+    mavent_check: "Mavent Compliance",
+    atr_qm_check: "ATR/QM Check",
+    order_disclosure: "Order Disclosure",
     
     // OrderDocs agent events
     orderdocs_summary: "OrderDocs Summary",
-    mavent_check: "Mavent Check",
     order_docs: "Order Documents",
+    
+    // Pre-check events
+    pre_check: "Pre-Check",
+    milestone_check: "Milestone Check",
+    disclosure_tracking: "Disclosure Tracking",
     
     // General events
     progress: "Progress Update",
