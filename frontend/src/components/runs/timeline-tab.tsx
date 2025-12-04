@@ -30,6 +30,7 @@ interface TimelineTabProps {
   runDetail: RunDetail | undefined;
   isLoading: boolean;
   className?: string;
+  agentType?: "drawdocs" | "disclosure" | "loa";
 }
 
 type AgentFilter = AgentName | 'all';
@@ -39,12 +40,19 @@ type LevelFilter = LogLevel | 'all';
 // FILTER BUTTONS
 // =============================================================================
 
-const AGENT_OPTIONS: { value: AgentFilter; label: string }[] = [
+const DRAWDOCS_AGENT_OPTIONS: { value: AgentFilter; label: string }[] = [
   { value: 'all', label: 'All' },
   { value: 'preparation', label: 'Preparation' },
   { value: 'drawcore', label: 'Drawcore' },
   { value: 'verification', label: 'Verification' },
   { value: 'orderdocs', label: 'OrderDocs' },
+];
+
+const DISCLOSURE_AGENT_OPTIONS: { value: AgentFilter; label: string }[] = [
+  { value: 'all', label: 'All' },
+  { value: 'verification', label: 'Verification' },
+  { value: 'preparation', label: 'Preparation' },
+  { value: 'send', label: 'Send' },
 ];
 
 const LEVEL_OPTIONS: { value: LevelFilter; label: string; icon: React.ElementType }[] = [
@@ -59,12 +67,17 @@ const LEVEL_OPTIONS: { value: LevelFilter; label: string; icon: React.ElementTyp
 // MAIN COMPONENT
 // =============================================================================
 
-export function TimelineTab({ runDetail, isLoading, className }: TimelineTabProps) {
+export function TimelineTab({ runDetail, isLoading, className, agentType = "drawdocs" }: TimelineTabProps) {
   const [agentFilter, setAgentFilter] = React.useState<AgentFilter>('all');
   const [levelFilter, setLevelFilter] = React.useState<LevelFilter>('all');
   const [searchQuery, setSearchQuery] = React.useState('');
   const [autoScroll, setAutoScroll] = React.useState(true);
   const scrollRef = React.useRef<HTMLDivElement>(null);
+  
+  // Get agent options based on agent type
+  const AGENT_OPTIONS = agentType === "disclosure" 
+    ? DISCLOSURE_AGENT_OPTIONS 
+    : DRAWDOCS_AGENT_OPTIONS;
   
   // Parse and filter events
   const allEvents = React.useMemo(() => {

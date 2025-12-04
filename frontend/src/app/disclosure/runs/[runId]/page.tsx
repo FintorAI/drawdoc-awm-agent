@@ -257,6 +257,7 @@ export default function DisclosureRunDetailPage() {
             <TimelineTab
               runDetail={runDetail}
               isLoading={isLoading && !runDetail}
+              agentType="disclosure"
             />
           </TabsContent>
 
