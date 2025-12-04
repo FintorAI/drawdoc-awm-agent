@@ -319,6 +319,7 @@ def create_run(request: CreateRunRequest) -> tuple[str, AgentType]:
         demo_mode=request.demo_mode,
         max_retries=request.max_retries,
         document_types=request.document_types,
+        lo_email=request.lo_email,
         require_review=require_review,
     )
     
@@ -332,6 +333,7 @@ def spawn_agent_process(
     demo_mode: bool,
     max_retries: int,
     document_types: Optional[list[str]],
+    lo_email: Optional[str] = None,
     require_review: bool = True,
     resume_from: Optional[str] = None,
 ) -> None:
@@ -344,7 +346,8 @@ def spawn_agent_process(
         agent_type: Type of agent pipeline to run
         demo_mode: Whether to run in demo mode
         max_retries: Number of retry attempts
-        document_types: Optional list of document types to process
+        document_types: Optional list of document types to process (DrawDocs only)
+        lo_email: Loan officer email (Disclosure/LOA only)
         require_review: If True, pause after prep agent for user review (HIL)
         resume_from: If set, resume from this agent (for continuing after review)
     """
@@ -368,6 +371,9 @@ def spawn_agent_process(
     
     if document_types:
         cmd.extend(["--document-types", ",".join(document_types)])
+    
+    if lo_email:
+        cmd.extend(["--lo-email", lo_email])
     
     if require_review and not resume_from:
         cmd.append("--require-review")

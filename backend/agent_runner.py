@@ -257,6 +257,7 @@ def run_agent(
     demo_mode: bool = True,
     max_retries: int = 2,
     document_types: Optional[list[str]] = None,
+    lo_email: Optional[str] = None,
     require_review: bool = False,
     resume_from: Optional[str] = None,
 ) -> None:
@@ -272,7 +273,8 @@ def run_agent(
         output_file: Path to the output JSON file
         demo_mode: Whether to run in demo mode
         max_retries: Number of retry attempts per agent
-        document_types: Optional list of document types to process
+        document_types: Optional list of document types to process (DrawDocs only)
+        lo_email: Loan officer email (Disclosure/LOA only)
         require_review: If True, pause after prep agent for user review (HIL)
         resume_from: If set, resume run from this agent (e.g., "drawcore")
     """
@@ -421,6 +423,7 @@ def run_agent(
             # Run Disclosure orchestrator
             results = run_disclosure_orchestrator(
                 loan_id=loan_id,
+                lo_email=lo_email or "",  # Default to empty string if not provided
                 demo_mode=demo_mode,
                 max_retries=max_retries,
                 progress_callback=progress_callback,
@@ -520,6 +523,10 @@ def main():
         help="Comma-separated list of document types to process (DrawDocs only)"
     )
     parser.add_argument(
+        "--lo-email",
+        help="Loan officer email address (required for Disclosure and LOA agents)"
+    )
+    parser.add_argument(
         "--require-review",
         action="store_true",
         help="Pause after prep agent for user to review fields (HIL)"
@@ -545,6 +552,7 @@ def main():
         demo_mode=not args.production,
         max_retries=args.max_retries,
         document_types=document_types,
+        lo_email=args.lo_email,
         require_review=args.require_review,
         resume_from=args.resume_from,
     )

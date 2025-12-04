@@ -219,7 +219,7 @@ export function RunListItem({ run, className, basePath = "/runs" }: RunListItemP
 
       {/* Agent Progress */}
       <div className="hidden sm:flex items-center gap-2">
-        <AgentProgressIndicator agents={run.agents} size="sm" />
+        <AgentProgressIndicator agents={run.agents} agentType={run.agent_type} size="sm" />
       </div>
 
       {/* Documents */}
@@ -288,7 +288,7 @@ export function RunListItemCard({ run, className, basePath = "/runs" }: RunListI
       {/* Agent Progress */}
       <div className="flex items-center gap-2">
         <span className="text-xs text-muted-foreground">Agents:</span>
-        <AgentProgressIndicator agents={run.agents} size="sm" />
+        <AgentProgressIndicator agents={run.agents} agentType={run.agent_type} size="sm" />
       </div>
 
       {/* Stats row */}

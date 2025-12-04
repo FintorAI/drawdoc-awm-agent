@@ -3,18 +3,16 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 import type { AgentStatusValue } from "@/lib/api";
+import { AGENT_TYPE_SUB_AGENTS } from "@/types/agents";
+import type { AgentType as PipelineType } from "@/types/agents";
 
 // =============================================================================
 // TYPES
 // =============================================================================
 
 interface AgentProgressIndicatorProps {
-  agents: {
-    preparation: AgentStatusValue;
-    drawcore?: AgentStatusValue;
-    verification: AgentStatusValue;
-    orderdocs: AgentStatusValue;
-  };
+  agents: Record<string, AgentStatusValue>;
+  agentType?: PipelineType; // Optional: for agent-specific rendering
   /** Show agent labels on hover */
   showTooltips?: boolean;
   /** Size variant */
@@ -94,6 +92,12 @@ function StatusDot({ status, label, size }: StatusDotProps) {
           <path d="M3 3l6 6M9 3l-6 6" />
         </svg>
       )}
+      {status === "blocked" && (
+        <span className="text-[10px] font-extrabold">!</span>
+      )}
+      {status === "pending_review" && (
+        <span className="text-[10px] font-extrabold">⏸</span>
+      )}
     </div>
   );
 }
@@ -105,28 +109,36 @@ function StatusDot({ status, label, size }: StatusDotProps) {
 /**
  * Agent Progress Indicator
  * 
- * Shows 3 mini indicators representing the status of each agent:
- * - Preparation
- * - Verification  
- * - OrderDocs
+ * Shows mini indicators representing the status of each sub-agent
+ * Dynamically renders based on agent type (drawdocs, disclosure, loa)
  * 
  * Status icons:
  * - ✓ (checkmark) = success
  * - ● (filled, pulsing) = running
  * - ✗ (x) = failed
+ * - ! (exclamation) = blocked
  * - ○ (empty circle) = pending
+ * - ⏸ (pause) = pending_review
  */
 export function AgentProgressIndicator({
   agents,
+  agentType = "drawdocs", // default to drawdocs for backwards compatibility
   size = "sm",
   className,
 }: AgentProgressIndicatorProps) {
+  // Get sub-agents for the specific agent type
+  const subAgents = AGENT_TYPE_SUB_AGENTS[agentType] || [];
+  
   return (
     <div className={cn("flex items-center gap-1", className)}>
-      <StatusDot status={agents.preparation || "pending"} label="Preparation" size={size} />
-      <StatusDot status={agents.drawcore || "pending"} label="Drawcore" size={size} />
-      <StatusDot status={agents.verification || "pending"} label="Verification" size={size} />
-      <StatusDot status={agents.orderdocs || "pending"} label="OrderDocs" size={size} />
+      {subAgents.map((subAgent) => (
+        <StatusDot 
+          key={subAgent.id}
+          status={agents[subAgent.id] || "pending"} 
+          label={subAgent.name} 
+          size={size} 
+        />
+      ))}
     </div>
   );
 }
@@ -136,12 +148,8 @@ export function AgentProgressIndicator({
 // =============================================================================
 
 interface AgentProgressExpandedProps {
-  agents: {
-    preparation: AgentStatusValue;
-    drawcore?: AgentStatusValue;
-    verification: AgentStatusValue;
-    orderdocs: AgentStatusValue;
-  };
+  agents: Record<string, AgentStatusValue>;
+  agentType?: PipelineType;
   className?: string;
 }
 
@@ -149,23 +157,18 @@ interface AgentProgressExpandedProps {
  * Expanded agent progress indicator with labels
  * Good for detail views where more space is available
  */
-export function AgentProgressExpanded({ agents, className }: AgentProgressExpandedProps) {
-  const agentList = [
-    { key: 'preparation', label: 'Prep', status: agents.preparation || "pending" },
-    { key: 'drawcore', label: 'Draw', status: agents.drawcore || "pending" },
-    { key: 'verification', label: 'Verify', status: agents.verification || "pending" },
-    { key: 'orderdocs', label: 'Order', status: agents.orderdocs || "pending" },
-  ] as const;
-
+export function AgentProgressExpanded({ agents, agentType = "drawdocs", className }: AgentProgressExpandedProps) {
+  const subAgents = AGENT_TYPE_SUB_AGENTS[agentType] || [];
+  
   return (
     <div className={cn("flex items-center gap-3", className)}>
-      {agentList.map((agent, idx) => (
-        <React.Fragment key={agent.key}>
+      {subAgents.map((subAgent, idx) => (
+        <React.Fragment key={subAgent.id}>
           <div className="flex items-center gap-1.5">
-            <StatusDot status={agent.status} label={agent.label} size="md" />
-            <span className="text-xs text-muted-foreground">{agent.label}</span>
+            <StatusDot status={agents[subAgent.id] || "pending"} label={subAgent.name} size="md" />
+            <span className="text-xs text-muted-foreground">{subAgent.name}</span>
           </div>
-          {idx < agentList.length - 1 && (
+          {idx < subAgents.length - 1 && (
             <div className="h-0.5 w-4 bg-slate-200 rounded-full" />
           )}
         </React.Fragment>
@@ -173,4 +176,3 @@ export function AgentProgressExpanded({ agents, className }: AgentProgressExpand
     </div>
   );
 }
-

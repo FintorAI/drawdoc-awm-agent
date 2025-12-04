@@ -13,7 +13,8 @@ import { OverviewTab } from "@/components/runs/overview-tab";
 import { TimelineTab } from "@/components/runs/timeline-tab";
 import { FinalReportTab } from "@/components/runs/final-report-tab";
 import { useRunDetail } from "@/hooks/use-runs";
-import { AlertTriangle, RefreshCw, ChevronLeft, Shield, Calendar, AlertCircle } from "lucide-react";
+import { AlertTriangle, RefreshCw, ChevronLeft } from "lucide-react";
+import { TRIDComplianceCard, MICalculationCard, ComplianceChecksCard, CTCMatchCard } from "@/components/disclosure";
 
 // =============================================================================
 // LOADING STATE
@@ -128,7 +129,7 @@ function ComplianceTab({ runDetail, isLoading }: ComplianceTabProps) {
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {[...Array(3)].map((_, i) => (
+        {[...Array(4)].map((_, i) => (
           <Card key={i}>
             <CardHeader className="pb-3">
               <Skeleton className="h-4 w-32" />
@@ -145,121 +146,38 @@ function ComplianceTab({ runDetail, isLoading }: ComplianceTabProps) {
 
   // Extract disclosure-specific data
   const verificationOutput = runDetail?.agents?.verification?.output || {};
+  const preparationOutput = runDetail?.agents?.preparation?.output || {};
   const sendOutput = runDetail?.agents?.send?.output || {};
-  const blockingIssues = runDetail?.blocking_issues || [];
   const tridCompliance = verificationOutput?.trid_compliance || {};
-  const hardStopCheck = verificationOutput?.hard_stop_check || {};
+  const miResult = preparationOutput?.mi_result || {};
+  const ctcResult = preparationOutput?.ctc_result || {};
   const maventResult = sendOutput?.mavent_result || {};
   const atrQmResult = sendOutput?.atr_qm_result || {};
+  const blockingIssues = runDetail?.blocking_issues || [];
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      {/* TRID Compliance */}
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-blue-600" />
-            <CardTitle className="text-base">TRID Compliance</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Status</span>
-            <span className={`text-sm font-medium ${tridCompliance.compliant ? 'text-emerald-600' : 'text-amber-600'}`}>
-              {tridCompliance.compliant ? 'Compliant' : 'Attention Required'}
-            </span>
-          </div>
-          {tridCompliance.application_date && (
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">App Date</span>
-              <span className="text-sm">{tridCompliance.application_date}</span>
-            </div>
-          )}
-          {tridCompliance.le_due_date && (
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">LE Due Date</span>
-              <span className="text-sm">{tridCompliance.le_due_date}</span>
-            </div>
-          )}
-          {tridCompliance.days_remaining !== undefined && (
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Days Remaining</span>
-              <span className={`text-sm font-medium ${tridCompliance.days_remaining <= 1 ? 'text-amber-600' : 'text-emerald-600'}`}>
-                {tridCompliance.days_remaining} days
-              </span>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* TRID Compliance Card */}
+        <TRIDComplianceCard tridData={tridCompliance} />
 
-      {/* Hard Stops */}
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-2">
-            <Shield className="h-4 w-4 text-blue-600" />
-            <CardTitle className="text-base">Hard Stop Checks</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Status</span>
-            <span className={`text-sm font-medium ${!hardStopCheck.has_hard_stops ? 'text-emerald-600' : 'text-red-600'}`}>
-              {!hardStopCheck.has_hard_stops ? 'All Clear' : 'BLOCKED'}
-            </span>
-          </div>
-          <div className="text-sm text-muted-foreground">
-            <p>• Phone: {hardStopCheck.phone_present !== false ? '✓ Present' : '✗ Missing'}</p>
-            <p>• Email: {hardStopCheck.email_present !== false ? '✓ Present' : '✗ Missing'}</p>
-          </div>
-        </CardContent>
-      </Card>
+        {/* MI Calculation Card */}
+        <MICalculationCard miData={miResult} />
 
-      {/* Mavent Check */}
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-2">
-            <Shield className="h-4 w-4 text-purple-600" />
-            <CardTitle className="text-base">Mavent Compliance</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Status</span>
-            <span className={`text-sm font-medium ${maventResult.passed ? 'text-emerald-600' : 'text-amber-600'}`}>
-              {maventResult.passed ? 'PASSED' : `${maventResult.total_issues || 0} Issues`}
-            </span>
-          </div>
-        </CardContent>
-      </Card>
+        {/* Compliance Checks Card (Mavent & ATR/QM) */}
+        <ComplianceChecksCard
+          maventData={maventResult}
+          atrQmData={atrQmResult}
+          className="lg:col-span-2"
+        />
 
-      {/* ATR/QM Check */}
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-2">
-            <AlertCircle className="h-4 w-4 text-amber-600" />
-            <CardTitle className="text-base">ATR/QM Flags</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Status</span>
-            <span className={`text-sm font-medium ${atrQmResult.passed ? 'text-emerald-600' : 'text-red-600'}`}>
-              {atrQmResult.passed ? 'No Red Flags' : 'Red Flags Detected'}
-            </span>
-          </div>
-          {atrQmResult.red_flags?.length > 0 && (
-            <div className="text-sm text-red-600">
-              {atrQmResult.red_flags.map((flag: string, i: number) => (
-                <p key={i}>• {flag}</p>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        {/* CTC Match Card */}
+        <CTCMatchCard ctcData={ctcResult} className="lg:col-span-2" />
+      </div>
 
-      {/* Blocking Issues */}
+      {/* Blocking Issues - Kept separate as a warning banner */}
       {blockingIssues.length > 0 && (
-        <Card className="lg:col-span-2 border-red-200 bg-red-50/50">
+        <Card className="border-red-200 bg-red-50/50">
           <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-red-600" />

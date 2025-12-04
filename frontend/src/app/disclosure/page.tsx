@@ -34,20 +34,39 @@ function StatsCards({ runs, isLoading }: StatsCardsProps) {
   const stats = React.useMemo(() => {
     if (!runs.length) {
       return {
-        lesSent: 0,
+        lesSentToday: 0,
         inProgress: 0,
-        tridCompliance: 0,
-        blocked: 0,
+        successRate: 0,
+        avgProcessingTime: 0,
       };
     }
 
-    const lesSent = runs.filter(r => r.status === "success").length;
-    const inProgress = runs.filter(r => r.status === "running").length;
-    const blocked = runs.filter(r => r.status === "blocked" || r.status === "failed").length;
-    const totalFinished = runs.filter(r => r.status !== "running").length;
-    const tridCompliance = totalFinished > 0 ? (lesSent / totalFinished) * 100 : 0;
+    // Calculate date for "today" (last 24 hours)
+    const now = new Date();
+    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
-    return { lesSent, inProgress, tridCompliance, blocked };
+    // Filter today's runs
+    const todayRuns = runs.filter(r => {
+      const createdAt = new Date(r.created_at);
+      return createdAt >= yesterday;
+    });
+    
+    const lesSentToday = todayRuns.filter(r => r.status === "success").length;
+    const inProgress = runs.filter(r => r.status === "running").length;
+    
+    // Success rate (exclude running)
+    const completedRuns = runs.filter(r => r.status !== "running");
+    const successfulRuns = completedRuns.filter(r => r.status === "success");
+    const successRate = completedRuns.length > 0 
+      ? (successfulRuns.length / completedRuns.length) * 100 
+      : 0;
+    
+    // Average processing time (for completed runs)
+    const avgProcessingTime = completedRuns.length > 0
+      ? completedRuns.reduce((sum, r) => sum + (r.duration_seconds || 0), 0) / completedRuns.length
+      : 0;
+
+    return { lesSentToday, inProgress, successRate, avgProcessingTime };
   }, [runs]);
 
   if (isLoading) {
@@ -72,6 +91,7 @@ function StatsCards({ runs, isLoading }: StatsCardsProps) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* LEs Sent Today */}
       <Card>
         <CardContent className="p-4">
           <div className="flex items-center gap-3">
@@ -79,13 +99,14 @@ function StatsCards({ runs, isLoading }: StatsCardsProps) {
               <CheckCircle2 className="h-5 w-5 text-emerald-600" />
             </div>
             <div>
-              <p className="text-2xl font-semibold">{stats.lesSent}</p>
-              <p className="text-sm text-muted-foreground">LEs Sent</p>
+              <p className="text-2xl font-semibold">{stats.lesSentToday}</p>
+              <p className="text-sm text-muted-foreground">LEs Sent Today</p>
             </div>
           </div>
         </CardContent>
       </Card>
       
+      {/* In Progress */}
       <Card>
         <CardContent className="p-4">
           <div className="flex items-center gap-3">
@@ -100,6 +121,7 @@ function StatsCards({ runs, isLoading }: StatsCardsProps) {
         </CardContent>
       </Card>
       
+      {/* Success Rate */}
       <Card>
         <CardContent className="p-4">
           <div className="flex items-center gap-3">
@@ -107,22 +129,27 @@ function StatsCards({ runs, isLoading }: StatsCardsProps) {
               <Shield className="h-5 w-5 text-blue-600" />
             </div>
             <div>
-              <p className="text-2xl font-semibold">{stats.tridCompliance.toFixed(1)}%</p>
-              <p className="text-sm text-muted-foreground">TRID Compliance</p>
+              <p className="text-2xl font-semibold">{stats.successRate.toFixed(1)}%</p>
+              <p className="text-sm text-muted-foreground">Success Rate</p>
             </div>
           </div>
         </CardContent>
       </Card>
       
+      {/* Avg Processing Time */}
       <Card>
         <CardContent className="p-4">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-amber-100 flex items-center justify-center">
-              <AlertTriangle className="h-5 w-5 text-amber-600" />
+            <div className="h-10 w-10 rounded-lg bg-purple-100 flex items-center justify-center">
+              <Clock className="h-5 w-5 text-purple-600" />
             </div>
             <div>
-              <p className="text-2xl font-semibold">{stats.blocked}</p>
-              <p className="text-sm text-muted-foreground">Blocked</p>
+              <p className="text-2xl font-semibold">
+                {stats.avgProcessingTime >= 60 
+                  ? `${(stats.avgProcessingTime / 60).toFixed(1)}m`
+                  : `${Math.round(stats.avgProcessingTime)}s`}
+              </p>
+              <p className="text-sm text-muted-foreground">Avg Time</p>
             </div>
           </div>
         </CardContent>

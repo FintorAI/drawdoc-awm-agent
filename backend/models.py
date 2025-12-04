@@ -59,9 +59,15 @@ class CreateRunRequest(BaseModel):
     agent_type: AgentType = Field(default=AgentType.DRAWDOCS, description="Type of agent pipeline to run")
     demo_mode: bool = Field(default=True, description="Demo mode: no actual writes to Encompass")
     max_retries: int = Field(default=2, ge=0, le=5, description="Number of retry attempts per agent")
+    # DrawDocs-specific fields
     document_types: Optional[list[str]] = Field(
         default=None,
-        description="Optional list of document types to process. null = process all documents"
+        description="Optional list of document types to process (DrawDocs only). null = process all documents"
+    )
+    # Disclosure/LOA-specific fields
+    lo_email: Optional[str] = Field(
+        default=None,
+        description="Loan officer email address (required for Disclosure and LOA agents)"
     )
     require_review: bool = Field(
         default=True,
