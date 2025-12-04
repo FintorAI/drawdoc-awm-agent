@@ -117,6 +117,22 @@ function extractFlaggedItems(runDetail: RunDetail): FlaggedItem[] {
     });
   }
 
+  // Extract from OrderDocs preflight warnings (loan readiness issues)
+  const orderdocsOutput = runDetail.agents.orderdocs?.output as {
+    preflight_warnings?: Array<{ flag: string; name: string; message: string }>;
+  };
+  if (orderdocsOutput?.preflight_warnings) {
+    orderdocsOutput.preflight_warnings.forEach((warning, idx) => {
+      items.push({
+        id: `orderdocs-preflight-${idx}`,
+        agent: "orderdocs",
+        severity: "warning",
+        message: `⚠️ ${warning.name}: Not Complete`,
+        details: warning.message,
+      });
+    });
+  }
+
   return items;
 }
 
@@ -756,6 +772,12 @@ function OrderDocsStepsCard({ runDetail }: OrderDocsStepsCardProps) {
         dry_run?: boolean;
       };
     };
+    preflight_warnings?: Array<{
+      flag: string;
+      name: string;
+      status: boolean;
+      message: string;
+    }>;
     summary?: {
       audit_id?: string;
       doc_set_id?: string;
@@ -773,6 +795,7 @@ function OrderDocsStepsCard({ runDetail }: OrderDocsStepsCardProps) {
 
   const steps = orderdocsOutput.steps;
   const summary = orderdocsOutput.summary;
+  const preflightWarnings = orderdocsOutput.preflight_warnings || [];
 
   return (
     <Card>
@@ -783,31 +806,80 @@ function OrderDocsStepsCard({ runDetail }: OrderDocsStepsCardProps) {
           {orderdocsOutput.dry_run && (
             <Badge variant="outline" className="ml-2 text-xs">Dry Run</Badge>
           )}
+          {preflightWarnings.length > 0 && (
+            <Badge variant="outline" className="ml-2 text-xs bg-amber-100 border-amber-300 text-amber-700">
+              {preflightWarnings.length} Warning{preflightWarnings.length > 1 ? 's' : ''}
+            </Badge>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
+          {/* Pre-flight Warnings */}
+          {preflightWarnings.length > 0 && (
+            <div className="p-3 rounded-lg border bg-amber-50/50 border-amber-200 mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <AlertTriangle className="h-4 w-4 text-amber-600" />
+                <span className="font-medium text-sm text-amber-800">Loan Readiness Warnings</span>
+              </div>
+              <p className="text-xs text-amber-700 mb-2">
+                The following prerequisites are not met - this may cause document generation to fail:
+              </p>
+              <div className="space-y-1.5">
+                {preflightWarnings.map((warning, idx) => (
+                  <div key={idx} className="flex items-center gap-2 text-xs">
+                    <XCircle className="h-3.5 w-3.5 text-red-500 flex-shrink-0" />
+                    <span className="text-amber-900 font-medium">{warning.name}:</span>
+                    <span className="text-amber-700">Not Complete</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-amber-600 mt-2 italic">
+                Ensure the loan is Clear to Close and the Closing Disclosure is approved/acknowledged before ordering closing documents.
+              </p>
+            </div>
+          )}
           {/* Step 1: Mavent Check */}
           <div className={cn(
             "p-3 rounded-lg border",
-            steps.mavent_check?.status === "Completed" ? "bg-emerald-50/50 border-emerald-200" : "bg-red-50/50 border-red-200"
+            steps.mavent_check?.status === "Completed" ? "bg-emerald-50/50 border-emerald-200" : 
+            steps.mavent_check?.error ? "bg-red-50/50 border-red-200" :
+            "bg-slate-50/50 border-slate-200"
           )}>
             <div className="flex items-center gap-2">
               <ShieldCheck className={cn(
                 "h-4 w-4",
-                steps.mavent_check?.status === "Completed" ? "text-emerald-500" : "text-red-500"
+                steps.mavent_check?.status === "Completed" ? "text-emerald-500" : 
+                steps.mavent_check?.error ? "text-red-500" : "text-slate-400"
               )} />
               <span className="font-medium text-sm">Mavent Compliance Check</span>
-              <Badge variant="outline" className="ml-auto text-xs">
-                {steps.mavent_check?.status || "Pending"}
+              <Badge variant="outline" className={cn(
+                "ml-auto text-xs",
+                steps.mavent_check?.error && "bg-red-100 border-red-300 text-red-700"
+              )}>
+                {steps.mavent_check?.error ? "Error" : steps.mavent_check?.status || "Pending"}
               </Badge>
             </div>
-            {steps.mavent_check?.audit_id && (
+            {steps.mavent_check?.audit_id && !steps.mavent_check?.error && (
               <p className="text-xs text-muted-foreground mt-1 font-mono">
                 Audit ID: {steps.mavent_check.audit_id}
               </p>
             )}
-            {(summary?.compliance_issues ?? 0) > 0 && (
+            {steps.mavent_check?.error && (
+              <div className="mt-2 p-2 bg-red-100 border border-red-200 rounded text-xs text-red-700">
+                <strong>Error:</strong> {steps.mavent_check.error}
+              </div>
+            )}
+            {steps.mavent_check?.issues && steps.mavent_check.issues.length > 0 && (
+              <div className="mt-2 space-y-1">
+                {steps.mavent_check.issues.map((issue, idx) => (
+                  <p key={idx} className="text-xs text-amber-700 bg-amber-50 p-1 rounded">
+                    ⚠ {issue.message}
+                  </p>
+                ))}
+              </div>
+            )}
+            {(summary?.compliance_issues ?? 0) > 0 && !steps.mavent_check?.issues?.length && (
               <p className="text-xs text-amber-600 mt-1">
                 ⚠ {summary?.compliance_issues} compliance issues found
               </p>
@@ -817,22 +889,33 @@ function OrderDocsStepsCard({ runDetail }: OrderDocsStepsCardProps) {
           {/* Step 2: Order Documents */}
           <div className={cn(
             "p-3 rounded-lg border",
-            steps.order_documents?.status === "Completed" ? "bg-emerald-50/50 border-emerald-200" : "bg-red-50/50 border-red-200"
+            steps.order_documents?.status === "Completed" ? "bg-emerald-50/50 border-emerald-200" : 
+            steps.order_documents?.error ? "bg-red-50/50 border-red-200" :
+            "bg-slate-50/50 border-slate-200"
           )}>
             <div className="flex items-center gap-2">
               <FileText className={cn(
                 "h-4 w-4",
-                steps.order_documents?.status === "Completed" ? "text-emerald-500" : "text-red-500"
+                steps.order_documents?.status === "Completed" ? "text-emerald-500" : 
+                steps.order_documents?.error ? "text-red-500" : "text-slate-400"
               )} />
               <span className="font-medium text-sm">Document Generation</span>
-              <Badge variant="outline" className="ml-auto text-xs">
-                {steps.order_documents?.status || "Pending"}
+              <Badge variant="outline" className={cn(
+                "ml-auto text-xs",
+                steps.order_documents?.error && "bg-red-100 border-red-300 text-red-700"
+              )}>
+                {steps.order_documents?.error ? "Error" : steps.order_documents?.status || "Pending"}
               </Badge>
             </div>
-            {steps.order_documents?.doc_set_id && (
+            {steps.order_documents?.doc_set_id && !steps.order_documents?.error && (
               <p className="text-xs text-muted-foreground mt-1 font-mono">
                 Doc Set ID: {steps.order_documents.doc_set_id}
               </p>
+            )}
+            {steps.order_documents?.error && (
+              <div className="mt-2 p-2 bg-red-100 border border-red-200 rounded text-xs text-red-700">
+                <strong>Error:</strong> {steps.order_documents.error}
+              </div>
             )}
             <p className="text-xs text-muted-foreground mt-1">
               {summary?.documents_ordered || 0} documents generated
@@ -842,19 +925,30 @@ function OrderDocsStepsCard({ runDetail }: OrderDocsStepsCardProps) {
           {/* Step 3: Deliver Documents */}
           <div className={cn(
             "p-3 rounded-lg border",
-            steps.deliver_documents?.status === "Success" ? "bg-emerald-50/50 border-emerald-200" : "bg-red-50/50 border-red-200"
+            steps.deliver_documents?.status === "Success" ? "bg-emerald-50/50 border-emerald-200" : 
+            steps.deliver_documents?.error ? "bg-red-50/50 border-red-200" :
+            "bg-slate-50/50 border-slate-200"
           )}>
             <div className="flex items-center gap-2">
               <Download className={cn(
                 "h-4 w-4",
-                steps.deliver_documents?.status === "Success" ? "text-emerald-500" : "text-red-500"
+                steps.deliver_documents?.status === "Success" ? "text-emerald-500" : 
+                steps.deliver_documents?.error ? "text-red-500" : "text-slate-400"
               )} />
               <span className="font-medium text-sm">Document Delivery</span>
-              <Badge variant="outline" className="ml-auto text-xs">
-                {steps.deliver_documents?.status || "Pending"}
+              <Badge variant="outline" className={cn(
+                "ml-auto text-xs",
+                steps.deliver_documents?.error && "bg-red-100 border-red-300 text-red-700"
+              )}>
+                {steps.deliver_documents?.error ? "Error" : steps.deliver_documents?.status || "Pending"}
               </Badge>
             </div>
-            {steps.deliver_documents?.delivery_method && (
+            {steps.deliver_documents?.error && (
+              <div className="mt-2 p-2 bg-red-100 border border-red-200 rounded text-xs text-red-700">
+                <strong>Error:</strong> {steps.deliver_documents.error}
+              </div>
+            )}
+            {steps.deliver_documents?.delivery_method && !steps.deliver_documents?.error && (
               <p className="text-xs text-muted-foreground mt-1">
                 Method: {steps.deliver_documents.delivery_method}
               </p>

@@ -11,6 +11,7 @@ import type { AgentStatusValue } from "@/lib/api";
 interface AgentProgressIndicatorProps {
   agents: {
     preparation: AgentStatusValue;
+    drawcore?: AgentStatusValue;
     verification: AgentStatusValue;
     orderdocs: AgentStatusValue;
   };
@@ -37,7 +38,7 @@ function StatusDot({ status, label, size }: StatusDotProps) {
     md: "h-3 w-3",
   };
 
-  const statusConfig = {
+  const statusConfig: Record<string, { icon: string; className: string; title: string }> = {
     success: {
       icon: "✓",
       className: "bg-emerald-500 text-white",
@@ -58,9 +59,20 @@ function StatusDot({ status, label, size }: StatusDotProps) {
       className: "bg-slate-200 text-slate-400 border border-slate-300",
       title: `${label}: Pending`,
     },
+    pending_review: {
+      icon: "⏸",
+      className: "bg-amber-500 text-white animate-pulse",
+      title: `${label}: Pending Review`,
+    },
+    blocked: {
+      icon: "⚠",
+      className: "bg-orange-500 text-white",
+      title: `${label}: Blocked`,
+    },
   };
 
-  const config = statusConfig[status];
+  // Fallback to pending if status not found
+  const config = statusConfig[status] || statusConfig.pending;
 
   return (
     <div
@@ -111,9 +123,10 @@ export function AgentProgressIndicator({
 }: AgentProgressIndicatorProps) {
   return (
     <div className={cn("flex items-center gap-1", className)}>
-      <StatusDot status={agents.preparation} label="Preparation" size={size} />
-      <StatusDot status={agents.verification} label="Verification" size={size} />
-      <StatusDot status={agents.orderdocs} label="OrderDocs" size={size} />
+      <StatusDot status={agents.preparation || "pending"} label="Preparation" size={size} />
+      <StatusDot status={agents.drawcore || "pending"} label="Drawcore" size={size} />
+      <StatusDot status={agents.verification || "pending"} label="Verification" size={size} />
+      <StatusDot status={agents.orderdocs || "pending"} label="OrderDocs" size={size} />
     </div>
   );
 }
@@ -125,6 +138,7 @@ export function AgentProgressIndicator({
 interface AgentProgressExpandedProps {
   agents: {
     preparation: AgentStatusValue;
+    drawcore?: AgentStatusValue;
     verification: AgentStatusValue;
     orderdocs: AgentStatusValue;
   };
@@ -137,9 +151,10 @@ interface AgentProgressExpandedProps {
  */
 export function AgentProgressExpanded({ agents, className }: AgentProgressExpandedProps) {
   const agentList = [
-    { key: 'preparation', label: 'Prep', status: agents.preparation },
-    { key: 'verification', label: 'Verify', status: agents.verification },
-    { key: 'orderdocs', label: 'Order', status: agents.orderdocs },
+    { key: 'preparation', label: 'Prep', status: agents.preparation || "pending" },
+    { key: 'drawcore', label: 'Draw', status: agents.drawcore || "pending" },
+    { key: 'verification', label: 'Verify', status: agents.verification || "pending" },
+    { key: 'orderdocs', label: 'Order', status: agents.orderdocs || "pending" },
   ] as const;
 
   return (

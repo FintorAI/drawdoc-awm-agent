@@ -16,7 +16,7 @@ import os
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 from datetime import datetime
 from dotenv import load_dotenv
 
@@ -1325,7 +1325,7 @@ def read_fields(loan_id: str, field_ids: List[str]) -> Dict[str, Any]:
         raise RuntimeError(f"Field read failed. MCP: {mcp_error}. EncompassConnect: {fallback_error}")
 
 
-def write_fields(loan_id: str, updates: List[Dict[str, Any]]) -> bool:
+def write_fields(loan_id: str, updates: Union[List[Dict[str, Any]], Dict[str, Any]]) -> bool:
     """
     Write multiple fields to Encompass.
     
@@ -1335,30 +1335,45 @@ def write_fields(loan_id: str, updates: List[Dict[str, Any]]) -> bool:
     
     Args:
         loan_id: The loan GUID
-        updates: List of dicts with 'field_id' and 'value' keys
-                Example: [{"field_id": "4000", "value": "John"}]
+        updates: Can be either:
+                - List of dicts: [{"field_id": "4000", "value": "John"}]
+                - Simple dict: {"4000": "John", "4002": "Doe"}
         
     Returns:
         True if successful, False otherwise
     """
+    # Normalize updates to list format
+    # Handle both {"field_id": value} dict format and [{"field_id": ..., "value": ...}] list format
+    if isinstance(updates, dict):
+        # Convert {"4000": "KYRYLO", "4002": "KROKHA"} to [{"field_id": "4000", "value": "KYRYLO"}, ...]
+        normalized_updates = [{"field_id": k, "value": v} for k, v in updates.items()]
+        logger.debug(f"[write_fields] Converted dict format to list: {len(normalized_updates)} fields")
+    else:
+        normalized_updates = updates
+    
+    if not normalized_updates:
+        logger.warning(f"[write_fields] No fields to write for loan {loan_id}")
+        return True  # Nothing to do is success
+    
     # Check if writes are enabled
     if not os.getenv("ENABLE_ENCOMPASS_WRITES", "false").lower() == "true":
-        logger.warning(f"[write_fields] Encompass writes disabled. Would have written {len(updates)} fields to {loan_id}")
-        return False
+        logger.warning(f"[write_fields] Encompass writes disabled (set ENABLE_ENCOMPASS_WRITES=true to enable). Would have written {len(normalized_updates)} fields to {loan_id}")
+        # Raise exception so caller knows WHY it failed
+        raise PermissionError("Encompass writes disabled. Set ENABLE_ENCOMPASS_WRITES=true to enable field writes.")
     
     mcp_error = None
     
     # Tier 1: Try MCP server's HTTP client (batch PATCH)
     if MCP_HTTP_CLIENT_AVAILABLE:
         try:
-            logger.info(f"[write_fields] Tier 1: Trying MCP HTTP client for {len(updates)} fields...")
+            logger.info(f"[write_fields] Tier 1: Trying MCP HTTP client for {len(normalized_updates)} fields...")
             http_client = _get_http_client()
             token = http_client.auth_manager.get_client_credentials_token()
             
             # Convert updates to loan PATCH format
             # Format: { "fieldId": value, ... }
             patch_body = {}
-            for update in updates:
+            for update in normalized_updates:
                 field_id = update.get("field_id") or update.get("fieldId")
                 value = update.get("value")
                 if field_id:
@@ -1388,28 +1403,42 @@ def write_fields(loan_id: str, updates: List[Dict[str, Any]]) -> bool:
     
     # Tier 2: Fall back to EncompassConnect
     logger.info(f"[write_fields] Tier 2: Falling back to EncompassConnect...")
+    fallback_errors = []
     try:
         client = _get_encompass_client()
         
         # Write each field individually (EncompassConnect's approach)
         success_count = 0
-        for update in updates:
+        for update in normalized_updates:
             field_id = update.get("field_id") or update.get("fieldId")
             value = update.get("value")
             if field_id:
                 try:
                     if client.write_field(loan_id, field_id, value):
                         success_count += 1
+                        logger.info(f"[write_fields] ✓ Wrote field {field_id} = {value}")
+                    else:
+                        fallback_errors.append(f"Field {field_id}: write_field returned False")
                 except Exception as field_error:
+                    fallback_errors.append(f"Field {field_id}: {field_error}")
                     logger.warning(f"[write_fields] Failed to write field {field_id}: {field_error}")
         
-        logger.info(f"[write_fields] ✓ EncompassConnect: Wrote {success_count}/{len(updates)} fields to loan {loan_id}")
-        return success_count == len(updates)
+        if success_count == len(normalized_updates):
+            logger.info(f"[write_fields] ✓ EncompassConnect: Wrote {success_count}/{len(normalized_updates)} fields to loan {loan_id}")
+            return True
+        else:
+            # Some writes failed - raise exception with details
+            error_msg = f"Only {success_count}/{len(normalized_updates)} fields written. MCP error: {mcp_error}. Fallback errors: {'; '.join(fallback_errors)}"
+            logger.error(f"[write_fields] {error_msg}")
+            raise RuntimeError(error_msg)
         
+    except RuntimeError:
+        raise  # Re-raise our detailed error
     except Exception as e:
         fallback_error = str(e)
         logger.error(f"[write_fields] ✗ EncompassConnect fallback also failed: {fallback_error}")
-        return False
+        # Raise with combined error message
+        raise RuntimeError(f"Write failed. MCP: {mcp_error}. EncompassConnect: {fallback_error}")
 
 
 # =============================================================================
@@ -1559,36 +1588,49 @@ def send_closing_package(loan_id: str, recipients: Dict[str, str]) -> Dict[str, 
 
 def log_issue(
     loan_id: str,
-    severity: str,
-    message: str,
-    context: Optional[Dict[str, Any]] = None
+    severity: str = None,
+    message: str = None,
+    context: Optional[Dict[str, Any]] = None,
+    issue_type: str = None,  # Alias for severity
+    field_id: str = None,     # Optional field ID
 ) -> str:
     """
     Log an issue for human review.
     
     Args:
         loan_id: The loan GUID
-        severity: "critical", "high", "medium", "low"
+        severity: "critical", "high", "medium", "low", "error" (or use issue_type)
         message: Issue description
         context: Additional context (field IDs, values, etc.)
+        issue_type: Alias for severity (for backward compatibility)
+        field_id: Optional field ID related to the issue
         
     Returns:
         Issue ID for tracking
     """
+    # Support both 'severity' and 'issue_type' as parameter names
+    actual_severity = severity or issue_type or "error"
+    
+    # Include field_id in context if provided
+    if field_id and context is None:
+        context = {"field_id": field_id}
+    elif field_id and context:
+        context["field_id"] = field_id
+    
     issue_id = f"ISSUE_{loan_id}_{datetime.now().timestamp()}"
     
     issue_data = {
         "issue_id": issue_id,
         "loan_id": loan_id,
-        "severity": severity,
-        "message": message,
+        "severity": actual_severity,
+        "message": message or "No message provided",
         "context": context or {},
         "logged_at": datetime.now().isoformat(),
         "resolved": False
     }
     
     # Log to file and logger
-    logger.warning(f"[{severity.upper()}] Issue logged for {loan_id}: {message}")
+    logger.warning(f"[{actual_severity.upper()}] Issue logged for {loan_id}: {message or 'No message'}")
     
     # Save to issues file
     issues_dir = Path("/tmp/loan_issues")

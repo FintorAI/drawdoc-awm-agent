@@ -119,7 +119,9 @@ def process_borrower_lo_phase(
             
             field_info = BORROWER_LO_FIELDS.get(field_id, {})
             field_name = field_info.get("name", field_id)
-            extracted_value = field_mappings[field_id]
+            # Extract actual value from mapping (may be dict with "value" key or simple value)
+            raw_mapping = field_mappings[field_id]
+            extracted_value = raw_mapping.get("value") if isinstance(raw_mapping, dict) and "value" in raw_mapping else raw_mapping
             current_value = current_values.get(field_id)
             
             logger.info(f"[PHASE 1] Processing {field_name} ({field_id})")
