@@ -26,6 +26,7 @@ from packages.shared import (
     audit_loan_for_disclosure,
     get_disclosure_orderer,
 )
+from packages.shared.audit_filter import filter_audit_issues
 
 logger = logging.getLogger(__name__)
 
@@ -65,6 +66,30 @@ def audit_loan(loan_id: str, application_id: str = None) -> dict:
                 }
         
         result = orderer.audit_loan(loan_id, application_id)
+        
+        # Apply G16 audit filtering
+        if result.has_issues and result.issues:
+            logger.info(f"[ORDER] Applying G16 audit exception filtering...")
+            filter_result = filter_audit_issues(result.issues)
+            
+            # Override blocking status if all issues are acceptable
+            if not filter_result["has_blocking_issues"]:
+                logger.info(f"[ORDER] All audit issues are acceptable per G16 - not blocking")
+                result_dict = result.to_dict()
+                result_dict["blocking"] = False
+                result_dict["audit_filter_applied"] = True
+                result_dict["acceptable_issues"] = filter_result["acceptable_issues"]
+                result_dict["blocking_issues"] = []
+                return result_dict
+            else:
+                # Some issues are blocking
+                logger.warning(f"[ORDER] {len(filter_result['blocking_issues'])} blocking issues found")
+                result_dict = result.to_dict()
+                result_dict["blocking"] = True
+                result_dict["audit_filter_applied"] = True
+                result_dict["acceptable_issues"] = filter_result["acceptable_issues"]
+                result_dict["blocking_issues"] = filter_result["blocking_issues"]
+                return result_dict
         
         return result.to_dict()
         

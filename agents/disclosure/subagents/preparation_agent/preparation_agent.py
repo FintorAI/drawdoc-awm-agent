@@ -268,6 +268,15 @@ Report your findings clearly, including:
 - Any issues requiring attention
 """
 
+# Import GAPS preparation tools
+from agents.disclosure.subagents.preparation_agent.tools.transcript_tools import transcript_tools
+from agents.disclosure.subagents.preparation_agent.tools.counseling_tools import counseling_tools
+from agents.disclosure.subagents.preparation_agent.tools.itemization_tools import itemization_tools
+from agents.disclosure.subagents.preparation_agent.tools.sspl_tools import sspl_tools
+from agents.disclosure.subagents.preparation_agent.tools.template_tools import template_tools
+from agents.disclosure.subagents.preparation_agent.tools.blend_tools import blend_tools
+from agents.disclosure.subagents.preparation_agent.tools.efolder_tools import efolder_tools
+
 # Create the preparation agent
 preparation_agent = create_deep_agent(
     agent_type="Disclosure-Preparation-SubAgent-v2",
@@ -299,7 +308,15 @@ preparation_agent = create_deep_agent(
         normalize_ssn,
         normalize_currency,
         clean_field_value,
-        normalize_address
+        normalize_address,
+        # GAPS implementation tools
+        *transcript_tools,  # G4: 4506-C and 8821 forms
+        *counseling_tools,  # G3: Homeownership counseling
+        *itemization_tools,  # G5: 2015 Itemization validations
+        *sspl_tools,  # G6: SSPL management
+        *template_tools,  # G7: ABA template
+        *blend_tools,  # G19: Blend ORGID check
+        *efolder_tools,  # G20: eFolder product selection
     ]
 )
 

@@ -39,7 +39,7 @@ URLA_LENDER_FIELDS = {
 # 1003 URLA Part 1
 URLA_PART1_FIELDS = {
     "borrower_current_address": "FR0104",
-    "borrower_mailing_same_as_current": "FR0108",  # Should be marked "Same as Current"
+    "borrower_mailing_same_as_current": "1819",  # Fixed: FR0108 is "Borr Present Zip", 1819 is correct
 }
 
 # 1003 URLA Part 2
@@ -132,7 +132,7 @@ CRITICAL_FIELDS = {
 # =============================================================================
 
 HARD_STOP_FIELDS = {
-    "borrower_phone": "FE0117",   # Home Phone Number - HARD STOP if missing
+    "borrower_phone": "66",       # Fixed: FE0117 is Business Phone, 66 is Home Phone - HARD STOP if missing
     "borrower_email": "1240",     # Email Address - HARD STOP if missing
 }
 

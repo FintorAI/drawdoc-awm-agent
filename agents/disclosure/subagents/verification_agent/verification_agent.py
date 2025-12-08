@@ -494,6 +494,9 @@ REPORT SUMMARY INCLUDING:
 Be concise and clear in your report.
 """
 
+# Import GAPS validation tools
+from agents.disclosure.subagents.verification_agent.tools.form_validation_tools import form_validation_tools
+
 # Create the verification agent
 verification_agent = create_deep_agent(
     agent_type="Disclosure-Verification-SubAgent-v2",
@@ -510,6 +513,8 @@ verification_agent = create_deep_agent(
         check_critical_fields,
         check_field_value,
         check_mvp_eligibility,
+        # GAPS implementation tools
+        *form_validation_tools,  # G2, G9, G10, G11, G12, G13, G14, G15, G17
     ]
 )
 

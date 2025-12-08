@@ -97,6 +97,10 @@ Report your findings clearly:
 - Any blocking issues that need attention
 """
 
+# Import GAPS send tools
+from agents.disclosure.subagents.send_agent.tools.audit_tools import audit_tools
+from agents.disclosure.subagents.send_agent.tools.review_tools import review_tools
+
 # Create the send agent
 send_agent = create_deep_agent(
     agent_type="Disclosure-Send-SubAgent-v2",
@@ -108,10 +112,13 @@ send_agent = create_deep_agent(
         # ATR/QM Tools
         check_atr_qm,
         get_points_and_fees_test,
-        # Order Tools
+        # Order Tools (with G16 audit filtering integrated)
         audit_loan,
         order_disclosure_package,
         get_application_id,
+        # GAPS implementation tools
+        *audit_tools,  # G16: Audit exception filtering
+        *review_tools,  # G21: LO review workflow
     ]
 )
 

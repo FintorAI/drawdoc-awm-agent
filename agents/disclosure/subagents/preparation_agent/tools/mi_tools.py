@@ -249,3 +249,10 @@ def check_mi_required(loan_id: str) -> dict:
             "requires_mi": False,
         }
 
+
+
+# Export tools
+mi_tools = [
+    calculate_loan_mi,
+    check_mi_required,
+]
