@@ -27,6 +27,8 @@ from .trid_checker import (
     check_trid_compliance,
     check_lock_status,
     check_closing_date,
+    TRIDChecker,
+    calculate_le_due_date,
 )
 from .regz_le_updater import (
     update_regz_le_form,
@@ -104,6 +106,8 @@ __all__ = [
     "check_trid_compliance",
     "check_lock_status",
     "check_closing_date",
+    "TRIDChecker",
+    "calculate_le_due_date",
     # Updaters
     "update_regz_le_form",
     "get_late_charge",

@@ -23,6 +23,7 @@ from langchain_core.tools import tool
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent.parent.parent))
 
 from packages.shared.encompass_client import get_encompass_client
+from packages.shared.encompass_io import read_fields
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +53,7 @@ def validate_fact_act_checkboxes(loan_id: str) -> dict:
         
         # Read related fields we DO have
         fields_to_check = ["4174", "DISCLOSURE.X637"]
-        loan_data = client.get_loan_fields(loan_id, fields_to_check)
+        loan_data = read_fields(client, loan_id, fields_to_check, context="[VERIFICATION-G2]")
         
         result = {
             "gap_id": "G2",
@@ -107,7 +108,7 @@ def validate_urla_part1(loan_id: str) -> dict:
         
         # Fields we can check
         fields_to_check = ["52", "1819", "URLA.X13", "URLA.X21"]
-        loan_data = client.get_loan_fields(loan_id, fields_to_check)
+        loan_data = read_fields(client, loan_id, fields_to_check, context="[VERIFICATION]")
         
         missing_fields = []
         valid_fields = []
@@ -193,7 +194,7 @@ def validate_lo_nmls_info(loan_id: str) -> dict:
         # Check LO NMLS field (assuming common field IDs)
         # Common LO fields: 317 (LO Name), 359 (LO NMLS), 4000 (LO License)
         fields_to_check = ["317", "359", "4000"]
-        loan_data = client.get_loan_fields(loan_id, fields_to_check)
+        loan_data = read_fields(client, loan_id, fields_to_check, context="[VERIFICATION]")
         
         lo_nmls = loan_data.get("359")
         lo_name = loan_data.get("317")
@@ -256,7 +257,7 @@ def validate_borrower_summary(loan_id: str) -> dict:
         client = get_encompass_client()
         
         fields_to_check = ["2626", "1393", "4008"]
-        loan_data = client.get_loan_fields(loan_id, fields_to_check)
+        loan_data = read_fields(client, loan_id, fields_to_check, context="[VERIFICATION]")
         
         channel = loan_data.get("2626")
         status = loan_data.get("1393")
@@ -365,7 +366,7 @@ def validate_credit_by_purpose(loan_id: str) -> dict:
         client = get_encompass_client()
         
         fields_to_check = ["HMDA.X80", "CD2.XSTLC", "4794", "4795"]
-        loan_data = client.get_loan_fields(loan_id, fields_to_check)
+        loan_data = read_fields(client, loan_id, fields_to_check, context="[VERIFICATION]")
         
         loan_purpose = loan_data.get("HMDA.X80")
         cd_total_lender_credit = loan_data.get("CD2.XSTLC")
@@ -446,7 +447,7 @@ def validate_consent_validity(loan_id: str) -> dict:
         client = get_encompass_client()
         
         fields_to_check = ["3983"]
-        loan_data = client.get_loan_fields(loan_id, fields_to_check)
+        loan_data = read_fields(client, loan_id, fields_to_check, context="[VERIFICATION]")
         
         econsent_date_str = loan_data.get("3983")
         
@@ -563,7 +564,7 @@ def verify_usps_address(loan_id: str) -> dict:
         # Subject property address fields
         # Common fields: 11 (street), 12 (city), 14 (state), 15 (ZIP)
         address_fields = ["11", "12", "14", "15"]
-        loan_data = client.get_loan_fields(loan_id, address_fields)
+        loan_data = read_fields(client, loan_id, address_fields, context="[VERIFICATION-G9]")
         
         street_address = loan_data.get("11")
         city = loan_data.get("12")

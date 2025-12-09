@@ -179,17 +179,30 @@ def run_disclosure_send(
         task_parts.append("1. Use check_atr_qm(loan_id) to check all flags")
         task_parts.append("2. If ANY RED flags, stop and report")
         
-        # Step 3: Order
-        task_parts.append("\n\n=== STEP 3: ORDER DISCLOSURE ===")
+        # Step 3: Audit & Order
+        task_parts.append("\n\n=== STEP 3: AUDIT & ORDER DISCLOSURE ===")
+        task_parts.append("G16: Audit Exception Filtering")
+        task_parts.append("  - audit_loan() already applies exception filtering automatically")
+        task_parts.append("  - Allows specific exceptions like '26.4' and 'HMDA' per SOP")
+        task_parts.append("")
         if dry_run:
-            task_parts.append("1. Use audit_loan(loan_id) to run audit")
+            task_parts.append("1. Use audit_loan(loan_id) to run audit with G16 filtering")
             task_parts.append("2. Report audit results (DRY RUN - do not order)")
         else:
             task_parts.append(f"1. Use order_disclosure_package(loan_id, dry_run={dry_run}) to order")
             task_parts.append("   IMPORTANT: Set dry_run parameter to False for actual ordering")
             task_parts.append("2. Report tracking ID on success")
         
-        task_parts.append("\n\nProvide a clear summary of all checks and actions.")
+        # Step 4: GAPS - LO Review
+        task_parts.append("\n\n=== STEP 4: GAPS - LO REVIEW WORKFLOW ===")
+        task_parts.append("G21: Set LO Review Status")
+        if not dry_run:
+            task_parts.append("  - Use set_lo_review_status() to mark loan for LO review")
+            task_parts.append("  - This is a MANUAL workflow step per SOP")
+        else:
+            task_parts.append("  - [DRY RUN - would set LO review status in production]")
+        
+        task_parts.append("\n\nProvide a clear summary of all checks, GAPS implementations, and actions.")
         
         task = "\n".join(task_parts)
         

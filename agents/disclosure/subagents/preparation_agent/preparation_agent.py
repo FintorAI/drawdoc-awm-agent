@@ -391,8 +391,36 @@ def run_disclosure_preparation(
         task_parts.append("   - Refinance: Check Alternative form checkbox")
         task_parts.append("2. Verify CTC match with verify_ctc_match()")
         
-        # Step 4: LE Fields
-        task_parts.append("\n\n=== STEP 4: LE FIELD POPULATION ===")
+        # Step 4: GAPS Implementations
+        task_parts.append("\n\n=== STEP 4: GAPS IMPLEMENTATIONS ===")
+        task_parts.append("CRITICAL - Perform ALL of the following SOP-required tasks:")
+        task_parts.append("")
+        task_parts.append("G4: Transcript Forms (4506-C, 8821)")
+        task_parts.append("  - Use populate_transcript_forms() to apply templates")
+        task_parts.append("  - This auto-populates IVES participant and AWM designee info")
+        task_parts.append("")
+        task_parts.append("G3: Home Counseling Agencies")
+        task_parts.append("  - Use validate_counseling_agency() to check requirements")
+        task_parts.append("  - If needed, use search_counseling_agencies() for selection")
+        task_parts.append("")
+        task_parts.append("G5: 2015 Itemization")
+        task_parts.append("  - Use validate_itemization_requirements() to check all checkboxes and fees")
+        task_parts.append("")
+        task_parts.append("G6: Settlement Service Provider List (SSPL)")
+        task_parts.append("  - Use manage_settlement_service_provider_list() to apply template and remove unwanted services")
+        task_parts.append("")
+        task_parts.append("G7: Affiliate Business Arrangement (ABA)")
+        task_parts.append("  - Use apply_aba_template() if form is blank")
+        task_parts.append("")
+        task_parts.append("G19: Blend ORGID")
+        task_parts.append("  - Use check_blend_orgid() to verify ORGID is set")
+        task_parts.append("")
+        task_parts.append("G20: eFolder Products")
+        task_parts.append("  - Use configure_efolder_products() to select appropriate disclosure package")
+        task_parts.append("  - If LTV < 80%, uncheck PMI Disclosure")
+        
+        # Step 5: LE Fields
+        task_parts.append("\n\n=== STEP 5: LE FIELD POPULATION ===")
         task_parts.append("1. Check LE field status using get_le_field_status()")
         
         if missing_fields:
@@ -402,7 +430,7 @@ def run_disclosure_preparation(
             if len(missing_fields) > 5:
                 task_parts.append(f"  ... and {len(missing_fields) - 5} more")
         
-        task_parts.append("\n\nProvide a clear summary of all actions taken.")
+        task_parts.append("\n\nProvide a clear summary of all actions taken, including all GAPS implementations.")
         
         task = "\n".join(task_parts)
         

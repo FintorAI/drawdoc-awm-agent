@@ -64,7 +64,7 @@ async def get_timeline(loan_id: str):
 @router.get("/agents/{loan_id}/{agent_name}")
 async def get_agent_logs(
     loan_id: str,
-    agent_name: str = Query(..., description="Agent name (VERIFICATION, PREPARATION, SEND, ORCHESTRATOR)")
+    agent_name: str
 ):
     """Get logs for a specific agent and loan.
     

@@ -554,11 +554,13 @@ def run_disclosure_verification(loan_id: str) -> Dict[str, Any]:
     logger.info(f"Loan ID: {loan_id}")
     
     try:
-        # Create task for agent (v2 workflow with G1/G8)
+        # Create task for agent (v2 workflow with G1/G8 and GAPS validations)
         task = f"""Verify Initial Loan Estimate (LE) disclosure prerequisites for loan {loan_id}.
 
-WORKFLOW:
-1. First, check TRID compliance using check_trid_dates()
+CRITICAL WORKFLOW - PERFORM ALL STEPS:
+
+=== CORE COMPLIANCE CHECKS ===
+1. Check TRID compliance using check_trid_dates()
 2. Check HARD STOPS (phone/email) using check_hard_stops() - G1
 3. Check closing date 15-day rule using check_closing_date_rule() - G8
 4. Check MVP eligibility using check_mvp_eligibility()
@@ -566,7 +568,35 @@ WORKFLOW:
 6. Validate form fields using validate_disclosure_form_fields()
 7. Check critical fields using check_critical_fields()
 
-Report any BLOCKING issues:
+=== GAPS VALIDATIONS (REQUIRED FOR SOP COMPLIANCE) ===
+G2: FACT Act Checkboxes
+  - Use validate_fact_act_checkboxes() to verify all required checkboxes
+
+G9: USPS Address Validation
+  - Use validate_usps_address() to standardize property address with USPS API
+
+G10: URLA Part 1 Validation
+  - Use validate_urla_part1() to check all borrower, property, and loan fields
+
+G11: Loan Officer NMLS Info
+  - Use validate_lo_nmls_info() to verify LO license and contact info
+
+G12: Borrower Summary
+  - Use validate_borrower_summary() to check borrower section completeness
+
+G13: Comments/Notes Required
+  - Use validate_comments_notes() to verify LO Comments field is populated
+
+G14: Credit Validation by Purpose
+  - Use validate_credit_by_purpose() to ensure correct credit type per loan purpose
+
+G15: Consent 60-Day Validity
+  - Use validate_consent_validity() to check disclosure consent is < 60 days old
+
+G17: Company License Info
+  - Use validate_company_license() to verify company NMLS and license details
+
+=== BLOCKING ISSUES TO REPORT ===
 - Application Date not set
 - LE Due Date has passed
 - Missing Phone/Email (HARD STOP - G1)
@@ -574,8 +604,9 @@ Report any BLOCKING issues:
 - Texas property
 - Non-Conventional loan
 - Critical fields missing
+- Any GAPS validation failures that block disclosure
 
-Provide a clear summary of all results.
+Provide a clear summary of all results including GAPS validation status.
 """
         
         # Invoke agent

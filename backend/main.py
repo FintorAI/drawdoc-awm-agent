@@ -30,6 +30,9 @@ from services import (
     get_pending_fields, submit_field_review
 )
 
+# Import log routes
+from routes import logs
+
 
 # =============================================================================
 # APP CONFIGURATION
@@ -53,6 +56,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include log routes
+app.include_router(logs.router)
 
 
 # =============================================================================

@@ -1,0 +1,313 @@
+{
+  "found": [],
+  "not_found": [
+    {
+      "field_id": "1172",
+      "field_name": "Loan Type",
+      "category": "mvp_eligibility",
+      "expected_value": "Conventional",
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "14",
+      "field_name": "Subject Property State",
+      "category": "property_fields",
+      "expected_value": "CA",
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "19",
+      "field_name": "Loan Purpose",
+      "category": "ctc_fields",
+      "expected_value": "Purchase",
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "3152",
+      "field_name": "TIL Intl Disclosure Provided Date",
+      "category": "trid_fields",
+      "expected_value": "2025-12-04",
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "761",
+      "field_name": "Lock Date",
+      "category": "trid_fields",
+      "expected_value": "2025-12-01",
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "762",
+      "field_name": "Lock Expiration Date",
+      "category": "trid_fields",
+      "expected_value": "2025-12-31",
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "2400",
+      "field_name": "Closing Loan Info Loan is Locked",
+      "category": "trid_fields",
+      "expected_value": "Y",
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "748",
+      "field_name": "Closing Date",
+      "category": "trid_fields",
+      "expected_value": "2025-12-20",
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "65",
+      "field_name": "Borr SSN",
+      "category": "borrower_fields",
+      "expected_value": "900-88-7799",
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "FE0117",
+      "field_name": "Borr Business Phone",
+      "category": "borrower_fields",
+      "expected_value": "714-488-2888",
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "11",
+      "field_name": "Subject Property Address",
+      "category": "property_fields",
+      "expected_value": "8080 BALLER ST",
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "12",
+      "field_name": "Subject Property City",
+      "category": "property_fields",
+      "expected_value": "Garden Grove",
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "15",
+      "field_name": "Subject Property Zip",
+      "category": "property_fields",
+      "expected_value": "92840",
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "1041",
+      "field_name": "Subject Property Type",
+      "category": "property_fields",
+      "expected_value": "Detached",
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "1811",
+      "field_name": "Occupancy (P/S/I)",
+      "category": "property_fields",
+      "expected_value": "PrimaryResidence",
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "1109",
+      "field_name": "Loan Amount",
+      "category": "loan_fields",
+      "expected_value": 968877.0,
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "3",
+      "field_name": "Note Rate",
+      "category": "loan_fields",
+      "expected_value": 6.0,
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "4",
+      "field_name": "Loan Term",
+      "category": "loan_fields",
+      "expected_value": 360,
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "353",
+      "field_name": "LTV",
+      "category": "loan_fields",
+      "expected_value": 98.865,
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "976",
+      "field_name": "Combined LTV",
+      "category": "loan_fields",
+      "expected_value": 98.865,
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "356",
+      "field_name": "Appraised Value",
+      "category": "loan_fields",
+      "expected_value": 980000,
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "136",
+      "field_name": "Subject Property Purchase Price",
+      "category": "loan_fields",
+      "expected_value": 980000.0,
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "1176",
+      "field_name": "Interest Days Per Year",
+      "category": "regz_le_fields",
+      "expected_value": "360/360",
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "3514",
+      "field_name": "0% Payment Option",
+      "category": "regz_le_fields",
+      "expected_value": null,
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "3515",
+      "field_name": "Use Simple Interest Accrual",
+      "category": "regz_le_fields",
+      "expected_value": null,
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "3516",
+      "field_name": "Biweekly/Interim Interest Days",
+      "category": "regz_le_fields",
+      "expected_value": 365,
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "672",
+      "field_name": "Late Charge Days",
+      "category": "regz_le_fields",
+      "expected_value": 15,
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "673",
+      "field_name": "Late Charge Percent",
+      "category": "regz_le_fields",
+      "expected_value": 5.0,
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "3517",
+      "field_name": "Assumption Text",
+      "category": "regz_le_fields",
+      "expected_value": "may not",
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "1751",
+      "field_name": "Buydown Marked",
+      "category": "regz_le_fields",
+      "expected_value": false,
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "664",
+      "field_name": "Prepayment Indicator",
+      "category": "regz_le_fields",
+      "expected_value": "Will not",
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "NEWHUD2.X55",
+      "field_name": "Use Actual Down Payment",
+      "category": "ctc_fields",
+      "expected_value": true,
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "NEWHUD2.X56",
+      "field_name": "Closing Costs Financed",
+      "category": "ctc_fields",
+      "expected_value": true,
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "NEWHUD2.X57",
+      "field_name": "Include Payoffs in Adjustments",
+      "category": "ctc_fields",
+      "expected_value": true,
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "NEWHUD2.X58",
+      "field_name": "Alternative Form Checkbox",
+      "category": "ctc_fields",
+      "expected_value": false,
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "LE1.X77",
+      "field_name": "Displayed CTC (LE Page 2)",
+      "category": "ctc_fields",
+      "expected_value": 44690.0,
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "ATRQM.X1",
+      "field_name": "Loan Features Flag",
+      "category": "atr_qm_fields",
+      "expected_value": "Meets Standard",
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "ATRQM.X2",
+      "field_name": "Points and Fees Flag",
+      "category": "atr_qm_fields",
+      "expected_value": "Meets Standard",
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "ATRQM.X3",
+      "field_name": "Price Limit Flag",
+      "category": "atr_qm_fields",
+      "expected_value": "Meets Standard",
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "317",
+      "field_name": "Loan Officer",
+      "category": "lo_info",
+      "expected_value": "Loan Officer 1",
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "3238",
+      "field_name": "NMLS Loan Originator ID",
+      "category": "lo_info",
+      "expected_value": "123456",
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "3330",
+      "field_name": "Income Year 2 Total Variance Joint Income Borr and Co-Borrower",
+      "category": "lo_info",
+      "expected_value": "789012",
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "2626",
+      "field_name": "Loan Info Channel",
+      "category": "status_fields",
+      "expected_value": "Retail",
+      "note": "Not found in schema - may be custom field or alternative ID"
+    },
+    {
+      "field_id": "1393",
+      "field_name": "Loan Status",
+      "category": "status_fields",
+      "expected_value": "Active",
+      "note": "Not found in schema - may be custom field or alternative ID"
+    }
+  ]
+}
