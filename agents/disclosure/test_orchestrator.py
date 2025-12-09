@@ -33,7 +33,7 @@ from agents.disclosure import run_disclosure_orchestrator
 # =============================================================================
 
 # Default test loan (update with your verified loan)
-DEFAULT_TEST_LOAN_ID = "b73fb60d-8f5d-4cbb-a05d-f1f2d1217af6"
+DEFAULT_TEST_LOAN_ID = "4b47fb8f-d597-4ede-84f9-d4e2357ce48e"
 DEFAULT_LO_EMAIL = "test@example.com"
 
 

@@ -37,13 +37,11 @@ from packages.shared import (
 # Load environment variables
 load_dotenv(Path(__file__).parent.parent.parent.parent.parent / ".env")
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] [%(name)s] %(message)s',
-    datefmt='%H:%M:%S'
-)
+# Import logging utilities
+from packages.shared.logging_config import add_agent_context
+
 logger = logging.getLogger(__name__)
+add_agent_context(logger, "VERIFICATION")
 
 
 # =============================================================================
@@ -111,7 +109,7 @@ def check_critical_fields(loan_id: str) -> dict:
     
     # Read all fields at once
     try:
-        field_values = read_fields(loan_id, field_ids)
+        field_values = read_fields(loan_id, field_ids, context="[VERIFICATION]")
         
         for field_id in field_ids:
             value = field_values.get(field_id)
@@ -157,7 +155,7 @@ def check_field_value(loan_id: str, field_id: str) -> dict:
     logger.info(f"[CHECK] Getting field {field_id} for loan {loan_id[:8]}...")
     
     try:
-        field_values = read_fields(loan_id, [field_id])
+        field_values = read_fields(loan_id, [field_id], context="[VERIFICATION]")
         value = field_values.get(field_id)
         has_value = value is not None
         field_name = get_field_name(field_id)

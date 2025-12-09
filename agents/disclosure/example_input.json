@@ -1,7 +1,7 @@
 {
-  "loan_id": "b73fb60d-8f5d-4cbb-a05d-f1f2d1217af6",
+  "loan_id": "4b47fb8f-d597-4ede-84f9-d4e2357ce48e",
   "lo_email": "test@example.com",
-  "demo_mode": true,
-  "max_retries": 2,
+  "demo_mode": false,
+  "max_retries": 1,
   "_comment": ""
 }

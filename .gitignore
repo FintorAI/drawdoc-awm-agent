@@ -47,6 +47,7 @@ Thumbs.db
 
 # Logs
 *.log
+logs/
 
 # Backend output directory (run results)
 backend/output/

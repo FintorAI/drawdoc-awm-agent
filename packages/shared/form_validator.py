@@ -233,7 +233,7 @@ class FormValidator:
         logger.info(f"[FORM] Validating {form_name} ({len(field_ids)} fields)...")
         
         # Read all fields
-        values = read_fields(loan_id, field_ids)
+        values = read_fields(loan_id, field_ids, context="[FORM_VALIDATOR]")
         
         # Check which are missing
         missing = []
@@ -329,7 +329,7 @@ class FormValidator:
         These fields are blocking if missing.
         """
         field_ids = list(CRITICAL_FIELDS.values())
-        values = read_fields(loan_id, field_ids)
+        values = read_fields(loan_id, field_ids, context="[CRITICAL_FIELDS]")
         
         missing = []
         for field_name, field_id in CRITICAL_FIELDS.items():
@@ -358,7 +358,7 @@ class FormValidator:
         logger.info(f"[FORM] Checking HARD STOP fields for loan {loan_id[:8]}...")
         
         field_ids = list(HARD_STOP_FIELDS.values())
-        values = read_fields(loan_id, field_ids)
+        values = read_fields(loan_id, field_ids, context="[HARD_STOP]")
         
         missing = []
         field_details = {}

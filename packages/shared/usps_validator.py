@@ -42,7 +42,8 @@ class USPSAddressValidator:
     Gracefully handles missing credentials with clear error logging.
     """
     
-    BASE_URL = "https://api.usps.com"
+    # USPS API URLs (note: 'apis' not 'api')
+    BASE_URL = "https://apis.usps.com"
     TOKEN_URL = f"{BASE_URL}/oauth2/v3/token"
     ADDRESS_URL = f"{BASE_URL}/addresses/v3/address"
     CITY_STATE_URL = f"{BASE_URL}/addresses/v3/city-state"
@@ -88,6 +89,7 @@ class USPSAddressValidator:
         try:
             logger.info("[USPS] Requesting new OAuth2 access token...")
             
+            # USPS OAuth2 token request per spec (client_id/secret in body, not Basic Auth)
             response = requests.post(
                 self.TOKEN_URL,
                 data={
@@ -179,12 +181,12 @@ class USPSAddressValidator:
         try:
             logger.info(f"[USPS] Validating address: {street_address}, {city}, {state} {zip_code}")
             
-            response = requests.post(
+            # USPS Address API v3 uses GET with query parameters (not POST)
+            response = requests.get(
                 self.ADDRESS_URL,
-                json=payload,
+                params=payload,  # Query parameters for GET request
                 headers={
                     "Authorization": f"Bearer {token}",
-                    "Content-Type": "application/json",
                 },
                 timeout=10,
             )

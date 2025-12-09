@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 # FIELD I/O FUNCTIONS
 # =============================================================================
 
-def read_fields(loan_id: str, field_ids: List[str]) -> Dict[str, Any]:
+def read_fields(loan_id: str, field_ids: List[str], context: str = None) -> Dict[str, Any]:
     """Read multiple field values from Encompass using Field Reader API.
     
     This function uses the Encompass Field Reader endpoint which is more
@@ -33,12 +33,13 @@ def read_fields(loan_id: str, field_ids: List[str]) -> Dict[str, Any]:
     Args:
         loan_id: Encompass loan GUID
         field_ids: List of Encompass field IDs to retrieve
+        context: Optional context string (e.g., "[VERIFICATION]", "[PREPARATION]", "[SEND]")
         
     Returns:
         Dictionary mapping field_id to value (None if not found or empty)
         
     Example:
-        values = read_fields(loan_id, ["4000", "4002", "1109"])
+        values = read_fields(loan_id, ["4000", "4002", "1109"], context="[VERIFICATION]")
         borrower_name = values.get("4000")
     """
     if not field_ids:
@@ -57,10 +58,14 @@ def read_fields(loan_id: str, field_ids: List[str]) -> Dict[str, Any]:
     api_base_url = os.getenv("ENCOMPASS_API_BASE_URL", "https://api.elliemae.com")
     url = f"{api_base_url}/encompass/v3/loans/{loan_id}/fieldReader"
     
-    logger.info(f"[READ] Reading {len(field_ids)} fields for loan {loan_id[:8]}...")
-    logger.info(f"[READ] API Base URL: {api_base_url}")
-    logger.info(f"[READ] Endpoint: POST /encompass/v3/loans/{loan_id[:8]}...{loan_id[-8:]}/fieldReader")
-    logger.info(f"[READ] Token: {access_token[:10]}...{access_token[-6:]}")
+    # Add context prefix if provided
+    ctx = f"{context} " if context else ""
+    
+    logger.info(f"{ctx}[READ] Reading {len(field_ids)} fields for loan {loan_id[:8]}...")
+    logger.debug(f"{ctx}[READ] Field IDs requested: {field_ids}")
+    logger.info(f"{ctx}[READ] API Base URL: {api_base_url}")
+    logger.info(f"{ctx}[READ] Endpoint: POST /encompass/v3/loans/{loan_id[:8]}...{loan_id[-8:]}/fieldReader")
+    logger.info(f"{ctx}[READ] Token: {access_token[:10]}...{access_token[-6:]}")
     
     headers = {
         "Authorization": f"Bearer {access_token}",
@@ -88,22 +93,37 @@ def read_fields(loan_id: str, field_ids: List[str]) -> Dict[str, Any]:
         
         # Normalize: convert empty strings to None
         normalized = {}
+        fields_with_values = []
+        fields_without_values = []
+        
         for field_id in field_ids:
             value = result.get(field_id)
             if value is not None and str(value).strip() != "":
                 normalized[field_id] = value
+                fields_with_values.append(field_id)
+                # Log each field with its value for full transparency
+                logger.info(f"{ctx}[READ] ✓ Field {field_id} = {value}")
             else:
                 normalized[field_id] = None
+                fields_without_values.append(field_id)
+                logger.debug(f"{ctx}[READ] ✗ Field {field_id} = (empty)")
         
-        logger.debug(f"[READ] Retrieved {sum(1 for v in normalized.values() if v is not None)} values")
+        # Summary
+        logger.info(f"{ctx}[READ] Retrieved {len(fields_with_values)}/{len(field_ids)} fields with values")
+        if fields_without_values:
+            # Show field names for empty fields
+            from .constants import get_field_name
+            empty_with_names = [f"{fid} ({get_field_name(fid)})" for fid in fields_without_values]
+            logger.warning(f"{ctx}[READ] {len(fields_without_values)} fields are empty: {empty_with_names}")
+        
         return normalized
         
     except requests.HTTPError as e:
         error_msg = f"Field read failed (status {e.response.status_code}): {e.response.text}"
-        logger.error(f"[READ] {error_msg}")
+        logger.error(f"{ctx}[READ] {error_msg}")
         raise RuntimeError(error_msg)
     except Exception as e:
-        logger.error(f"[READ] Error reading fields: {e}")
+        logger.error(f"{ctx}[READ] Error reading fields: {e}")
         raise
 
 

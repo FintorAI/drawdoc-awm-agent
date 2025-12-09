@@ -46,13 +46,11 @@ from packages.shared import (
 # Load environment variables
 load_dotenv(Path(__file__).parent.parent.parent.parent.parent / ".env")
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] [%(name)s] %(message)s',
-    datefmt='%H:%M:%S'
-)
+# Import logging utilities
+from packages.shared.logging_config import add_agent_context
+
 logger = logging.getLogger(__name__)
+add_agent_context(logger, "SEND")
 
 
 # =============================================================================
@@ -187,7 +185,8 @@ def run_disclosure_send(
             task_parts.append("1. Use audit_loan(loan_id) to run audit")
             task_parts.append("2. Report audit results (DRY RUN - do not order)")
         else:
-            task_parts.append("1. Use order_disclosure_package(loan_id, dry_run=False) to order")
+            task_parts.append(f"1. Use order_disclosure_package(loan_id, dry_run={dry_run}) to order")
+            task_parts.append("   IMPORTANT: Set dry_run parameter to False for actual ordering")
             task_parts.append("2. Report tracking ID on success")
         
         task_parts.append("\n\nProvide a clear summary of all checks and actions.")

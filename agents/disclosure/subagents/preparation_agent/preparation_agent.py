@@ -72,13 +72,11 @@ from packages.shared import (
 # Load environment variables
 load_dotenv(Path(__file__).parent.parent.parent.parent.parent / ".env")
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] [%(name)s] %(message)s',
-    datefmt='%H:%M:%S'
-)
+# Import logging utilities
+from packages.shared.logging_config import add_agent_context
+
 logger = logging.getLogger(__name__)
+add_agent_context(logger, "PREPARATION")
 
 
 # =============================================================================
@@ -119,7 +117,7 @@ def check_loan_fee_tolerance(loan_id: str) -> dict:
         
         # For MVP, we'll read current CD fees
         # In production, would compare LE vs CD
-        cd_values = read_fields(loan_id, fee_field_ids)
+        cd_values = read_fields(loan_id, fee_field_ids, context="[PREPARATION]")
         cd_fees = extract_fees_from_fields(cd_values, fee_field_ids)
         
         # For MVP, use current CD as both LE and CD (no comparison available)
@@ -177,12 +175,12 @@ def get_le_field_status(loan_id: str) -> dict:
         "4002",      # Borrower Last Name
         "232",       # Monthly MI
         "672",       # Late Charge Days
-        "673",       # Late Charge Percent
-        "LE1.X77",   # Displayed CTC
+        "674",       # Late Charge Percent (fixed: was 673 - invalid field)
+        "LE1.X87",   # Displayed CTC (fixed: was LE1.X77 - incorrect field)
     ]
     
     try:
-        values = read_fields(loan_id, le_field_ids)
+        values = read_fields(loan_id, le_field_ids, context="[PREPARATION]")
         
         field_status = {}
         populated = []
@@ -372,6 +370,7 @@ def run_disclosure_preparation(
         # Step 1: RegZ-LE Updates (NEW in v2)
         task_parts.append("\n\n=== STEP 1: REGZ-LE FORM UPDATES ===")
         task_parts.append(f"1. Update RegZ-LE fields using update_regz_le_fields() with dry_run={demo_mode}")
+        task_parts.append(f"   IMPORTANT: Set dry_run parameter to {demo_mode}")
         task_parts.append("   - LE Date Issued = Current Date")
         task_parts.append("   - Interest Accrual = 360/360")
         task_parts.append("   - Late Charge per loan type")
@@ -382,10 +381,12 @@ def run_disclosure_preparation(
         task_parts.append("1. Check if MI is required using check_mi_required()")
         task_parts.append("2. If required (LTV > 80%), calculate MI using calculate_loan_mi()")
         task_parts.append(f"3. Populate MI fields using populate_mi_fields() with dry_run={demo_mode}")
+        task_parts.append(f"   IMPORTANT: Set dry_run parameter to {demo_mode}")
         
         # Step 3: Cash to Close (NEW in v2)
         task_parts.append("\n\n=== STEP 3: CASH TO CLOSE ===")
         task_parts.append(f"1. Match CTC using match_ctc() with dry_run={demo_mode}")
+        task_parts.append(f"   IMPORTANT: Set dry_run parameter to {demo_mode}")
         task_parts.append("   - Purchase: Check specific boxes")
         task_parts.append("   - Refinance: Check Alternative form checkbox")
         task_parts.append("2. Verify CTC match with verify_ctc_match()")
@@ -465,7 +466,9 @@ def run_disclosure_preparation(
         # RegZ-LE Summary
         if regz_le_result:
             if regz_le_result.get("success"):
-                summary_lines.append(f"✓ RegZ-LE: Updated {len(regz_le_result.get('updates_made', {}))} fields")
+                updates = regz_le_result.get('updates_made', {})
+                field_ids = ", ".join(updates.keys()) if updates else "none"
+                summary_lines.append(f"✓ RegZ-LE: Updated {len(updates)} fields ({field_ids})")
             else:
                 summary_lines.append(f"✗ RegZ-LE: {regz_le_result.get('errors', 'Error')}")
         
