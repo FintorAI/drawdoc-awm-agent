@@ -249,6 +249,7 @@ export default function DisclosureRunDetailPage() {
             <OverviewTab
               runDetail={runDetail}
               isLoading={isLoading && !runDetail}
+              agentType="disclosure"
             />
           </TabsContent>
 
@@ -256,6 +257,7 @@ export default function DisclosureRunDetailPage() {
             <TimelineTab
               runDetail={runDetail}
               isLoading={isLoading && !runDetail}
+              agentType="disclosure"
             />
           </TabsContent>
 
@@ -270,6 +272,7 @@ export default function DisclosureRunDetailPage() {
             <FinalReportTab
               runDetail={runDetail}
               isLoading={isLoading && !runDetail}
+              agentType="disclosure"
             />
           </TabsContent>
         </Tabs>

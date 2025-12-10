@@ -3,9 +3,35 @@
 v2: Focus on Initial LE disclosure with mandatory compliance checks.
 
 Workflow:
-1. Verification: TRID compliance, form validation, MVP eligibility
-2. Preparation: RegZ-LE updates, MI calculation, CTC matching
-3. Send: Mavent check, ATR/QM check, order eDisclosures
+1. Verification: TRID compliance, form validation, MVP eligibility, GAPS validations (G1-G17)
+2. Preparation: RegZ-LE updates, MI calculation, CTC matching, GAPS implementations (G3-G7, G18-G20)
+3. Send: Mavent check, ATR/QM check, order eDisclosures, GAPS compliance (G16, G21)
+
+GAPS Implementations (22 total):
+- G1: Phone/Email Hard Stop ✅
+- G2: FACT Act Checkboxes 🚧
+- G3: Home Counseling 🚧
+- G4: Transcript Forms (API) ✅
+- G5: 2015 Itemization 🚧
+- G6: SSPL Management 🚧
+- G7: ABA Template 🚧
+- G8: 15-Day Closing Rule ✅
+- G9: USPS Address (API) ✅
+- G10: URLA Part 1 🚧
+- G11: LO NMLS Validation ✅
+- G12: Borrower Summary 🚧
+- G13: Comments/Notes 🚧
+- G14: Credit Validation ✅
+- G15: Consent 60-Day 🚧
+- G16: Audit Exceptions ✅
+- G17: Company License 🚧
+- G18: RegZ-LE Fields 🚧
+- G19: Blend ORGID ✅
+- G20: eFolder Products 🚧
+- G21: LO Review Workflow 🚧
+- G22: Texas Rules ❌ (Out of MVP)
+
+Legend: ✅ Full, 🚧 Partial/Manual, ❌ Not Implemented
 """
 
 import os
@@ -22,7 +48,7 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).parent.parent / ".env")
 
 # Add project root to path
-project_root = Path(__file__).parent.parent
+project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 # Import sub-agents
@@ -41,12 +67,9 @@ from packages.shared import (
     PreCheckResult,
 )
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] [%(name)s] %(message)s',
-    datefmt='%H:%M:%S'
-)
+# Import logging utilities
+from packages.shared.logging_config import setup_logging, add_agent_context
+
 logger = logging.getLogger(__name__)
 
 
@@ -61,26 +84,37 @@ class DisclosureConfig:
 
 
 class DisclosureOrchestrator:
-    """Orchestrator for disclosure agent pipeline (v2).
+    """Orchestrator for disclosure agent pipeline (v2) with GAPS implementations.
     
     v2 workflow:
     0. PRE-CHECK: Milestone, disclosure tracking, eligibility check
-    1. Verify: TRID compliance, form validation, MVP eligibility
-    2. Preparation: RegZ-LE updates, MI calculation, CTC matching
-    3. Send: Mavent check, ATR/QM check, order eDisclosures
+    1. Verify: TRID compliance, form validation, MVP eligibility, GAPS validations
+    2. Preparation: RegZ-LE updates, MI calculation, CTC matching, GAPS implementations
+    3. Send: Mavent check, ATR/QM check, order eDisclosures, GAPS compliance
+    
+    GAPS Coverage (22 gaps from SOP):
+    - Verification Agent: G1, G2, G8, G9, G10, G11, G12, G13, G14, G15, G17
+    - Preparation Agent: G3, G4, G5, G6, G7, G18, G19, G20
+    - Send Agent: G16, G21
     
     Blocking conditions (early exit):
     - Initial LE already sent (from disclosure tracking)
     - Loan in terminal status (Funded, Closed, etc.)
     - Non-Conventional loan type
-    - Texas property
+    - Texas property (G22 - not implemented)
     - LE Due Date passed
     - Application Date not set
+    - Hard stop fields missing (G1: Phone/Email)
     """
     
     def __init__(self, config: DisclosureConfig, progress_callback: Optional[Callable] = None):
         self.config = config
         self.progress_callback = progress_callback
+        
+        # Setup structured logging to file
+        setup_logging(config.loan_id, agent_name="ORCHESTRATOR")
+        add_agent_context(logger, "ORCHESTRATOR")
+        
         self.results = {
             "loan_id": config.loan_id,
             "execution_timestamp": datetime.now().isoformat(),
@@ -90,6 +124,13 @@ class DisclosureOrchestrator:
             "pre_check": None,  # Pre-check results
             "is_mvp_supported": True,
             "blocking_issues": [],
+            "gaps_implemented": {  # GAPS implementation tracking
+                "total": 22,
+                "fully_implemented": 6,  # G1, G4, G8, G9, G11, G14, G16, G19
+                "partial": 13,  # G2, G3, G5, G6, G7, G10, G12, G13, G15, G17, G18, G20, G21
+                "not_implemented": 1,  # G22 (Texas - out of MVP)
+                "status": "Sub-agents have GAPS tools registered and active"
+            },
         }
         
         if self.config.demo_mode:
@@ -310,7 +351,7 @@ class DisclosureOrchestrator:
         """Generate human-readable summary (v2)."""
         lines = [
             "=" * 80,
-            "DISCLOSURE EXECUTION SUMMARY (v2 - LE Focus)",
+            "DISCLOSURE EXECUTION SUMMARY (v2 - LE Focus with GAPS)",
             "=" * 80,
             f"Loan ID: {self.config.loan_id}",
             f"Timestamp: {self.results['execution_timestamp']}",
@@ -319,6 +360,12 @@ class DisclosureOrchestrator:
             f"MVP Supported: {self.results.get('is_mvp_supported', 'Unknown')}",
             f"Loan Type: {self.results.get('loan_type', 'Unknown')}",
             f"State: {self.results.get('property_state', 'Unknown')}",
+            "",
+            "[GAPS IMPLEMENTATIONS]",
+            f"✓ {self.results.get('gaps_implemented', {}).get('total', 22)} GAPS from SOP tracked",
+            f"✓ Fully Implemented: {self.results.get('gaps_implemented', {}).get('fully_implemented', 6)} gaps",
+            f"• Partial/Manual: {self.results.get('gaps_implemented', {}).get('partial', 13)} gaps",
+            f"• {self.results.get('gaps_implemented', {}).get('status', 'Active')}",
             ""
         ]
         
@@ -489,7 +536,7 @@ class DisclosureOrchestrator:
         return "\n".join(lines)
     
     def _aggregate_results(self) -> Dict[str, Any]:
-        """Aggregate results into JSON format (v2)."""
+        """Aggregate results into JSON format (v2 with GAPS)."""
         return {
             "loan_id": self.config.loan_id,
             "timestamp": self.results["execution_timestamp"],
@@ -500,7 +547,7 @@ class DisclosureOrchestrator:
             "property_state": self.results.get("property_state"),
             # Pre-check results (integrated)
             "pre_check": self.results.get("pre_check"),
-            # v2: Agent results
+            # v2: Agent results (with GAPS tools)
             "verification": self.results["agents"].get("verification", {}),
             "preparation": self.results["agents"].get("preparation", {}),
             "send": self.results["agents"].get("send", {}),  # v2: replaces "request"
@@ -508,6 +555,8 @@ class DisclosureOrchestrator:
             "tracking_id": self.results.get("tracking_id"),
             "blocking_issues": self.results.get("blocking_issues", []),
             "status": self.results.get("status"),
+            # GAPS implementation tracking
+            "gaps_implemented": self.results.get("gaps_implemented", {}),
         }
 
 
@@ -519,18 +568,18 @@ def run_disclosure_orchestrator(
     skip_non_mvp: bool = False,
     progress_callback: Optional[Callable] = None
 ) -> Dict[str, Any]:
-    """Main entry point for disclosure orchestrator (v2).
+    """Main entry point for disclosure orchestrator (v2) with GAPS implementations.
     
-    v2: Focus on Initial LE disclosure with mandatory compliance checks.
+    v2: Focus on Initial LE disclosure with mandatory compliance checks + 22 GAPS from SOP.
     - Runs PRE-CHECK first (milestones, disclosure tracking, eligibility)
     - Conventional loans only (FHA/VA/USDA require manual)
-    - NOT Texas (special state rules)
+    - NOT Texas (G22 - special state rules excluded from MVP)
     
     Workflow:
     0. Pre-check: milestone status, disclosure tracking, loan eligibility
-    1. Verification: TRID compliance, form validation, MVP eligibility
-    2. Preparation: RegZ-LE updates, MI calculation, CTC matching
-    3. Send: Mavent check, ATR/QM check, order eDisclosures
+    1. Verification: TRID compliance, form validation, MVP eligibility, GAPS validations (G1-G17)
+    2. Preparation: RegZ-LE updates, MI calculation, CTC matching, GAPS implementations (G3-G20)
+    3. Send: Mavent check, ATR/QM check, order eDisclosures, GAPS compliance (G16, G21)
     
     Args:
         loan_id: Encompass loan GUID
@@ -543,11 +592,18 @@ def run_disclosure_orchestrator(
     Returns:
         Dictionary with complete results including:
         - pre_check results (milestone, disclosure tracking)
-        - verification results (TRID, forms)
-        - preparation results (RegZ-LE, MI, CTC)
-        - send results (Mavent, ATR/QM, order)
+        - verification results (TRID, forms, GAPS validations)
+        - preparation results (RegZ-LE, MI, CTC, GAPS implementations)
+        - send results (Mavent, ATR/QM, order, GAPS compliance)
         - tracking_id (if disclosure ordered)
         - blocking_issues (if any)
+        - gaps_implemented (GAPS implementation status)
+        
+    GAPS Implementation Notes:
+        - All sub-agents have GAPS tools registered and active
+        - GAPS with UNKNOWN field IDs log warnings for manual verification
+        - API integrations (G4: Transcript Forms, G9: USPS) are fully implemented
+        - See GAPS.md for detailed implementation status
     """
     config = DisclosureConfig(
         loan_id=loan_id,

@@ -30,6 +30,7 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 from agents.drawdocs.status_writer import StatusWriter
+from packages.shared.logging_config import get_recent_logs
 
 
 def get_output_dir() -> Path:
@@ -272,10 +273,50 @@ def get_run_detail(run_id: str) -> Optional[dict]:
         run_id: The run identifier (format: {loan_id}_{timestamp})
         
     Returns:
-        Complete run data dict or None if not found
+        Complete run data dict with logs included or None if not found
     """
     file_path = get_run_file_path(run_id)
-    return load_run_data(file_path)
+    data = load_run_data(file_path)
+    
+    if data is None:
+        return None
+    
+    # Get loan_id from data to fetch logs
+    loan_id = data.get("loan_id", "")
+    
+    # Fetch logs from JSONL files if loan_id is available
+    if loan_id:
+        try:
+            logs = get_recent_logs(loan_id=loan_id, limit=1000)
+            
+            # Normalize log entries for frontend consumption
+            # Convert uppercase fields to lowercase to match frontend types
+            normalized_logs = []
+            for log in logs:
+                normalized_log = {
+                    "timestamp": log.get("timestamp", ""),
+                    "level": log.get("level", "INFO").lower(),  # INFO -> info
+                    "agent": log.get("agent", "SYSTEM").lower(),  # ORCHESTRATOR -> orchestrator
+                    "message": log.get("message", ""),
+                }
+                
+                # Include optional fields if present
+                if "event_type" in log:
+                    normalized_log["event_type"] = log["event_type"]
+                if "details" in log:
+                    normalized_log["details"] = log["details"]
+                
+                normalized_logs.append(normalized_log)
+            
+            data["logs"] = normalized_logs
+        except Exception as e:
+            # If logs can't be fetched, continue without them
+            print(f"Warning: Could not fetch logs for loan {loan_id}: {e}")
+            data["logs"] = []
+    else:
+        data["logs"] = []
+    
+    return data
 
 
 def create_run(request: CreateRunRequest) -> tuple[str, AgentType]:

@@ -72,13 +72,11 @@ from packages.shared import (
 # Load environment variables
 load_dotenv(Path(__file__).parent.parent.parent.parent.parent / ".env")
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] [%(name)s] %(message)s',
-    datefmt='%H:%M:%S'
-)
+# Import logging utilities
+from packages.shared.logging_config import add_agent_context
+
 logger = logging.getLogger(__name__)
+add_agent_context(logger, "PREPARATION")
 
 
 # =============================================================================
@@ -119,7 +117,7 @@ def check_loan_fee_tolerance(loan_id: str) -> dict:
         
         # For MVP, we'll read current CD fees
         # In production, would compare LE vs CD
-        cd_values = read_fields(loan_id, fee_field_ids)
+        cd_values = read_fields(loan_id, fee_field_ids, context="[PREPARATION]")
         cd_fees = extract_fees_from_fields(cd_values, fee_field_ids)
         
         # For MVP, use current CD as both LE and CD (no comparison available)
@@ -177,12 +175,12 @@ def get_le_field_status(loan_id: str) -> dict:
         "4002",      # Borrower Last Name
         "232",       # Monthly MI
         "672",       # Late Charge Days
-        "673",       # Late Charge Percent
-        "LE1.X77",   # Displayed CTC
+        "674",       # Late Charge Percent (fixed: was 673 - invalid field)
+        "LE1.X87",   # Displayed CTC (fixed: was LE1.X77 - incorrect field)
     ]
     
     try:
-        values = read_fields(loan_id, le_field_ids)
+        values = read_fields(loan_id, le_field_ids, context="[PREPARATION]")
         
         field_status = {}
         populated = []
@@ -268,6 +266,15 @@ Report your findings clearly, including:
 - Any issues requiring attention
 """
 
+# Import GAPS preparation tools
+from agents.disclosure.subagents.preparation_agent.tools.transcript_tools import transcript_tools
+from agents.disclosure.subagents.preparation_agent.tools.counseling_tools import counseling_tools
+from agents.disclosure.subagents.preparation_agent.tools.itemization_tools import itemization_tools
+from agents.disclosure.subagents.preparation_agent.tools.sspl_tools import sspl_tools
+from agents.disclosure.subagents.preparation_agent.tools.template_tools import template_tools
+from agents.disclosure.subagents.preparation_agent.tools.blend_tools import blend_tools
+from agents.disclosure.subagents.preparation_agent.tools.efolder_tools import efolder_tools
+
 # Create the preparation agent
 preparation_agent = create_deep_agent(
     agent_type="Disclosure-Preparation-SubAgent-v2",
@@ -299,7 +306,15 @@ preparation_agent = create_deep_agent(
         normalize_ssn,
         normalize_currency,
         clean_field_value,
-        normalize_address
+        normalize_address,
+        # GAPS implementation tools
+        *transcript_tools,  # G4: 4506-C and 8821 forms
+        *counseling_tools,  # G3: Homeownership counseling
+        *itemization_tools,  # G5: 2015 Itemization validations
+        *sspl_tools,  # G6: SSPL management
+        *template_tools,  # G7: ABA template
+        *blend_tools,  # G19: Blend ORGID check
+        *efolder_tools,  # G20: eFolder product selection
     ]
 )
 
@@ -355,6 +370,7 @@ def run_disclosure_preparation(
         # Step 1: RegZ-LE Updates (NEW in v2)
         task_parts.append("\n\n=== STEP 1: REGZ-LE FORM UPDATES ===")
         task_parts.append(f"1. Update RegZ-LE fields using update_regz_le_fields() with dry_run={demo_mode}")
+        task_parts.append(f"   IMPORTANT: Set dry_run parameter to {demo_mode}")
         task_parts.append("   - LE Date Issued = Current Date")
         task_parts.append("   - Interest Accrual = 360/360")
         task_parts.append("   - Late Charge per loan type")
@@ -365,16 +381,46 @@ def run_disclosure_preparation(
         task_parts.append("1. Check if MI is required using check_mi_required()")
         task_parts.append("2. If required (LTV > 80%), calculate MI using calculate_loan_mi()")
         task_parts.append(f"3. Populate MI fields using populate_mi_fields() with dry_run={demo_mode}")
+        task_parts.append(f"   IMPORTANT: Set dry_run parameter to {demo_mode}")
         
         # Step 3: Cash to Close (NEW in v2)
         task_parts.append("\n\n=== STEP 3: CASH TO CLOSE ===")
         task_parts.append(f"1. Match CTC using match_ctc() with dry_run={demo_mode}")
+        task_parts.append(f"   IMPORTANT: Set dry_run parameter to {demo_mode}")
         task_parts.append("   - Purchase: Check specific boxes")
         task_parts.append("   - Refinance: Check Alternative form checkbox")
         task_parts.append("2. Verify CTC match with verify_ctc_match()")
         
-        # Step 4: LE Fields
-        task_parts.append("\n\n=== STEP 4: LE FIELD POPULATION ===")
+        # Step 4: GAPS Implementations
+        task_parts.append("\n\n=== STEP 4: GAPS IMPLEMENTATIONS ===")
+        task_parts.append("CRITICAL - Perform ALL of the following SOP-required tasks:")
+        task_parts.append("")
+        task_parts.append("G4: Transcript Forms (4506-C, 8821)")
+        task_parts.append("  - Use populate_transcript_forms() to apply templates")
+        task_parts.append("  - This auto-populates IVES participant and AWM designee info")
+        task_parts.append("")
+        task_parts.append("G3: Home Counseling Agencies")
+        task_parts.append("  - Use validate_counseling_agency() to check requirements")
+        task_parts.append("  - If needed, use search_counseling_agencies() for selection")
+        task_parts.append("")
+        task_parts.append("G5: 2015 Itemization")
+        task_parts.append("  - Use validate_itemization_requirements() to check all checkboxes and fees")
+        task_parts.append("")
+        task_parts.append("G6: Settlement Service Provider List (SSPL)")
+        task_parts.append("  - Use manage_settlement_service_provider_list() to apply template and remove unwanted services")
+        task_parts.append("")
+        task_parts.append("G7: Affiliate Business Arrangement (ABA)")
+        task_parts.append("  - Use apply_aba_template() if form is blank")
+        task_parts.append("")
+        task_parts.append("G19: Blend ORGID")
+        task_parts.append("  - Use check_blend_orgid() to verify ORGID is set")
+        task_parts.append("")
+        task_parts.append("G20: eFolder Products")
+        task_parts.append("  - Use configure_efolder_products() to select appropriate disclosure package")
+        task_parts.append("  - If LTV < 80%, uncheck PMI Disclosure")
+        
+        # Step 5: LE Fields
+        task_parts.append("\n\n=== STEP 5: LE FIELD POPULATION ===")
         task_parts.append("1. Check LE field status using get_le_field_status()")
         
         if missing_fields:
@@ -384,7 +430,7 @@ def run_disclosure_preparation(
             if len(missing_fields) > 5:
                 task_parts.append(f"  ... and {len(missing_fields) - 5} more")
         
-        task_parts.append("\n\nProvide a clear summary of all actions taken.")
+        task_parts.append("\n\nProvide a clear summary of all actions taken, including all GAPS implementations.")
         
         task = "\n".join(task_parts)
         
@@ -448,7 +494,9 @@ def run_disclosure_preparation(
         # RegZ-LE Summary
         if regz_le_result:
             if regz_le_result.get("success"):
-                summary_lines.append(f"✓ RegZ-LE: Updated {len(regz_le_result.get('updates_made', {}))} fields")
+                updates = regz_le_result.get('updates_made', {})
+                field_ids = ", ".join(updates.keys()) if updates else "none"
+                summary_lines.append(f"✓ RegZ-LE: Updated {len(updates)} fields ({field_ids})")
             else:
                 summary_lines.append(f"✗ RegZ-LE: {regz_le_result.get('errors', 'Error')}")
         

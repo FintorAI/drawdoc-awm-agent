@@ -1,5 +1,5 @@
 import * as React from "react";
-import { FileSearch, CheckCircle, FileText, Zap, Shield, FilePen, Send, Mail, LucideIcon } from "lucide-react";
+import { FileSearch, CheckCircle, FileText, Zap, Shield, FilePen, Send, Mail, LucideIcon, Settings, AlertCircle } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { AGENT_TYPE_SUB_AGENTS } from "@/types/agents";
@@ -14,9 +14,13 @@ type KnownSubAgentId =
   | "orderdocs"
   // Disclosure agents
   | "send"
+  | "pre_check"
   // LOA agents
   | "generation"
-  | "delivery";
+  | "delivery"
+  // System agents
+  | "system"
+  | "orchestrator";
 
 // Default fallback icons (DrawDocs-style)
 const defaultAgentIconMap: Record<KnownSubAgentId, LucideIcon> = {
@@ -27,9 +31,13 @@ const defaultAgentIconMap: Record<KnownSubAgentId, LucideIcon> = {
   orderdocs: FileText,
   // Disclosure
   send: Send,
+  pre_check: Shield,
   // LOA
   generation: FilePen,
   delivery: Mail,
+  // System
+  system: Settings,
+  orchestrator: Settings,
 };
 
 const defaultAgentColorMap: Record<KnownSubAgentId, string> = {
@@ -40,9 +48,13 @@ const defaultAgentColorMap: Record<KnownSubAgentId, string> = {
   orderdocs: "text-purple-600",
   // Disclosure
   send: "text-purple-600",
+  pre_check: "text-blue-600",
   // LOA
   generation: "text-emerald-600",
   delivery: "text-purple-600",
+  // System
+  system: "text-slate-600",
+  orchestrator: "text-slate-600",
 };
 
 const defaultAgentBgMap: Record<KnownSubAgentId, string> = {
@@ -53,9 +65,13 @@ const defaultAgentBgMap: Record<KnownSubAgentId, string> = {
   orderdocs: "bg-purple-100",
   // Disclosure
   send: "bg-purple-100",
+  pre_check: "bg-blue-100",
   // LOA
   generation: "bg-emerald-100",
   delivery: "bg-purple-100",
+  // System
+  system: "bg-slate-100",
+  orchestrator: "bg-slate-100",
 };
 
 export interface AgentIconProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -91,6 +107,14 @@ function AgentIcon({
       colorClass = `text-${color}-600`;
       bgClass = `bg-${color}-100`;
     }
+  }
+  
+  // Fallback to a default icon if Icon is still undefined
+  if (!Icon) {
+    console.warn(`AgentIcon: No icon found for agent type "${type}". Using fallback.`);
+    Icon = AlertCircle;
+    colorClass = colorClass || "text-slate-600";
+    bgClass = bgClass || "bg-slate-100";
   }
   
   const sizeClasses = {

@@ -46,13 +46,11 @@ from packages.shared import (
 # Load environment variables
 load_dotenv(Path(__file__).parent.parent.parent.parent.parent / ".env")
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] [%(name)s] %(message)s',
-    datefmt='%H:%M:%S'
-)
+# Import logging utilities
+from packages.shared.logging_config import add_agent_context
+
 logger = logging.getLogger(__name__)
+add_agent_context(logger, "SEND")
 
 
 # =============================================================================
@@ -97,6 +95,10 @@ Report your findings clearly:
 - Any blocking issues that need attention
 """
 
+# Import GAPS send tools
+from agents.disclosure.subagents.send_agent.tools.audit_tools import audit_tools
+from agents.disclosure.subagents.send_agent.tools.review_tools import review_tools
+
 # Create the send agent
 send_agent = create_deep_agent(
     agent_type="Disclosure-Send-SubAgent-v2",
@@ -108,10 +110,13 @@ send_agent = create_deep_agent(
         # ATR/QM Tools
         check_atr_qm,
         get_points_and_fees_test,
-        # Order Tools
+        # Order Tools (with G16 audit filtering integrated)
         audit_loan,
         order_disclosure_package,
         get_application_id,
+        # GAPS implementation tools
+        *audit_tools,  # G16: Audit exception filtering
+        *review_tools,  # G21: LO review workflow
     ]
 )
 
@@ -174,16 +179,30 @@ def run_disclosure_send(
         task_parts.append("1. Use check_atr_qm(loan_id) to check all flags")
         task_parts.append("2. If ANY RED flags, stop and report")
         
-        # Step 3: Order
-        task_parts.append("\n\n=== STEP 3: ORDER DISCLOSURE ===")
+        # Step 3: Audit & Order
+        task_parts.append("\n\n=== STEP 3: AUDIT & ORDER DISCLOSURE ===")
+        task_parts.append("G16: Audit Exception Filtering")
+        task_parts.append("  - audit_loan() already applies exception filtering automatically")
+        task_parts.append("  - Allows specific exceptions like '26.4' and 'HMDA' per SOP")
+        task_parts.append("")
         if dry_run:
-            task_parts.append("1. Use audit_loan(loan_id) to run audit")
+            task_parts.append("1. Use audit_loan(loan_id) to run audit with G16 filtering")
             task_parts.append("2. Report audit results (DRY RUN - do not order)")
         else:
-            task_parts.append("1. Use order_disclosure_package(loan_id, dry_run=False) to order")
+            task_parts.append(f"1. Use order_disclosure_package(loan_id, dry_run={dry_run}) to order")
+            task_parts.append("   IMPORTANT: Set dry_run parameter to False for actual ordering")
             task_parts.append("2. Report tracking ID on success")
         
-        task_parts.append("\n\nProvide a clear summary of all checks and actions.")
+        # Step 4: GAPS - LO Review
+        task_parts.append("\n\n=== STEP 4: GAPS - LO REVIEW WORKFLOW ===")
+        task_parts.append("G21: Set LO Review Status")
+        if not dry_run:
+            task_parts.append("  - Use set_lo_review_status() to mark loan for LO review")
+            task_parts.append("  - This is a MANUAL workflow step per SOP")
+        else:
+            task_parts.append("  - [DRY RUN - would set LO review status in production]")
+        
+        task_parts.append("\n\nProvide a clear summary of all checks, GAPS implementations, and actions.")
         
         task = "\n".join(task_parts)
         

@@ -233,10 +233,12 @@ def check_mi_required(loan_id: str) -> dict:
                 "loan_type": loan_type,
             }
         
+        # LTV <= 80% or not set
+        ltv_display = f"{ltv:.1f}%" if ltv is not None else "N/A"
         return {
             "success": True,
             "requires_mi": False,
-            "reason": f"LTV ({ltv:.1f}% if ltv else 'N/A') does not exceed 80%",
+            "reason": f"LTV ({ltv_display}) does not exceed 80%",
             "ltv": ltv,
             "loan_type": loan_type,
         }
@@ -249,3 +251,10 @@ def check_mi_required(loan_id: str) -> dict:
             "requires_mi": False,
         }
 
+
+
+# Export tools
+mi_tools = [
+    calculate_loan_mi,
+    check_mi_required,
+]

@@ -27,9 +27,9 @@ DISCLOSURE_SENT_DATE_FIELD = "3152"  # Disclosure Sent Date
 
 # Lock fields
 LOCK_DATE_FIELD = "761"  # Lock Date
-LOCK_EXPIRATION_FIELD = "432"  # Lock Expiration Date
+LOCK_EXPIRATION_FIELD = "762"  # Fixed: 432 is "Rate Lock # Days", 762 is Lock Expiration Date
 RATE_LOCKED_FIELD = "2400"  # Rate Locked indicator
-LAST_RATE_SET_DATE_FIELD = "3152"  # Last Rate Set Date
+LAST_RATE_SET_DATE_FIELD = "3152"  # Last Rate Set Date (TIL Intl Disclosure Provided Date)
 
 # Closing Date field
 CLOSING_DATE_FIELD = "748"  # Estimated Closing Date

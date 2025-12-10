@@ -1,0 +1,3477 @@
+{
+  "id": "4b47fb8f-d597-4ede-84f9-d4e2357ce48e",
+  "additionalRequests": {},
+  "applications": [
+    {
+      "id": "70dbe691-1f90-4231-9c9b-f6d665145ae4",
+      "legacyId": "_borrower1",
+      "borrower": {
+        "id": "70dbe691-1f90-4231-9c9b-f6d665145ae4",
+        "legacyId": "_borrower1",
+        "ageAtApplicationYearsCount": 40,
+        "applicantType": "Borrower",
+        "bankruptcyIndicatorChapterSeven": false,
+        "bankruptcyIndicatorChapterEleven": false,
+        "bankruptcyIndicatorChapterTwelve": false,
+        "bankruptcyIndicatorChapterThirteen": false,
+        "birthDate": "1985-01-01",
+        "borrowerType": "Individual",
+        "firstName": "JOHN",
+        "firstNameWithMiddleName": "JOHN",
+        "fullName": "JOHN FAILURE",
+        "fullNameWithSuffix": "JOHN FAILURE",
+        "fannieFirstName": "JOHN",
+        "hmdaAge": "40",
+        "isBorrower": true,
+        "jointAssetLiabilityReportingIndicator1": "NotJointly",
+        "lastName": "FAILURE",
+        "lastNameWithSuffix": "FAILURE"
+      },
+      "coborrower": {
+        "id": "56797ee1-ea3a-449f-bb10-ff54b7a9bb30",
+        "legacyId": "_coborrower1",
+        "applicantType": "CoBorrower",
+        "bankruptcyIndicatorChapterSeven": false,
+        "bankruptcyIndicatorChapterEleven": false,
+        "bankruptcyIndicatorChapterTwelve": false,
+        "bankruptcyIndicatorChapterThirteen": false,
+        "isBorrower": false
+      },
+      "tax4506": {
+        "currentFirst": "JOHN",
+        "currentLast": "FAILURE",
+        "first": "JOHN",
+        "last": "FAILURE",
+        "formVersion": "4506-COct2022"
+      },
+      "borrowerPairId": "_borrower1"
+    }
+  ],
+  "atrqmCommon": {
+    "generalAtrStatusOverall": "Review Needed",
+    "generalAtrStatusDti": "Review Needed",
+    "generalAtrStatusResidualIncome": "Review Needed",
+    "generalAtrStatusCoveredLoan": "Review Needed",
+    "generalAtrStatusSimultaneousLoan": "Review Needed",
+    "generalAtrStatusMtgRelatedObligations": "Review Needed",
+    "generalAtrStatusEmployment": "Review Needed",
+    "generalAtrStatusIncome": "Review Needed",
+    "generalAtrStatusAssets": "Review Needed",
+    "generalAtrStatusDebtObligations": "Review Needed",
+    "generalAtrStatusAlimony": "Review Needed",
+    "generalAtrStatusChildSupport": "Review Needed",
+    "generalAtrStatusCreditHistory": "Review Needed",
+    "standardQmStatusOverall": "Review Needed",
+    "standardQmStatusLoanTerm": "Review Needed",
+    "standardQmStatusInterestOnly": "Meets Standard",
+    "standardQmStatusNegativeAmortization": "Review Needed",
+    "standardQmStatusBalloonPayment": "Meets Standard",
+    "standardQmStatusPrepaymentPenalty": "Review Needed",
+    "standardQmStatusPointsFeesLimit": "Review Needed",
+    "standardQmStatusDti": "Review Needed",
+    "standardQmStatusResidualIncome": "Review Needed",
+    "standardQmStatusCoveredLoan": "Review Needed",
+    "standardQmStatusSimultaneousLoan": "Review Needed",
+    "standardQmStatusMtgRelatedObligations": "Review Needed",
+    "standardQmStatusEmployment": "Review Needed",
+    "standardQmStatusIncome": "Review Needed",
+    "standardQmStatusAssets": "Review Needed",
+    "standardQmStatusDebtObligations": "Review Needed",
+    "standardQmStatusAlimony": "Review Needed",
+    "standardQmStatusChildSupport": "Review Needed",
+    "standardQmStatusCreditHistory": "Review Needed",
+    "gseagencyQmStatusOverall": "Review Needed",
+    "gseagencyQmStatusLoanTerm": "Review Needed",
+    "gseagencyQmStatusInterestOnly": "Meets Standard",
+    "gseagencyQmStatusNegativeAmortization": "Review Needed",
+    "gseagencyQmStatusBalloonPayment": "Meets Standard",
+    "gseagencyQmStatusPrepaymentPenalty": "Review Needed",
+    "gseagencyQmStatusPointsFeesLimit": "Review Needed",
+    "gseagencyQmStatusDti": "Review Needed",
+    "gseagencyQmStatusResidualIncome": "Review Needed",
+    "gseagencyQmStatusCoveredLoan": "Review Needed",
+    "gseagencyQmStatusSimultaneousLoan": "Review Needed",
+    "gseagencyQmStatusMtgRelatedObligations": "Review Needed",
+    "gseagencyQmStatusEmployment": "Review Needed",
+    "gseagencyQmStatusIncome": "Review Needed",
+    "gseagencyQmStatusAssets": "Review Needed",
+    "gseagencyQmStatusDebtObligations": "Review Needed",
+    "gseagencyQmStatusAlimony": "Review Needed",
+    "gseagencyQmStatusChildSupport": "Review Needed",
+    "gseagencyQmStatusCreditHistory": "Review Needed",
+    "aporMaxBonaFideDiscountPoint": 0.0,
+    "rateReductionMaxBonaFideDiscountPoint": 0.0,
+    "startingAdjustedRateMaxBonaFideDiscountPoint": 0.0,
+    "bonaFideDiscountPoint": 0.0,
+    "bonaFideDiscountPointAmount": 0.0,
+    "usePriceBasedLimitTest": true,
+    "standardQmStatusPriceLimit": "Review Needed"
+  },
+  "borrowerCount": "1",
+  "borrowerPairCount": 1,
+  "closingCost": {
+    "closingDisclosure5": {
+      "totalPayments": 0.0,
+      "lenderName": "All Western Mortgage Inc.",
+      "lenderAddress": "8345 West Sunset Road Suite 380",
+      "lenderCity": "Las Vegas",
+      "lenderState": "NV",
+      "lenderZip": "89113",
+      "lenderNmlsId": "14210",
+      "lenderContact": "Insurance API User",
+      "lenderEmail": "AWMPROCESS@allwestern.com",
+      "signatureType": "AsApplicant"
+    },
+    "gfe2010": {
+      "escrowChargeAllInsuranceIndicator": false,
+      "escrowChargeAllPropertyTaxesIndicator": false,
+      "escrowChargeOtherIndicator": false,
+      "gfe2010Fees": [
+        {
+          "gfe2010FeeParentType": "Section1000",
+          "gfe2010FeeType": "Line1002",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1000",
+          "gfe2010FeeType": "Line1003",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1000",
+          "gfe2010FeeType": "Line1004",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1000",
+          "gfe2010FeeType": "Line1005",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1000",
+          "gfe2010FeeType": "Line1006",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1000",
+          "gfe2010FeeType": "Line1007",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1000",
+          "gfe2010FeeType": "Line1008",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1000",
+          "gfe2010FeeType": "Line1009",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1000",
+          "gfe2010FeeType": "Line1010",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1100",
+          "gfe2010FeeType": "Line1101a",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1100",
+          "gfe2010FeeType": "Line1101b",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1100",
+          "gfe2010FeeType": "Line1101c",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1100",
+          "gfe2010FeeType": "Line1101d",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1100",
+          "gfe2010FeeType": "Line1101e",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1100",
+          "gfe2010FeeType": "Line1101f",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1100",
+          "gfe2010FeeType": "Line1102a",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1100",
+          "gfe2010FeeType": "Line1102b",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1100",
+          "gfe2010FeeType": "Line1102c",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1100",
+          "gfe2010FeeType": "Line1102d",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1100",
+          "gfe2010FeeType": "Line1102e",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1100",
+          "gfe2010FeeType": "Line1102f",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1100",
+          "gfe2010FeeType": "Line1102g",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1100",
+          "gfe2010FeeType": "Line1102h",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1100",
+          "gfe2010FeeType": "Line1103",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false,
+          "sec32PointsAndFees2015": 0.0
+        },
+        {
+          "gfe2010FeeParentType": "Section1100",
+          "gfe2010FeeType": "Line1104",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false,
+          "sec32PointsAndFees2015": 0.0
+        },
+        {
+          "gfe2010FeeParentType": "Section1100",
+          "gfe2010FeeType": "Line1109",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1100",
+          "gfe2010FeeType": "Line1110",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1100",
+          "gfe2010FeeType": "Line1111",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1100",
+          "gfe2010FeeType": "Line1112",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1100",
+          "gfe2010FeeType": "Line1113",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1100",
+          "gfe2010FeeType": "Line1114",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1100",
+          "gfe2010FeeType": "Line1115",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1100",
+          "gfe2010FeeType": "Line1116",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1200",
+          "gfe2010FeeType": "Line1202",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1200",
+          "gfe2010FeeType": "Line1203",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1200",
+          "gfe2010FeeType": "Line1204",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1200",
+          "gfe2010FeeType": "Line1205",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1200",
+          "gfe2010FeeType": "Line1206",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1200",
+          "gfe2010FeeType": "Line1207",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1200",
+          "gfe2010FeeType": "Line1208",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1200",
+          "gfe2010FeeType": "Line1209",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1200",
+          "gfe2010FeeType": "Line1210",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1300",
+          "gfe2010FeeType": "Line1302",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1300",
+          "gfe2010FeeType": "Line1303",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1300",
+          "gfe2010FeeType": "Line1304",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1300",
+          "gfe2010FeeType": "Line1305",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1300",
+          "gfe2010FeeType": "Line1306",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1300",
+          "gfe2010FeeType": "Line1307",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1300",
+          "gfe2010FeeType": "Line1308",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1300",
+          "gfe2010FeeType": "Line1309",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1300",
+          "gfe2010FeeType": "Line1310",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1300",
+          "gfe2010FeeType": "Line1311",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1300",
+          "gfe2010FeeType": "Line1312",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1300",
+          "gfe2010FeeType": "Line1313",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1300",
+          "gfe2010FeeType": "Line1314",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1300",
+          "gfe2010FeeType": "Line1315",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1300",
+          "gfe2010FeeType": "Line1316",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1300",
+          "gfe2010FeeType": "Line1317",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1300",
+          "gfe2010FeeType": "Line1318",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1300",
+          "gfe2010FeeType": "Line1319",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section1300",
+          "gfe2010FeeType": "Line1320",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line801A",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line801B",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line801C",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line801D",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line801E",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line801G",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line801H",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line801I",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line801J",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line801K",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line801L",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line801M",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line801N",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line801O",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line801P",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line801Q",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line801R",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line802e",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line802f",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line802g",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line802h",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line803x",
+          "gfe2010FeeIndex": 0,
+          "borrowerCanShopForIndicator2015": false,
+          "borrowerDidShopForIndicator2015": false,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line804",
+          "gfe2010FeeIndex": 0,
+          "borrowerCanShopForIndicator2015": false,
+          "borrowerDidShopForIndicator2015": false,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line805",
+          "gfe2010FeeIndex": 0,
+          "borrowerCanShopForIndicator2015": false,
+          "borrowerDidShopForIndicator2015": false,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line806",
+          "gfe2010FeeIndex": 0,
+          "borrowerCanShopForIndicator2015": false,
+          "borrowerDidShopForIndicator2015": false,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line807",
+          "gfe2010FeeIndex": 0,
+          "borrowerCanShopForIndicator2015": false,
+          "borrowerDidShopForIndicator2015": false,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line808",
+          "gfe2010FeeIndex": 0,
+          "borrowerCanShopForIndicator2015": false,
+          "borrowerDidShopForIndicator2015": false,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line809",
+          "gfe2010FeeIndex": 0,
+          "borrowerCanShopForIndicator2015": false,
+          "borrowerDidShopForIndicator2015": false,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line810",
+          "gfe2010FeeIndex": 0,
+          "borrowerCanShopForIndicator2015": false,
+          "borrowerDidShopForIndicator2015": false,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line811",
+          "gfe2010FeeIndex": 0,
+          "borrowerCanShopForIndicator2015": false,
+          "borrowerDidShopForIndicator2015": false,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line812",
+          "gfe2010FeeIndex": 0,
+          "borrowerCanShopForIndicator2015": false,
+          "borrowerDidShopForIndicator2015": false,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line813",
+          "gfe2010FeeIndex": 0,
+          "borrowerCanShopForIndicator2015": false,
+          "borrowerDidShopForIndicator2015": false,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line814",
+          "gfe2010FeeIndex": 0,
+          "borrowerCanShopForIndicator2015": false,
+          "borrowerDidShopForIndicator2015": false,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line815",
+          "gfe2010FeeIndex": 0,
+          "borrowerCanShopForIndicator2015": false,
+          "borrowerDidShopForIndicator2015": false,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line816",
+          "gfe2010FeeIndex": 0,
+          "borrowerCanShopForIndicator2015": false,
+          "borrowerDidShopForIndicator2015": false,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line817",
+          "gfe2010FeeIndex": 0,
+          "borrowerCanShopForIndicator2015": false,
+          "borrowerDidShopForIndicator2015": false,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line818",
+          "gfe2010FeeIndex": 0,
+          "borrowerCanShopForIndicator2015": false,
+          "borrowerDidShopForIndicator2015": false,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line819",
+          "gfe2010FeeIndex": 0,
+          "borrowerCanShopForIndicator2015": false,
+          "borrowerDidShopForIndicator2015": false,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line820",
+          "gfe2010FeeIndex": 0,
+          "borrowerCanShopForIndicator2015": false,
+          "borrowerDidShopForIndicator2015": false,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line821",
+          "gfe2010FeeIndex": 0,
+          "borrowerCanShopForIndicator2015": false,
+          "borrowerDidShopForIndicator2015": false,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line822",
+          "gfe2010FeeIndex": 0,
+          "borrowerCanShopForIndicator2015": false,
+          "borrowerDidShopForIndicator2015": false,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line823",
+          "gfe2010FeeIndex": 0,
+          "borrowerCanShopForIndicator2015": false,
+          "borrowerDidShopForIndicator2015": false,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line824",
+          "gfe2010FeeIndex": 0,
+          "borrowerCanShopForIndicator2015": false,
+          "borrowerDidShopForIndicator2015": false,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line825",
+          "gfe2010FeeIndex": 0,
+          "borrowerCanShopForIndicator2015": false,
+          "borrowerDidShopForIndicator2015": false,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line826",
+          "gfe2010FeeIndex": 0,
+          "borrowerCanShopForIndicator2015": false,
+          "borrowerDidShopForIndicator2015": false,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line827",
+          "gfe2010FeeIndex": 0,
+          "borrowerCanShopForIndicator2015": false,
+          "borrowerDidShopForIndicator2015": false,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line828",
+          "gfe2010FeeIndex": 0,
+          "borrowerCanShopForIndicator2015": false,
+          "borrowerDidShopForIndicator2015": false,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line829",
+          "gfe2010FeeIndex": 0,
+          "borrowerCanShopForIndicator2015": false,
+          "borrowerDidShopForIndicator2015": false,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line830",
+          "gfe2010FeeIndex": 0,
+          "borrowerCanShopForIndicator2015": false,
+          "borrowerDidShopForIndicator2015": false,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line831",
+          "gfe2010FeeIndex": 0,
+          "borrowerCanShopForIndicator2015": false,
+          "borrowerDidShopForIndicator2015": false,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line832",
+          "gfe2010FeeIndex": 0,
+          "borrowerCanShopForIndicator2015": false,
+          "borrowerDidShopForIndicator2015": false,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line833",
+          "gfe2010FeeIndex": 0,
+          "borrowerCanShopForIndicator2015": false,
+          "borrowerDidShopForIndicator2015": false,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line834",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800",
+          "gfe2010FeeType": "Line835",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section800BrokerCompensation",
+          "gfe2010FeeType": "Undefined",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section900",
+          "gfe2010FeeType": "Line901",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section900",
+          "gfe2010FeeType": "Line902",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section900",
+          "gfe2010FeeType": "Line903",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section900",
+          "gfe2010FeeType": "Line904",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section900",
+          "gfe2010FeeType": "Line905",
+          "gfe2010FeeIndex": 0,
+          "borrowerCanShopForIndicator2015": false,
+          "borrowerDidShopForIndicator2015": false,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section900",
+          "gfe2010FeeType": "Line906",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section900",
+          "gfe2010FeeType": "Line907",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section900",
+          "gfe2010FeeType": "Line908",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section900",
+          "gfe2010FeeType": "Line909",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section900",
+          "gfe2010FeeType": "Line910",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section900",
+          "gfe2010FeeType": "Line911",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section900",
+          "gfe2010FeeType": "Line912",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section700",
+          "gfe2010FeeType": "Line701",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section700",
+          "gfe2010FeeType": "Line702",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        },
+        {
+          "gfe2010FeeParentType": "Section700",
+          "gfe2010FeeType": "Line704",
+          "gfe2010FeeIndex": 0,
+          "sellerCreditIndicator2015": false
+        }
+      ],
+      "homeownerInsurance": 0.0,
+      "loanOriginatorName": "All Western Mortgage Inc.",
+      "maxLifeInterestCapPercentUi": "0"
+    },
+    "gfe2010Page": {
+      "hasEscrowAccountIndicator": false
+    },
+    "gfe2010Section": {
+      "loCompensationItemizeFeesIndicator": true,
+      "loCompensationUseLoCompensationToolIndicator": true,
+      "section1100ItemizeFeesIndicator": true,
+      "section800ItemizeFeesIndicator": true,
+      "projectedPaymentTableColumns": "0"
+    },
+    "impoundType3": "Loan Amount",
+    "loanEstimate1": {
+      "rateLockExpirationTime": "11:00 PM",
+      "rateLockExpirationTimeZone": "PST",
+      "closingCostEstimateExpirationTime": "5:00 PM",
+      "closingCostEstimateExpirationTimeZone": "PST",
+      "estimatedTaxesInsuranceAssessments": 0.0,
+      "estimatedTaxesInsuranceAssessmentsUi": "0",
+      "inEscrowPropertyTaxes": "No",
+      "inEscrowHomeownerInsurance": "No",
+      "inEscrowOther": "No",
+      "reasonSettlementCharges": false,
+      "reasonEligibility": false,
+      "reasonRevisions": false,
+      "reasonInterestRate": false,
+      "reasonExpiration": false,
+      "reasonDelayedSettlement": false,
+      "reasonOther": false,
+      "totalEstimatedCashClose": 0.0,
+      "closingCostEstimateExpirationTimeUi": "5:00 PM",
+      "closingCostEstimateExpirationTimeZoneUi": "PST",
+      "expirationGenericTimeZone": "PT"
+    },
+    "loanEstimate2": {
+      "originationChargesSubTotal": 0,
+      "servicesYouNotShopSubTotal": 0,
+      "servicesYouShopSubTotal": 0,
+      "totalLoanCosts": 0,
+      "taxesGovFeesSubTotal": 0,
+      "prepaidsSubTotal": 0,
+      "initialEscrowPaymentClosingSubTotal": 0,
+      "otherSubTotal": 0,
+      "totalOtherCosts": 0,
+      "totalClosingCosts": 0,
+      "totalLoanAndOtherCosts": 0,
+      "fundsForBorrower": 0.0,
+      "adjustmentsOtherCredits": 0.0,
+      "estimatedCashToCloseSv": 0.0,
+      "estimatedCashToCloseAv": 0.0,
+      "fromOrToBorrower": "To Borrower",
+      "useAlternate": false,
+      "sellerCreditAmount": 0,
+      "unroundedTotalLoanCosts": 0.0,
+      "unroundedTotalOtherCosts": 0.0,
+      "actualStdleTotalClosingCostJ": 0.0,
+      "actualStdleSellerCredits": 0.0,
+      "thirdPartyPaymentsNotOtherwiseDisclosed": 0.0,
+      "useActualDownPaymentAndClosingCostsFinancedIndicator": false,
+      "estimatedTotalPayoffsAndPaymentsAmount": 0
+    },
+    "loanEstimate3": {
+      "totalInterestPercentageUi": "0",
+      "signatureType": "AsApplicant"
+    },
+    "closingDisclosure1": {
+      "estimatedTaxesInsuranceAssessments": 0.0,
+      "inEscrowPropertyTaxes": "No",
+      "inEscrowHomeownerInsurance": "No",
+      "inEscrowOther": "No",
+      "reasonChangeInApr": false,
+      "reasonChangeInLoanProduct": false,
+      "reasonPrepaymentPenalty": false,
+      "reasonChangeSettlementCharges": false,
+      "reasonAdvancedReview": false,
+      "reasonToleranceCure": false,
+      "reasonClericalErrorCorrection": false,
+      "reasonOther": false,
+      "changedCircumstanceFlag": false,
+      "reasonRevisionsReqConsumer": false,
+      "reasonInterestRatecharges": false,
+      "reasonChangedCircumstanceElg": false,
+      "totalCashToClose": 0.0
+    },
+    "closingDisclosure2": {
+      "originationChargesSubTotal": 0.0,
+      "servicesDidNotShopSubTotal": 0.0,
+      "servicesDidShopSubTotal": 0.0,
+      "totalLoanCost": 0.0,
+      "totalBorrowerPaidAtClosing": 0.0,
+      "totalBorrowerPaidBeforeClosing": 0.0,
+      "taxesGovermentFeesSubTotal": 0.0,
+      "prepaidsSubTotal": 0.0,
+      "initialEscrowSubTotal": 0.0,
+      "otherSubTotal": 0.0,
+      "totalOtherCost": 0.0,
+      "totalOtherCostAtClosing": 0.0,
+      "totalOtherCostBeforeClosing": 0.0,
+      "totalClosingCost": 0.0,
+      "borrowerClosingCostAtClosing": 0.0,
+      "borrowerClosingCostBeforeClosing": 0.0,
+      "sellerClosingCostAtClosing": 0.0,
+      "sellerClosingCostBeforeClosing": 0.0,
+      "closingCostPaidByOthers": 0.0
+    },
+    "closingDisclosure3": {
+      "totalDuefromBorrowerAtClosing": 0.0,
+      "totalPaidAlreadybyoronBehalfofBoroweratClosing": 0.0,
+      "cashToClose": 0.0,
+      "totalDuetoSelleratClosingM": 0.0,
+      "totalDuefromSelleratClosingN": 0.0,
+      "cash": 0.0,
+      "totalFromK": 0.0,
+      "totalFromL": 0.0,
+      "totalFromM": 0.0,
+      "totalFromN": 0.0,
+      "finalCashToClose": 0.0,
+      "closingCostsPaidatClosingJ": 0.0,
+      "fromToBorrower": "From Borrower",
+      "fromToSeller": "To Seller",
+      "liabilityTotal": 0.0,
+      "loanAmount": 0.0,
+      "cd3TotalClosingCostJ": 0.0,
+      "cd3ClosingCostsPaidBeforeClosing": 0.0,
+      "cd3TotalPayoffsAndPaymentsK": 0.0,
+      "cd3CashToClose": 0.0,
+      "cd3CashToCloseFromToBorrower": "From Borrower",
+      "leLoanAmount": 0.0,
+      "lecd3TotalClosingCostJ": 0.0,
+      "lecd3ClosingCostsPaidBeforeClosing": 0.0,
+      "lecd3TotalPayoffsAndPaymentsK": 0.0,
+      "lecd3CashToClose": 0.0,
+      "lecd3CashToCloseFromToBorrower": "From Borrower",
+      "stdleTotalClosingCostJ": 0.0,
+      "stdleCd3ClosingCostsPaidBeforeClosing": 0.0,
+      "stdleClosingCostFinanced": 0.0,
+      "stdleDownPayment": 0.0,
+      "stdleDeposit": 0.0,
+      "stdleFundForBorrower": 0.0,
+      "stdleSellerCredits": 0.0,
+      "stdleAdjustmentAndOtherCredits": 0.0,
+      "stdleCashToClose": 0.0,
+      "stdFinalTotalClosingCostJ": 0.0,
+      "stdFinalCd3ClosingCostsPaidBeforeClosing": 0.0,
+      "stdFinalClosingCostFinanced": 0.0,
+      "stdFinalDownPayment": 0.0,
+      "stdFinalDeposit": 0.0,
+      "stdFinalFundForBorrower": 0.0,
+      "stdFinalSellerCredits": 0.0,
+      "stdFinalAdjustmentAndOtherCredits": 0.0,
+      "stdTotalClosingCostDidChangeCol": "NO",
+      "stdTotalClosingCostBeforeClosingDidChangeCol": "NO",
+      "stdDownPaymentDidChangeCol": "NO",
+      "stdDepositDidChangeCol": "NO",
+      "stdFundsForBorrowerDidChangeCol": "NO",
+      "stdSellerCreditsDidChangeCol": "NO",
+      "stdAdjustmentsDidChangeCol": "NO",
+      "altLoanAmountDidChangeCol": "NO",
+      "altTotalClosingCostDidChangeCol": "NO",
+      "altClosingCostBeforeClosingDidChangeCol": "NO",
+      "altTotalPayoffsDidChangeCol": "NO",
+      "altCashToCloseDidChangeCol": "NO",
+      "stdClosingCostFinancedDidChangeCol": "NO",
+      "actualLeLoanAmountFromLatestRec": 0.0,
+      "actualLecd3TotalClosingCostJFromLatestRec": 0.0,
+      "actualLecd3TotalPayoffsAndPaymentsKFromLatestRec": 0.0,
+      "actualStdleTotalClosingCostJFromLatestRec": 0.0,
+      "actualStdleClosingCostFinancedFromLatestRec": 0.0,
+      "actualStdleDownPaymentFromLatestRec": 0.0,
+      "actualStdleDepositFromLatestRec": 0.0,
+      "actualStdleFundForBorrowerFromLatestRec": 0.0,
+      "actualStdleSellerCreditsFromLatestRec": 0.0,
+      "actualStdleAdjustmentAndOtherCreditsFromLatestRec": 0.0,
+      "excludeBorrowerClosingCosts": false,
+      "ucdkSubTotal": 0.0,
+      "ucdlSubTotal": 0.0,
+      "ucdTotalAdjustmentsAndOtherCredits": 0.0,
+      "nonUcdTotalAdjustmentsAndOtherCredits": 0.0,
+      "totalAdjustmentsAndOtherCredits": 0.0,
+      "newVerbiageDisclosed": false
+    },
+    "closingDisclosure4": {
+      "interestOnlyPayments": false,
+      "stepPayments": false,
+      "seasonalPayments": false,
+      "ignoreArmAdj": false,
+      "escrowedPropertyCostsBasis": "ConsummationDate"
+    },
+    "feeVarianceOther": {
+      "appliedCureAmount": 0.0
+    }
+  },
+  "closingDocument": {
+    "additionalStateDisclosures": [
+      {
+        "stateCode": "KS",
+        "disclosureName": "StatutoryElectionInKansas",
+        "disclosureValue": "No Statutory Election"
+      },
+      {
+        "stateCode": "MD",
+        "disclosureName": "StatutoryElectionInMaryland",
+        "disclosureValue": "No Statutory Election"
+      },
+      {
+        "stateCode": "MD",
+        "disclosureName": "RefinanceSubordination5",
+        "disclosureValue": false
+      },
+      {
+        "stateCode": "OH",
+        "disclosureName": "AfterChangeInEscrowPaymentForCalculation",
+        "disclosureValue": "Not Required"
+      },
+      {
+        "stateCode": "OH",
+        "disclosureName": "AfterChangeInMIPaymentForCalculation",
+        "disclosureValue": "Not Required"
+      }
+    ],
+    "closingProvider": "Encompass Docs",
+    "syncInterestDateDisbursementDate": true,
+    "refinanceRightOfRescissionExemptFlag": false
+  },
+  "commitmentTerms": {
+    "mortgageeAddress": "8345 West Sunset Road Suite 380",
+    "mortgageeCity": "Las Vegas",
+    "mortgageeName": "All Western Mortgage Inc.",
+    "mortgageePostalCode": "89113",
+    "mortgageeState": "NV"
+  },
+  "constructionManagement": {},
+  "contacts": [
+    {
+      "contactType": "BROKER_LENDER",
+      "address": "8345 West Sunset Road Suite 380",
+      "city": "Las Vegas",
+      "companyId": "14210",
+      "fax": "702-920-8421",
+      "name": "All Western Mortgage Inc.",
+      "phone": "702-369-0905",
+      "postalCode": "89113",
+      "state": "NV"
+    },
+    {
+      "contactType": "BROKER_LENDERSsnCompanyAgent",
+      "address": "8345 West Sunset Road Suite 380",
+      "city": "Las Vegas",
+      "name": "All Western Mortgage Inc.",
+      "postalCode": "89113",
+      "state": "NV"
+    },
+    {
+      "contactType": "LENDER_INVESTOR",
+      "address": "8345 West Sunset Road Suite 380",
+      "city": "Las Vegas",
+      "fax": "702-920-8421",
+      "name": "All Western Mortgage Inc.",
+      "nmlsLicense": "14210",
+      "phone": "702-369-0905",
+      "postalCode": "89113",
+      "state": "NV"
+    }
+  ],
+  "copyBrokerToLenderIndicator": true,
+  "correspondent": {
+    "gracePeriodDays": 0,
+    "lfsCalculateAs": 0,
+    "lfsFeeHandledAs": 0,
+    "lfsGracePeriodCalendar": 0,
+    "lfsGracePeriodLaterOf": 1,
+    "lfsGracePeriodStarts": 0,
+    "lfsIncludeDay": 0,
+    "lfsLateFeeBasedOn": 0,
+    "lfsMaxLateDays": 0,
+    "lfsStartOnWeekend": 0,
+    "lfsGracePeriodDays": 0,
+    "lfsDayCleared": 1,
+    "lateDaysEndTrigger": "Purchase Approval Date",
+    "lfsLateFee": 0.0,
+    "lfsAmount": 0.0
+  },
+  "currentApplicationIndex": 0,
+  "customFields": [
+    {
+      "fieldName": "CX.COL.WAREHOUSE.INV.2",
+      "value": "N/A",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.RIW.YR1.12.5",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.C.BON.TOT.DOL",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.COMM.Y1.EXCL.MO",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.GAINONSALERECEIVABLECURV2",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.HSLIQUIDASSETS",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.RIW.TOTRI.PROP1",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.IC.NT.SOURCE1.M.Q",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.HSLIQUIDASSETS2",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.RIW.YR1.12.3",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.ALLNOTARY",
+      "value": "JOHN FAILURE",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CUST93FV",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.COMM.TOT.DOL",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.INC.YTD.MO",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.OVR.Y4.EXCL.MO",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.ALLBORROWERNAMES",
+      "value": "JOHN FAILURE",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.KM.C.BON.Y2.EXCL.MO",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.TOLERANCEBALANCE",
+      "value": -100.0,
+      "format": "DECIMAL"
+    },
+    {
+      "fieldName": "CX.KM.PC.COUNT.INSURE",
+      "value": 0,
+      "format": "INTEGER"
+    },
+    {
+      "fieldName": "CX.KM.C.COMM.Y1.EXCL.MO",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.KM.C.BON.Y1.EXCL.DOL",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.BON.Y2.EXCL.DOL",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.PC.COUNT.TRAILING",
+      "value": 0,
+      "format": "INTEGER"
+    },
+    {
+      "fieldName": "CX.KM.BON.TOT.DOL",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.FEESPAYABLECURR",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.KM.BON.Y4.EXCL.DOL",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.LOCOMPCURR",
+      "value": "0.0000000",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.FLD.TOTAL.PAYMENTS",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.CAM.TOTALEXPOSURE",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.BUYDOWN1",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.IC.NT.C.SOURCE1.A.Q",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.C.INC.Y2.MO",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.INC.Y1.MO",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.CONTIGENCYRESERVECURR",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.C.BON.Y3.EXCL.MO",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.BUYDOWN3",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.C.EXP.DED.Y1",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.OVR.Y2.EXCL.DOL",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.INC.LESSER",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CUST96FV",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.C.OVR.TOT.DOL",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.Y",
+      "value": "Y",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.ALLBORROWERAND",
+      "value": "JOHN FAILURE",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.NETCORPORATEMARGIN",
+      "value": 0.0,
+      "format": "DECIMAL_3"
+    },
+    {
+      "fieldName": "CX.IC.NT.C.SOURCE2.A.Q",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.SEASONING",
+      "value": 0,
+      "format": "INTEGER"
+    },
+    {
+      "fieldName": "CX.IC.NT.SOURCE1.A.Q",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.C.OVR.Y4.EXCL.DOL",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.RIW.TOTRI.PROP4",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.RIW.YR2.12.2",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.C.BON.Y1.EXCL.MO",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.FLD.682.LONGMONTH",
+      "value": "January",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.PLACEHOLDERTODAY",
+      "value": "2025-12-04",
+      "format": "DATE"
+    },
+    {
+      "fieldName": "CUST46FV",
+      "value": -100.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.PLACEHOLDERX",
+      "value": "X",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.USCOLOR",
+      "value": "Yes",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.14RIDER",
+      "value": false,
+      "format": "YN"
+    },
+    {
+      "fieldName": "CX.GAINONSALERECEIVABLECURR",
+      "value": "0.0000000",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.POLLYCORPMARGINCURRV2",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.BUYPRICECURRV2",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.PLACEHOLDERA",
+      "value": "A",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.KM.COMM.TOT.MO",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.SD.CHANGES",
+      "value": "Yes",
+      "format": "DROPDOWNLIST"
+    },
+    {
+      "fieldName": "CX.UW.ASSIGNED.DATE2",
+      "value": "2025-12-04",
+      "format": "DATE"
+    },
+    {
+      "fieldName": "CX.KM.C.BON.Y2.EXCL.DOL",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.LO_DISC_ORIG_FEES",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.IC.NT.SOURCE2.A.Q",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.ALLBORROWERSNOCOSIGNERS",
+      "value": "JOHN FAILURE",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.FHB.INVESTOR",
+      "value": "Freddie Mac",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.KM.BON.Y3.EXCL.DOL",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.CORPPRICECONCCURRV2",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.1095",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.BON.Y2.EXCL.MO",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.KM.C.INC.LESSER",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.COMM.Y4.EXCL.DOL",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.TODAYS.DATE",
+      "value": "2025-12-04",
+      "format": "DATE"
+    },
+    {
+      "fieldName": "CX.BRANCHMARGINRECVCURV2",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.OVR.Y1.EXCL.MO",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.KM.OVR.Y2.EXCL.MO",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.KM.C.COMM.Y4.EXCL.MO",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.KM.OVR.Y4.EXCL.DOL",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.BON.Y4.EXCL.MO",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.BRANCHMARGINCURR",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CUST92FV",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CUST94FV",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.ESTCOMMAFTERSPLIT",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.RIW.YR2.12.5",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.ACQCOST",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.RIW.TOTRI.PROP2",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.FLD.MURABAHA.PRICE",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.NETBRANCHMARGINCURR",
+      "value": "0.000",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.RIW.YR1.12.4",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.C.COMM.Y2.EXCL.DOL",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.GROSSBRANCHMARGINCURR",
+      "value": "0.000",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.KM.C.OVR.Y2.EXCL.DOL",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.ACTUALIPC",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.C.OVR.Y4.EXCL.MO",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.KM.C.OVR.Y2.EXCL.MO",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.BORR.NAME",
+      "value": "FAILURE, JOHN",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.TOTALCOMMISSIONSPLITS",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.COMM.Y4.EXCL.MO",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.W.PROPTYPE",
+      "value": "SF",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.KM.PC.COUNT.INVEST",
+      "value": 0,
+      "format": "INTEGER"
+    },
+    {
+      "fieldName": "CX.DMI.CONDOHOTEL",
+      "value": false,
+      "format": "YN"
+    },
+    {
+      "fieldName": "CX.KM.C.INC.Y1.MO",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.C.BON.Y4.EXCL.DOL",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.RIW.YR2.12",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.SSNS",
+      "value": "|||||||",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.TOTALCORPCONCESSION",
+      "value": 0.0,
+      "format": "DECIMAL_10"
+    },
+    {
+      "fieldName": "CX.KM.C.INC.YTD.MO",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.BUYPRICECURR",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.KM.BON.TOT.MO",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.POLLYCORPMARGINCURR",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.KM.C.BON.Y4.EXCL.MO",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.GAINONSALECURRV2",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.TOTALDAYS.OPS",
+      "value": 0,
+      "format": "INTEGER"
+    },
+    {
+      "fieldName": "CX.KM.COMM.Y2.EXCL.MO",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.BRANCHMARGINCURRENCY",
+      "value": "0.000",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.KM.OVR.TOT.MO",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.RIW.YR1.12.2",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.RIW.YR1.12",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.COMM.Y3.EXCL.DOL",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.BON.Y3.EXCL.MO",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.GROSSBRANCHMARGIN",
+      "value": 0.0,
+      "format": "DECIMAL_3"
+    },
+    {
+      "fieldName": "CX.COL.WAREHOUSE.INV.1",
+      "value": "N/A",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.IC.NT.C.SOURCE2.M.Q",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.RIW.YR2.12.3",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CUST89FV",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.C.OVR.Y3.EXCL.DOL",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.OVR.Y3.EXCL.DOL",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.FHASEASONING",
+      "value": "Y",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.KM.C.COMM.Y3.EXCL.DOL",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.PROC.MS.COMPLETE",
+      "value": false,
+      "format": "YN"
+    },
+    {
+      "fieldName": "CX.BRANCHMARGINRECEIVABLECUR",
+      "value": "0.000",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.BRANCHPRICECONCESSIONCURR",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.IC.NT.SOURCE2.M.Q",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.LODISCORIGFEES2",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CUST91FV",
+      "value": 0.0,
+      "format": "DECIMAL_7"
+    },
+    {
+      "fieldName": "CUST44FV",
+      "value": 0.0,
+      "format": "DECIMAL_3"
+    },
+    {
+      "fieldName": "CX.KM.C.COMM.Y4.EXCL.DOL",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.CX.LOCOMPCURRV2",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.C.COMM.Y2.EXCL.MO",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.KM.C.COMM.TOT.DOL",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.C.OVR.Y3.EXCL.MO",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.GAINONSALECURR",
+      "value": "0.0000000",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.KM.BON.Y1.EXCL.DOL",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.COMM.Y2.EXCL.DOL",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.CUST101FV",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CUST85FV",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.BON.Y1.EXCL.MO",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.KM.C.BON.Y3.EXCL.DOL",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.BASE.INC",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.ALLCOLOR",
+      "value": "Yes",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.RIW.TOTRI.PROP5",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.TOTALLOCOMPADJ",
+      "value": 0.0,
+      "format": "DECIMAL_5"
+    },
+    {
+      "fieldName": "CX.GROSSBRANCHMARGINCURRV2",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.PLACEHOLDER1",
+      "value": "1",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.KM.OVR.TOT.DOL",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.PLACEHOLDERINV",
+      "value": "--",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CUST97FV",
+      "value": 0.0,
+      "format": "DECIMAL_3"
+    },
+    {
+      "fieldName": "CX.UW.ASSIGNED.DATE3",
+      "value": "12/04/2025 02:30 AM",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.KM.COMM.Y3.EXCL.MO",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.TOTALACQCOSTS",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.FLD.L770.LONGMONTH",
+      "value": "January",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.KM.C.BASE.INC",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.OVR.Y3.EXCL.MO",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.KM.C.COMM.TOT.MO",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.FHASEASONING",
+      "value": 0,
+      "format": "INTEGER"
+    },
+    {
+      "fieldName": "CX.LANDEQUITY",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CUST43FV",
+      "value": -100.0,
+      "format": "DECIMAL_6"
+    },
+    {
+      "fieldName": "CX.KM.COMM.Y1.EXCL.DOL",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.TOTALBRANCHCONCESSIONS",
+      "value": 0.0,
+      "format": "DECIMAL_7"
+    },
+    {
+      "fieldName": "CX.KM.C.OVR.Y1.EXCL.MO",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.TOTALDAYS.SALES",
+      "value": 0,
+      "format": "INTEGER"
+    },
+    {
+      "fieldName": "CX.KM.INC.Y2.MO",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CUST95FV",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.RIW.PROP.TOTAL",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.C.COMM.Y3.EXCL.MO",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.TPO.COMP.B",
+      "value": true,
+      "format": "YN"
+    },
+    {
+      "fieldName": "CX.KM.C.OVR.TOT.MO",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.KM.C.OVR.Y1.EXCL.DOL",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.KM.C.BON.TOT.MO",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.PLACEHOLDERAWM",
+      "value": "AWM",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.KM.PC.COUNT.SHIP",
+      "value": 0,
+      "format": "INTEGER"
+    },
+    {
+      "fieldName": "CX.RIW.YR2.12.4",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.IC.NT.C.SOURCE1.M.Q",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.CORPPRICECONCCURR",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.KM.C.COMM.Y1.EXCL.DOL",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.LASTFIRST",
+      "value": "FAILURE,JOHN",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.CONSTINTIALLOANAMT",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.CONSTMAXLOANAMT",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.INITIALRESERVES",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.ACTUALBRANCHMARGINCONC",
+      "value": "0",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.BRANCHPRICECONCCURV2",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.RIW.TOTRI.PROP3",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.BUYDOWN2",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.UC.CHANGES",
+      "value": "Yes",
+      "format": "DROPDOWNLIST"
+    },
+    {
+      "fieldName": "CX.KM.OVR.Y1.EXCL.DOL",
+      "value": 0.0,
+      "format": "DECIMAL_2"
+    },
+    {
+      "fieldName": "CX.LOANSTATUS",
+      "value": "PROSPECT",
+      "format": "STRING"
+    },
+    {
+      "fieldName": "CX.KM.FMS",
+      "value": "Lender ID",
+      "format": "STRING"
+    }
+  ],
+  "customModelFields": {},
+  "disclosureNotices": {},
+  "docEngine": "New_Encompass_Docs_Solution",
+  "downPayment": {},
+  "loCompensation": {
+    "whoPaidCompensation": "Lender Paid"
+  },
+  "emDocument": {},
+  "emDocumentInvestor": {},
+  "emDocumentLender": {},
+  "encompassVersion": "25.4.0.0",
+  "enforceCountyLoanLimit": true,
+  "emXmlVersionId": "25.400",
+  "fannieMae": {},
+  "fhaVaLoan": {
+    "energyEfficientMortgage": {},
+    "lenderAddress": "8345 West Sunset Road Suite 380",
+    "lenderCity": "Las Vegas",
+    "lenderName": "All Western Mortgage Inc.",
+    "lenderNmls": "14210",
+    "lenderPostalCode": "89113",
+    "lenderState": "NV",
+    "useDefaultLenderInfo": true,
+    "fhaSalesPrice": 100000.0,
+    "fhaMortgageAmount": 96500.0,
+    "fhaMortgageAmountUmip": 98188.0,
+    "fhaClosingCost": 2000.0,
+    "fhaDownPayment": 3500.0,
+    "fhaInterestRate": 5.0,
+    "fhaLoanTerm": 30,
+    "fhaMonthlyPayment": 527.09,
+    "fhaLtv": 96.5,
+    "fhaMmi": 99.85,
+    "fhaYearsMonthlyInsurance": 10,
+    "fhaUmip": 1688.0,
+    "conventionalSalesPrice": 100000.0,
+    "conventionalMortgageAmount": 95000.0,
+    "conventionalClosingCost": 2000.0,
+    "conventionalDownPayment": 5000.0,
+    "conventionalInterestRate": 100.0,
+    "conventionalLoanTerm": 30,
+    "conventionalMonthlyPayment": 509.98,
+    "conventionalLtv": 95.0,
+    "conventionalMmi": 53.04,
+    "conventionalMaxYearsMi": 9
+  },
+  "freddieMac": {},
+  "funding": {},
+  "gfe": {
+    "address": "8345 West Sunset Road Suite 380",
+    "brokerName": "All Western Mortgage Inc.",
+    "brokerRepresentative": "Insurance API User",
+    "city": "Las Vegas",
+    "hasPrepaymentPenaltyIndicator": false,
+    "postalCode": "89113",
+    "state": "NV"
+  },
+  "hmda": {
+    "balloonIndicator": "N",
+    "cdRequired": true,
+    "hoepaStatus": "Not a HOEPA Loan",
+    "hmda2InterestOnlyIndicator": "N",
+    "reportingYear": 2025,
+    "applicationDate": "2025-12-04",
+    "businessOrCommercialPurpose": "Not primarily for a business or commercial purpose",
+    "totalLoanCosts": "0.00",
+    "totalPointsAndFees": "NA",
+    "originationCharges": "0.00",
+    "prepaymentPenaltyPeriod": "NA",
+    "hmdaPropertyAddress": "NA",
+    "hmdaSyncAddressIndicator": true,
+    "hmdaProfileApplicationDateValue": "2025-12-04",
+    "hmdaInterestOnlyIndicator": false
+  },
+  "hud1Es": {
+    "hud1EsDates": [
+      {
+        "id": "bcd4573f-ca2f-4e25-bfe0-44d5815b9b95",
+        "date": "12/25"
+      },
+      {
+        "id": "8be88ba2-5c42-4b8c-9410-3969a1093126",
+        "date": "01/26"
+      },
+      {
+        "id": "e94b235e-1c79-40dc-8615-c6b11e7e141f",
+        "date": "02/26"
+      },
+      {
+        "id": "aff5ff71-0122-4f3a-a645-d1de2c348962",
+        "date": "03/26"
+      },
+      {
+        "id": "6287417b-6f18-4d3b-acfd-95b9e6969692",
+        "date": "04/26"
+      },
+      {
+        "id": "ca429156-64a9-4c37-9e9e-59ea15045ecc",
+        "date": "05/26"
+      },
+      {
+        "id": "1248f4e9-c825-451d-b605-92733dd9d04f",
+        "date": "06/26"
+      },
+      {
+        "id": "1a6a8392-3c1a-418d-a820-d3423e00038b",
+        "date": "07/26"
+      },
+      {
+        "id": "c53b74df-ed8e-4d9e-b55c-95d629b40445",
+        "date": "08/26"
+      },
+      {
+        "id": "5b87adda-c9b9-418f-895d-87dd2c1f42bd",
+        "date": "09/26"
+      },
+      {
+        "id": "dbcd9c23-44e2-44d0-a43c-5ae31ce44c4e",
+        "date": "10/26"
+      },
+      {
+        "id": "f9d74572-f9fe-4fa6-b251-2f4d8f306a64",
+        "date": "11/26"
+      },
+      {
+        "id": "27d515a5-71a8-4ff4-a51b-65586eb6be6d",
+        "date": "12/26"
+      },
+      {
+        "id": "e249fe41-aa91-4efc-9824-345eb6e4a1c6",
+        "date": "01/27"
+      },
+      {
+        "id": "6bb7b1d5-3610-40d4-b6d4-395f330f7496",
+        "date": "02/27"
+      },
+      {
+        "id": "409b3d31-e784-41fe-a913-f7d05393cce6",
+        "date": "03/27"
+      },
+      {
+        "id": "7f27480e-42a9-4953-b168-53a143218723",
+        "date": "04/27"
+      },
+      {
+        "id": "66a57a05-3a72-45b0-95ce-980f9c7b0f15",
+        "date": "05/27"
+      },
+      {
+        "id": "58375e6a-9cb4-4ce0-9b0f-c125e4437c4b",
+        "date": "06/27"
+      },
+      {
+        "id": "a95a80ef-ac4c-41b7-b6c8-216cf5c5ebc5",
+        "date": "07/27"
+      },
+      {
+        "id": "b8cb785f-76c6-44e2-9460-e62690cdb9bd",
+        "date": "08/27"
+      },
+      {
+        "id": "5e5353f8-4ab2-4950-8c6b-a51cc5f0036f",
+        "date": "09/27"
+      },
+      {
+        "id": "ab0ba24e-6847-4085-909e-4b1724c1be67",
+        "date": "10/27"
+      },
+      {
+        "id": "9151064f-8372-4a9d-af33-6bd1077f4d40",
+        "date": "11/27"
+      },
+      {
+        "id": "59376a3f-f478-4fc7-a44e-bba793a8258c"
+      },
+      {
+        "id": "6ea14dba-1022-4ed5-b2bb-62037deaa2a2"
+      },
+      {
+        "id": "c60aaf0e-e3ed-4088-a575-2106de8665b3"
+      },
+      {
+        "id": "20843d63-2515-4744-85fc-c37a35d60fe5"
+      },
+      {
+        "id": "e46180d2-7dc6-425b-9c9a-1bd734403e4c"
+      },
+      {
+        "id": "a4b13e71-d26c-4d6d-a77e-a9c626b92878"
+      },
+      {
+        "id": "554742e4-0492-461a-b004-cf7be6631346"
+      },
+      {
+        "id": "292c59a2-f681-4f34-939d-d90cfdc308d1"
+      },
+      {
+        "id": "9aa27137-1c1c-428a-9b28-7df2020afd65"
+      },
+      {
+        "id": "ec5fe443-6f28-4e57-89b7-75953f125518"
+      },
+      {
+        "id": "0b3b908a-90ea-4e20-98a1-d106578fa5b6"
+      },
+      {
+        "id": "61cde6c9-8dda-4b50-893c-00d0e9ce454a"
+      },
+      {
+        "id": "44b092c6-f9d7-4b51-807a-644a63c7322e"
+      },
+      {
+        "id": "eed446c1-858d-4a5f-bc56-80933092312b"
+      },
+      {
+        "id": "679f3bd9-a94a-41ea-bd24-4cf016884b57"
+      },
+      {
+        "id": "c99430d5-7054-4d00-85ce-fc6cb4f0fc67"
+      },
+      {
+        "id": "0f867606-2572-41fa-ae51-fc7b357705fb"
+      },
+      {
+        "id": "c70f1815-6433-47fe-8328-167e6b447aae"
+      },
+      {
+        "id": "110a2e01-0fef-45c1-a46b-5aca18377fb6"
+      },
+      {
+        "id": "f6457df0-aaa0-4bf6-b1fd-ece203d164ad"
+      },
+      {
+        "id": "701393a2-94aa-4efe-b1e7-7abb14d51d30"
+      },
+      {
+        "id": "dc7fde36-5ad7-46ee-9470-c57aedbfaea4"
+      },
+      {
+        "id": "86024b20-81d5-425e-9a0e-4cb3c99ecc62"
+      },
+      {
+        "id": "f60382fb-e5c7-4045-8b1f-ae33e1f59235"
+      }
+    ],
+    "hud1EsDueDates": [
+      {
+        "id": "df6cbdf2-1005-40c8-9007-d953b7cd46f1"
+      },
+      {
+        "id": "4b7f7d40-0412-4b67-a967-1b80e829f747"
+      },
+      {
+        "id": "f7d2c92b-0457-44b6-8713-cf8fbfd38971"
+      },
+      {
+        "id": "1073d734-fdd1-4483-ad89-25835da60ebc"
+      }
+    ],
+    "hud1EsItemizes": [
+      {
+        "id": "c0716a10-ca09-4d81-bce2-70a400065f32",
+        "date": "12/25"
+      },
+      {
+        "id": "7935cbb1-971c-4a57-a8ef-17e90c9bb223",
+        "date": "01/26"
+      },
+      {
+        "id": "f40db488-3262-4294-b7e3-acd4d5687163",
+        "date": "02/26"
+      },
+      {
+        "id": "fa4139c7-03cf-4965-8ff2-676a5608b882",
+        "date": "03/26"
+      },
+      {
+        "id": "71c496c7-984b-404e-87f5-ecd594ad5497",
+        "date": "04/26"
+      },
+      {
+        "id": "c2736317-37d2-460b-99be-fb841f9bf1b6",
+        "date": "05/26"
+      },
+      {
+        "id": "efc33d0d-3280-4019-ac5f-4bd9b90e58e3",
+        "date": "06/26"
+      },
+      {
+        "id": "15856c8a-d188-4c41-9351-76df42a178fc",
+        "date": "07/26"
+      },
+      {
+        "id": "c2a7637b-2736-4038-ab04-adfd6dd8e6c4",
+        "date": "08/26"
+      },
+      {
+        "id": "3da3c731-5624-4cf3-8d8b-eaf92d013d0b",
+        "date": "09/26"
+      },
+      {
+        "id": "2884d534-e476-4e30-9ea8-2973bffbfe90",
+        "date": "10/26"
+      },
+      {
+        "id": "9eddb1e1-e518-4797-acc8-c4f9a8f7809e",
+        "date": "11/26"
+      },
+      {
+        "id": "eda10f20-88a9-4566-81b7-3c4ad93498d3"
+      },
+      {
+        "id": "36a5f985-1c38-4727-a231-0838c6f4242a"
+      },
+      {
+        "id": "335449d6-5558-4c3d-9ce0-c3e5a6ba4ce8"
+      },
+      {
+        "id": "79c74480-4975-4f26-8d8b-1ff502860b78"
+      },
+      {
+        "id": "3bab2ec7-a526-46fb-9705-b10ff5a9ae2b"
+      },
+      {
+        "id": "49116751-29c0-4218-a91b-0215fdf9bd4b"
+      },
+      {
+        "id": "89543434-5af7-4a51-87cd-8bdf5ab55d7b"
+      },
+      {
+        "id": "5380db91-b5f4-4356-aca1-368255235714"
+      },
+      {
+        "id": "415e2e1d-cad7-4711-982a-19c005f4f96d"
+      },
+      {
+        "id": "dd671161-3f68-4459-918e-1fadab1ee40f"
+      },
+      {
+        "id": "eaedea2f-2a65-4722-9655-1ad6781824f9"
+      },
+      {
+        "id": "7c1d29e1-5505-4afa-a91d-4eee803f7037"
+      },
+      {
+        "id": "a2b74aae-7180-4add-a796-e2044425d8b2"
+      },
+      {
+        "id": "aa22eb8b-de3e-4b02-973a-43cbbed4c2b8"
+      },
+      {
+        "id": "05010e9e-d32e-483f-bcdf-7a1ae99fb3b4"
+      },
+      {
+        "id": "b9cb021f-10ab-4f5b-83bd-14431f2e706b"
+      },
+      {
+        "id": "8a4a0294-853e-4dc3-a0c5-db3bd21431d1"
+      },
+      {
+        "id": "0bb5f2c2-6cff-4a9e-8940-8b2fae564576"
+      },
+      {
+        "id": "d2c29946-ee75-4b02-9470-fc9e43b550c2"
+      },
+      {
+        "id": "049e0ce6-3b46-4813-8088-1285cccfafc2"
+      },
+      {
+        "id": "36a21243-d6da-470a-b302-4d46997420fa"
+      },
+      {
+        "id": "dc365194-f0ce-4d8b-962d-f9f38c0b840a"
+      },
+      {
+        "id": "645041b9-c07d-46df-add6-72dc847e80f6"
+      },
+      {
+        "id": "103bb464-4236-48ff-ba38-7042ee1af1b7"
+      },
+      {
+        "id": "7aa400e0-1370-48b8-b559-c84b081cd174"
+      },
+      {
+        "id": "2e28b172-0454-4643-98fe-4d6f259e8093"
+      },
+      {
+        "id": "f8480e06-d4ff-4657-9343-ee86dd940811"
+      },
+      {
+        "id": "a98890c4-5926-4140-8662-46654fbcbd30"
+      },
+      {
+        "id": "dd5e042c-ffc8-4e44-94f0-46189768c4c5"
+      },
+      {
+        "id": "e8966b67-7302-4145-aef5-acaefcb0ca48"
+      },
+      {
+        "id": "135c27d1-9bdb-492b-950e-e570a51db56d"
+      },
+      {
+        "id": "9f25dd6d-7811-4a35-a444-f8222b2d65e7"
+      },
+      {
+        "id": "561a4a1f-453d-473e-9aee-0167e49bc3a9"
+      },
+      {
+        "id": "2d0d7671-c940-486f-a98f-7430782edd85"
+      },
+      {
+        "id": "c3257e4c-8aa1-4526-ab5c-bf714a127d1d"
+      },
+      {
+        "id": "f542d8b7-373c-44e0-8f6f-33afa1d7295a"
+      }
+    ],
+    "hud1EsItemizesTotalLines": 12,
+    "hud1EsSetups": [
+      {
+        "id": "324a0c9f-1272-494c-9790-8bf6d5fc7e3f",
+        "date": "12/2025"
+      },
+      {
+        "id": "5d322151-7707-44d4-a258-75ceed8d2506",
+        "date": "01/2026"
+      },
+      {
+        "id": "cad11cd1-26c3-4d7a-86df-ae69bb7dce43",
+        "date": "02/2026"
+      },
+      {
+        "id": "01bbd687-a44d-4d2b-8102-66c2d39c75f2",
+        "date": "03/2026"
+      },
+      {
+        "id": "2da563f4-a3c1-4d2c-afce-ac5fcd526101",
+        "date": "04/2026"
+      },
+      {
+        "id": "07dd2bd6-b247-4f27-bac6-c5f6d51539fd",
+        "date": "05/2026"
+      },
+      {
+        "id": "1354123f-2f98-4113-96d7-393919fa9b0c",
+        "date": "06/2026"
+      },
+      {
+        "id": "bfedd45f-43d5-47fa-9bbf-8e3021c016e3",
+        "date": "07/2026"
+      },
+      {
+        "id": "3288bf30-b65f-4779-8ca3-4a626c700837",
+        "date": "08/2026"
+      },
+      {
+        "id": "400e3882-b592-4a2f-9837-4c9d0dbfb3e9",
+        "date": "09/2026"
+      },
+      {
+        "id": "d8484091-fd2f-4f1c-a3f9-12f35b7b2d87",
+        "date": "10/2026"
+      },
+      {
+        "id": "1dfbefe7-9cf2-45e6-8cbe-5f919ff8447d",
+        "date": "11/2026"
+      },
+      {
+        "id": "bf02a407-be19-4ec2-93c2-03128c40d948",
+        "date": "12/2026"
+      },
+      {
+        "id": "e251f70c-af29-4908-81f5-15850f184a07",
+        "date": "01/2027"
+      },
+      {
+        "id": "6ace667d-fdea-4673-98a9-e48c2b5239db",
+        "date": "02/2027"
+      },
+      {
+        "id": "c2dd3abf-13a3-4b78-bdcf-7b521367c243",
+        "date": "03/2027"
+      },
+      {
+        "id": "68e1a516-46a2-433f-9f6b-b3df8575198f",
+        "date": "04/2027"
+      },
+      {
+        "id": "eab5b865-f9c7-4316-a98d-bd0786654c43",
+        "date": "05/2027"
+      },
+      {
+        "id": "047d8b1a-9293-4051-b599-6a1b4baf2a3b",
+        "date": "06/2027"
+      },
+      {
+        "id": "d3e7d66f-038a-4f5e-a582-b4e00f398a8e",
+        "date": "07/2027"
+      },
+      {
+        "id": "6333d21f-cfa0-4c2e-aac3-cb787dcf56a7",
+        "date": "08/2027"
+      },
+      {
+        "id": "5a0852a2-c58c-4011-b786-e536b18ad927",
+        "date": "09/2027"
+      },
+      {
+        "id": "3f5c51aa-ce68-41ff-9e30-31bb8ba95650",
+        "date": "10/2027"
+      },
+      {
+        "id": "8d5a732a-6067-4289-a809-08e0d3fef705",
+        "date": "11/2027"
+      },
+      {
+        "id": "5b6a1e64-c736-4279-98d3-9c627eb827d8",
+        "date": "12/2027"
+      },
+      {
+        "id": "d3b50420-2917-4ff9-a321-7d5b3a867cbe",
+        "date": "01/2028"
+      },
+      {
+        "id": "c59301d1-39e5-4334-996c-f0618b7be73b",
+        "date": "02/2028"
+      },
+      {
+        "id": "662768af-8e9f-44ae-b7be-daf604b8e1f6",
+        "date": "03/2028"
+      },
+      {
+        "id": "abded467-6df5-4b64-a85b-6ee879ffb413",
+        "date": "04/2028"
+      },
+      {
+        "id": "4e946c84-ab66-4677-9b15-5c3c9e6aa788",
+        "date": "05/2028"
+      },
+      {
+        "id": "65bac742-7c08-4e8d-8f48-a7a21f35e711",
+        "date": "06/2028"
+      },
+      {
+        "id": "a2d460b6-25d8-47ac-92e6-d12f7a61b607",
+        "date": "07/2028"
+      },
+      {
+        "id": "066660ea-071b-4032-b988-7170fc8a78c4",
+        "date": "08/2028"
+      },
+      {
+        "id": "f12cc3a9-0848-4166-9d6e-aa4d3e22854d",
+        "date": "09/2028"
+      },
+      {
+        "id": "da2391ac-e6e8-4b86-83b1-424547ffb221",
+        "date": "10/2028"
+      },
+      {
+        "id": "e7daa42c-af99-4b07-93dd-9ddba049636d",
+        "date": "11/2028"
+      },
+      {
+        "id": "5faa7be4-6cef-4967-9543-25dcb83f7cab",
+        "date": "12/2028"
+      },
+      {
+        "id": "a7050468-0473-45d7-b7da-1a83d3b4d1c9",
+        "date": "01/2029"
+      },
+      {
+        "id": "4678cfc5-afe5-4b41-9811-d9de3c51ea9a",
+        "date": "02/2029"
+      },
+      {
+        "id": "1a6ca343-196c-4cd4-bf8a-938ae0493842",
+        "date": "03/2029"
+      },
+      {
+        "id": "3d318c5f-edec-4112-835d-c617d2613197",
+        "date": "04/2029"
+      },
+      {
+        "id": "26d3541f-a0a4-4038-a5d9-3795e0051489",
+        "date": "05/2029"
+      },
+      {
+        "id": "35dbcb71-70ee-4093-a875-446be5465642",
+        "date": "06/2029"
+      },
+      {
+        "id": "a93d8d9d-8c54-42f2-9758-553a9650c4ca",
+        "date": "07/2029"
+      },
+      {
+        "id": "8fd07d36-d0b4-49a6-b7aa-a1f975150911",
+        "date": "08/2029"
+      },
+      {
+        "id": "1d3ce3af-b3cc-4240-a159-44b6a150bfef",
+        "date": "09/2029"
+      },
+      {
+        "id": "1564f762-f8d1-42fd-be2a-e0c65b50cfd3",
+        "date": "10/2029"
+      },
+      {
+        "id": "e12272a7-2522-4ca4-9247-d09bbb913432",
+        "date": "11/2029"
+      }
+    ],
+    "startingBalance": 0.0,
+    "escrowPaymentYearly": 0.0,
+    "nonEscrowCostsYearly": 0.0,
+    "escrowFirstPaymentDateType": "FirstPaymentDate"
+  },
+  "hudLoanData": {
+    "supplementalOriginationFee": 350.0,
+    "financeableMortgageFeesIfCharged": 350.0,
+    "totalRehabilitationCostsFeesReserves": 350.0,
+    "step2EPlusStep1E": 350.0,
+    "appropriateLtvFactor": 96.5,
+    "initialDrawAtClosingTotal": 350.0,
+    "rehabilitationEscrowAccount": 350.0,
+    "criteriaForAppropriateLtvFactor": "Manual Underwriting Required"
+  },
+  "initialInterestRateUi": "0",
+  "interimServicing": {},
+  "interviewerEmail": "AWMPROCESS@allwestern.com",
+  "interviewersId": "ins-api",
+  "interviewerName": "Insurance API User",
+  "loanCreationDate": "2025-12-04T10:30:17Z",
+  "loanNumber": "2512926117",
+  "loanProductData": {
+    "balloonIndicator": false,
+    "floorPercentUi": "0",
+    "indexMarginPercentUi": "0",
+    "maxLifeInterestCapPercentUi": "0",
+    "nmlsPiggyBackOrFundedHelocIndicator": false,
+    "prepaymentPenaltyIndicator": false,
+    "rateAdjustmentPercentUi": "0",
+    "rateAdjustmentSubsequentCapPercentUi": "0",
+    "helocEscrowAccountIndicator": false,
+    "helocDrawPaymentBasis": true,
+    "helocRepaymentBasis": true,
+    "helocTaRequestAdvanceInPersonIndicator": false,
+    "helocTaRequestAdvanceViaInternetIndicator": false,
+    "helocTaPeriodicCapAppliedToRepaymentPeriod": false,
+    "helocTaInstallmentLoanDiscountedAprIndicator": false
+  },
+  "loanSource": "Encompass - New File",
+  "loanSubmission": {},
+  "mcaw": {},
+  "mersNumber": "100690900000862072",
+  "milestoneCompletedDueDate": "2026-01-07",
+  "milestoneCurrentDate": "2025-12-04T10:30:17Z",
+  "milestoneCurrentName": "Started",
+  "milestoneNextName": "Prospect",
+  "milestoneFileStartedDate": "2025-12-04",
+  "milestones": [
+    {
+      "id": "fb6a9e97-ddf4-4993-8ac5-899c795fd07b",
+      "startDate": "2025-12-04T10:30:17Z",
+      "days": 0,
+      "doneIndicator": true,
+      "loanAssociate": {
+        "loanAssociateType": "User",
+        "user": {
+          "entityId": "ins-api",
+          "entityName": "Insurance API User",
+          "entityType": "User"
+        },
+        "email": "AWMPROCESS@allwestern.com",
+        "role": {
+          "entityId": "0",
+          "entityName": "File Starter",
+          "entityType": "Role"
+        },
+        "writeAccess": false,
+        "apiClientId": "uexzo92"
+      },
+      "reviewedIndicator": true,
+      "duration": -1,
+      "roleRequired": "N",
+      "name": "Started",
+      "milestoneSetting": {
+        "entityId": "1",
+        "entityType": "MilestoneSetting"
+      }
+    },
+    {
+      "id": "d9a23d85-abf6-4d4c-ba84-34eb9aae3c35",
+      "startDate": "2025-12-04T10:31:17Z",
+      "days": 0,
+      "doneIndicator": false,
+      "loanAssociate": {
+        "role": {
+          "entityId": "1",
+          "entityName": "Loan Officer",
+          "entityType": "Role"
+        },
+        "writeAccess": false
+      },
+      "reviewedIndicator": false,
+      "duration": -1,
+      "roleRequired": "N",
+      "name": "Prospect",
+      "milestoneSetting": {
+        "entityId": "8e8ced33-86cd-405b-8481-be7c799f7060",
+        "entityType": "MilestoneSetting"
+      }
+    },
+    {
+      "id": "829b0f39-8cdd-4382-a16f-2e51fa4765a7",
+      "startDate": "2025-12-07T10:31:17Z",
+      "days": 3,
+      "doneIndicator": false,
+      "loanAssociate": {
+        "role": {
+          "entityId": "5",
+          "entityName": "Loan Processor",
+          "entityType": "Role"
+        },
+        "writeAccess": false
+      },
+      "reviewedIndicator": false,
+      "duration": -1,
+      "roleRequired": "N",
+      "name": "Application",
+      "milestoneSetting": {
+        "entityId": "2",
+        "entityType": "MilestoneSetting"
+      }
+    },
+    {
+      "id": "2e74d23a-b332-413d-afb5-13aa8ec1a6ce",
+      "startDate": "2025-12-07T10:32:17Z",
+      "days": 0,
+      "doneIndicator": false,
+      "loanAssociate": {
+        "role": {
+          "entityId": "5",
+          "entityName": "Loan Processor",
+          "entityType": "Role"
+        },
+        "writeAccess": false
+      },
+      "reviewedIndicator": false,
+      "duration": -1,
+      "roleRequired": "Y",
+      "name": "In Processing/Submitted",
+      "milestoneSetting": {
+        "entityId": "c9412ef9-482b-4062-9ed6-c8a74915dfc4",
+        "entityType": "MilestoneSetting"
+      }
+    },
+    {
+      "id": "75de7bf7-84ad-4f8a-bc48-3b0b34945cfb",
+      "startDate": "2025-12-09T10:32:17Z",
+      "days": 2,
+      "doneIndicator": false,
+      "loanAssociate": {
+        "role": {
+          "entityId": "6",
+          "entityName": "Underwriting",
+          "entityType": "Role"
+        },
+        "writeAccess": false
+      },
+      "reviewedIndicator": false,
+      "duration": -1,
+      "roleRequired": "N",
+      "name": "In UW/UW Completed",
+      "milestoneSetting": {
+        "entityId": "4f5f6df6-4a76-47e5-a16d-ee1137d8f0a7",
+        "entityType": "MilestoneSetting"
+      }
+    },
+    {
+      "id": "0b150a28-a2fc-4a93-b611-ac22a096ca1f",
+      "startDate": "2025-12-12T10:32:17Z",
+      "days": 3,
+      "doneIndicator": false,
+      "loanAssociate": {
+        "role": {
+          "entityId": "5",
+          "entityName": "Loan Processor",
+          "entityType": "Role"
+        },
+        "writeAccess": false
+      },
+      "reviewedIndicator": false,
+      "duration": -1,
+      "roleRequired": "N",
+      "name": "Approval Review/Conds Sub",
+      "milestoneSetting": {
+        "entityId": "c1080c26-d8ba-40e7-b8b6-620462bdcc20",
+        "entityType": "MilestoneSetting"
+      }
+    },
+    {
+      "id": "8d7d61e7-df20-426d-885f-2c018f5af43d",
+      "startDate": "2025-12-13T10:32:17Z",
+      "days": 1,
+      "doneIndicator": false,
+      "loanAssociate": {
+        "role": {
+          "entityId": "6",
+          "entityName": "Underwriting",
+          "entityType": "Role"
+        },
+        "writeAccess": false
+      },
+      "reviewedIndicator": false,
+      "duration": -1,
+      "roleRequired": "N",
+      "name": "Conds in Review/CTC",
+      "milestoneSetting": {
+        "entityId": "a80466af-5b69-48ff-8590-fa24e56fa31f",
+        "entityType": "MilestoneSetting"
+      }
+    },
+    {
+      "id": "3d3514fd-ea08-4ccf-9e71-713653aacd64",
+      "startDate": "2025-12-15T10:32:17Z",
+      "days": 2,
+      "doneIndicator": false,
+      "loanAssociate": {
+        "role": {
+          "entityId": "7",
+          "entityName": "Closer",
+          "entityType": "Role"
+        },
+        "writeAccess": false
+      },
+      "reviewedIndicator": false,
+      "duration": -1,
+      "roleRequired": "N",
+      "name": "Docs Ordered/Docs Out",
+      "milestoneSetting": {
+        "entityId": "19f548a8-9153-409f-9958-a32331dc2e59",
+        "entityType": "MilestoneSetting"
+      }
+    },
+    {
+      "id": "07efa1a0-33a3-41b1-96c0-1c23531bed51",
+      "startDate": "2025-12-16T10:32:17Z",
+      "days": 1,
+      "doneIndicator": false,
+      "loanAssociate": {
+        "role": {
+          "entityId": "8",
+          "entityName": "Funder",
+          "entityType": "Role"
+        },
+        "writeAccess": false
+      },
+      "reviewedIndicator": false,
+      "duration": -1,
+      "roleRequired": "N",
+      "name": "Docs at Escrow/Docs are Back",
+      "milestoneSetting": {
+        "entityId": "21f7ba85-8775-4117-b7c8-45a5a35fd024",
+        "entityType": "MilestoneSetting"
+      }
+    },
+    {
+      "id": "5f7ddb7e-5418-4c5c-ab78-ab457bc2bb07",
+      "startDate": "2025-12-17T10:32:17Z",
+      "days": 1,
+      "doneIndicator": false,
+      "loanAssociate": {
+        "role": {
+          "entityId": "8",
+          "entityName": "Funder",
+          "entityType": "Role"
+        },
+        "writeAccess": false
+      },
+      "reviewedIndicator": false,
+      "duration": -1,
+      "roleRequired": "N",
+      "name": "Docs in Review/Doc Rvw Complete",
+      "milestoneSetting": {
+        "entityId": "b84be2eb-622c-4c71-b72d-9a3e0a87d23b",
+        "entityType": "MilestoneSetting"
+      }
+    },
+    {
+      "id": "037494c4-98ac-4b8c-b756-d163d1126935",
+      "startDate": "2025-12-20T10:32:17Z",
+      "days": 3,
+      "doneIndicator": false,
+      "loanAssociate": {
+        "role": {
+          "entityId": "5",
+          "entityName": "Loan Processor",
+          "entityType": "Role"
+        },
+        "writeAccess": false
+      },
+      "reviewedIndicator": false,
+      "duration": -1,
+      "roleRequired": "N",
+      "name": "Fund Cond Needed/Fund Cond Sub",
+      "milestoneSetting": {
+        "entityId": "bbc4016f-b078-4bd0-97dc-aee3cc29d143",
+        "entityType": "MilestoneSetting"
+      }
+    },
+    {
+      "id": "f3efe0b2-c091-4b3f-8108-8e4aefec4545",
+      "startDate": "2025-12-21T10:32:17Z",
+      "days": 1,
+      "doneIndicator": false,
+      "loanAssociate": {
+        "role": {
+          "entityId": "8",
+          "entityName": "Funder",
+          "entityType": "Role"
+        },
+        "writeAccess": false
+      },
+      "reviewedIndicator": false,
+      "duration": -1,
+      "roleRequired": "N",
+      "name": "Fund Rvw/Funded",
+      "milestoneSetting": {
+        "entityId": "324d1c21-d7d3-44aa-8ade-efb21d7c9983",
+        "entityType": "MilestoneSetting"
+      }
+    },
+    {
+      "id": "9eb2ef3f-eaf4-407e-a732-71fc9b29611a",
+      "startDate": "2025-12-22T10:32:17Z",
+      "days": 1,
+      "doneIndicator": false,
+      "loanAssociate": {
+        "role": {
+          "entityId": "8",
+          "entityName": "Funder",
+          "entityType": "Role"
+        },
+        "writeAccess": false
+      },
+      "reviewedIndicator": false,
+      "duration": -1,
+      "roleRequired": "N",
+      "name": "Ship Hold/Ship Rlsd",
+      "milestoneSetting": {
+        "entityId": "ef1b0193-6663-4a2c-b1b2-54a96f9846b3",
+        "entityType": "MilestoneSetting"
+      }
+    },
+    {
+      "id": "aad87937-30a7-4dec-8d9d-2e9970b1ffba",
+      "startDate": "2025-12-24T10:32:17Z",
+      "days": 2,
+      "doneIndicator": false,
+      "loanAssociate": {
+        "role": {
+          "entityId": "32",
+          "entityName": "Shipper",
+          "entityType": "Role"
+        },
+        "writeAccess": false
+      },
+      "reviewedIndicator": false,
+      "duration": -1,
+      "roleRequired": "N",
+      "name": "Ship Rcvd/Shipped",
+      "milestoneSetting": {
+        "entityId": "41659023-6932-4988-8fb4-f44370604af4",
+        "entityType": "MilestoneSetting"
+      }
+    },
+    {
+      "id": "ae586770-9046-4437-ba24-8941494c974f",
+      "startDate": "2026-01-07T10:32:17Z",
+      "days": 14,
+      "doneIndicator": false,
+      "loanAssociate": {
+        "role": {
+          "entityId": "9",
+          "entityName": "Post Closer",
+          "entityType": "Role"
+        },
+        "writeAccess": false
+      },
+      "reviewedIndicator": false,
+      "duration": -1,
+      "roleRequired": "N",
+      "name": "Waiting for Purchase/Purchased",
+      "milestoneSetting": {
+        "entityId": "eceea1aa-49d3-455b-80d9-d832af74769b",
+        "entityType": "MilestoneSetting"
+      }
+    },
+    {
+      "id": "cca8ea1a-1cb6-4acc-9e6e-4055397e9f19",
+      "startDate": "2026-01-07T10:33:17Z",
+      "days": 0,
+      "doneIndicator": false,
+      "loanAssociate": {
+        "role": {
+          "entityId": "14",
+          "entityName": "Accounting",
+          "entityType": "Role"
+        },
+        "writeAccess": false
+      },
+      "reviewedIndicator": false,
+      "duration": 0,
+      "roleRequired": "N",
+      "name": "Completion",
+      "milestoneSetting": {
+        "entityId": "7",
+        "entityType": "MilestoneSetting"
+      }
+    }
+  ],
+  "milestoneStage": "PREQUAL",
+  "miscellaneous": {
+    "newBuyDownEnabled": true,
+    "contactName": "Insurance API User",
+    "contactFax": "702-920-8421",
+    "contactPhone": "702-369-0905",
+    "loanFileSequenceNumber": 1,
+    "tpoConnectStatusUpdated": true,
+    "savedLogVersion": "No Log"
+  },
+  "netTangibleBenefit": {},
+  "organizationCode": "ADMIN",
+  "originationDate": "2025-12-04",
+  "originatorAddressLineText": "8345 West Sunset Road",
+  "originatorAddressUnitIdentifier": "Suite 380",
+  "originatorFirstName": "Insurance",
+  "originatorLastName": "API User",
+  "pmiIndicator": false,
+  "prequalification": {
+    "qualificationStatus": "Yellow"
+  },
+  "print2003Application": "2020",
+  "privacyPolicy": {
+    "affiliateType": "We have affiliates and share personal information with them",
+    "affiliateTypeExample1": "R3 Appraisal Management",
+    "alsoCollectFrom": "We also collect your personal information from others, such as credit bureaus, affiliates, or other companies",
+    "howToShare": "Customers",
+    "informationShare1": "Yes",
+    "informationShare2": "No",
+    "informationShare3": "No",
+    "informationShare4": "No",
+    "informationShare5": "No",
+    "informationShare6": "No",
+    "informationShare7": "No",
+    "informationTypesWeCollect1": "Income",
+    "informationTypesWeCollect2": "Assets",
+    "informationTypesWeCollect3": "Credit card or other debt",
+    "informationTypesWeCollect4": "Employment information",
+    "informationTypesWeCollect5": "Retirement assets",
+    "jointMarketType": "We do not engage in joint marketing",
+    "limitSharing1": "No",
+    "limitSharing2": "We Don't Share",
+    "limitSharing3": "We Don't Share",
+    "limitSharing4": "We Don't Share",
+    "limitSharing5": "We Don't Share",
+    "limitSharing6": "We Don't Share",
+    "limitSharing7": "We Don't Share",
+    "nonaffiliateType": "We do not share personal information with nonaffiliated third parties",
+    "phoneForQuestion": "800-707-2830",
+    "printSelection": "Affiliate Opt-Out",
+    "timesToCollect1": "Apply for a loan",
+    "timesToCollect2": "Apply for financing",
+    "timesToCollect3": "Give us your income information",
+    "timesToCollect4": "Give us your employment history",
+    "timesToCollect5": "Give us your wage statements",
+    "month": "5",
+    "year": 14
+  },
+  "profitManagement": {},
+  "property": {
+    "fhaSecondaryResidenceIndicator": false,
+    "typeRecordingJurisdiction": "County"
+  },
+  "proposedOtherAmount": 0.0,
+  "purchaseCredits": [
+    {
+      "purchaseCreditIndex": 2,
+      "purchaseCreditType": "Lender Credit"
+    }
+  ],
+  "rateLock": {
+    "fhaSecondaryResidence": false,
+    "helocCreditLimit": 0.0,
+    "lockRequestBorrowers": [
+      {
+        "lrbIndex": 1,
+        "firstName": "JOHN",
+        "lastName": "FAILURE"
+      }
+    ],
+    "requestPrepayPenalty": "N",
+    "isDeliveryType": false,
+    "correspondentWarehouseBankId": 0,
+    "daysToExtend": 0,
+    "rateRequestStatus": "NotLocked-NoRequest",
+    "requestLockType": "NewLock",
+    "isCancelled": "N",
+    "rateStatus": "NotLocked",
+    "requestPending": "N",
+    "requestType": "Lock",
+    "extensionRequestPending": "N",
+    "cancellationRequestPending": "N",
+    "reLockRequestPending": "N",
+    "borrLenderPaid": "Lender Paid",
+    "correspondentRetainUserInputs": false
+  },
+  "regulationZ": {
+    "aprPercentUi": "0",
+    "gfeChangedCircumstanceIndicator": false,
+    "gfeRateLockRedisclosureRequiredIndicator": false,
+    "hud1ToleranceViolatedIndicator": false,
+    "interestOnlyIndicator": false,
+    "namePreparedBy": "Insurance API User",
+    "paymentFrequencyType": "Monthly",
+    "regzTableType": "None",
+    "yearOfMaximumPayment": "1st",
+    "zeroPercentPaymentOption": "AmortizingPayment",
+    "interestAccrual": "Actuarial"
+  },
+  "section32": {
+    "loanQualifyAsHighCostMortgage": "does not",
+    "maximumPercentageOfLoan": 8.0,
+    "resultOfPointAndFees": "does not",
+    "resultOfSecurityYieldTest": "does not"
+  },
+  "selectedHomeCounselingProvider": {},
+  "servicingDisclosure": {
+    "weDoNotServiceMortgageLoansIndicator": true
+  },
+  "shipping": {
+    "ecUpdatesAllowed": "Yes"
+  },
+  "stateDisclosure": {
+    "nameOfLicensee": "All Western Mortgage Inc."
+  },
+  "statementCreditDenial": {},
+  "systemIdGuid": "d856b6b7-b787-4ac4-bfc0-07a25c9a750c",
+  "titleHolderName1": "JOHN FAILURE",
+  "tpo": {
+    "preferredAus": "NoPreference"
+  },
+  "tql": {
+    "tqlFraudAlertsTotal": 0,
+    "tqlFraudAlertsTotalHigh": 0,
+    "tqlFraudAlertsTotalMedium": 0,
+    "tqlFraudAlertsTotalLow": 0,
+    "tqlFraudAlertsTotalHighUnaddressed": 0,
+    "tqlFraudAlertsTotalMediumUnaddressed": 0,
+    "tqlFraudAlertsTotalLowUnaddressed": 0,
+    "driveScore": 0,
+    "driveIdVerifyScore": 0,
+    "driveAppVerifyScore": 0,
+    "drivePropertyVerifyScore": 0,
+    "lomaOrLomrIndicator": false
+  },
+  "trustAccount": {},
+  "tsum": {},
+  "uldd": {
+    "countryCode": "US",
+    "fannieFloodSpecialFeatureCode": "180",
+    "notePayToName": "All Western Mortgage Inc.",
+    "sellerLoanIdentifier": "2512926117",
+    "temporaryBuydownIndicator": false
+  },
+  "underwriterSummary": {},
+  "underwritingEscrowIndicator": false,
+  "urlaLoanIdentifier": "2512926117",
+  "usda": {},
+  "use2018DiIndicator": true,
+  "useNew2015FormsIndicator": "RESPA-TILA 2015 LE and CD",
+  "vaLoanData": {
+    "disbursementsLessPayoffAmount": 0.0,
+    "includeSectionAIndicator": true,
+    "includeSectionBVaFundingFeeIndicator": true,
+    "includeSectionBOtherIndicator": true,
+    "includeSectionCIndicator": true,
+    "includeSectionEIndicator": true,
+    "includeSectionFIndicator": true,
+    "includeSectionGIndicator": true,
+    "includeSectionHIndicator": true,
+    "includeLenderCreditIndicator": true
+  },
+  "serverDateTimeDdmApplied": "2025-12-04T02:30:18Z",
+  "collateralTracking": {},
+  "titleWillBeFullName": "JOHN FAILURE",
+  "printUliAndLoanNoUrla": false,
+  "useEnhancedConditionIndicator": false,
+  "mersOrgId": "1006909",
+  "mom": true,
+  "isLoanAmountRounding": true,
+  "aiq": {},
+  "eClose": {},
+  "armIndexPrecision": "ThreeDecimals",
+  "archived": false
+}

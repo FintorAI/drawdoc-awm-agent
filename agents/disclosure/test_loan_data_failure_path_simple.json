@@ -1,0 +1,319 @@
+{
+  "mvp_eligibility": {
+    "1172": {
+      "field_name": "Loan Type",
+      "value": "FHA",
+      "rule": "MUST be 'Conventional' (FHA/VA/USDA excluded from MVP)",
+      "failure_reason": "FHA is not supported in MVP"
+    },
+    "14": {
+      "field_name": "Subject Property State",
+      "value": "TX",
+      "rule": "MUST be 'CA' or 'NV' (Texas excluded from MVP)",
+      "failure_reason": "Texas excluded from MVP"
+    },
+    "19": {
+      "field_name": "Loan Purpose",
+      "value": "Purchase",
+      "rule": "'Purchase' or 'Refinance' supported"
+    }
+  },
+
+  "trid_fields": {
+    "745": {
+      "field_name": "Application Date",
+      "value": "2025-11-20",
+      "rule": "Must be set; LE due within 3 business days",
+      "failure_reason": "14 days ago - LE due date has passed"
+    },
+    "LE1.X1": {
+      "field_name": "Loan Estimate - LE Date Issued",
+      "value": null,
+      "rule": "SET BY PREPARATION AGENT to current date when preparing LE"
+    },
+    "3152": {
+      "field_name": "TIL Intl Disclosure Provided Date",
+      "value": "2025-11-25",
+      "rule": "LE Due Date - Calculated: App Date + 3 business days",
+      "failure_reason": "Due date was 9 days ago - PASSED"
+    },
+    "761": {
+      "field_name": "Lock Date",
+      "value": "2025-11-20",
+      "rule": "If locked, Case 1 flow applies"
+    },
+    "762": {
+      "field_name": "Lock Expiration Date",
+      "value": "2025-12-20",
+      "rule": "For locked loans"
+    },
+    "2400": {
+      "field_name": "Closing Loan Info Loan is Locked",
+      "value": "Y",
+      "rule": "'Y' = Locked, 'N' = Not Locked"
+    },
+    "748": {
+      "field_name": "Closing Date",
+      "value": "2025-12-10",
+      "rule": "MUST be >= 15 days from Application Date (or Lock Date if locked)",
+      "failure_reason": "Only 6 days away - violates 15-day rule (G8)"
+    }
+  },
+
+  "borrower_fields": {
+    "4000": {
+      "field_name": "Borrower First Name",
+      "value": "JOHN",
+      "rule": "Required for 1003 URLA"
+    },
+    "4002": {
+      "field_name": "Borrower Last Name",
+      "value": "FAILURE",
+      "rule": "Required for 1003 URLA"
+    },
+    "65": {
+      "field_name": "Borr SSN",
+      "value": "999-99-9999",
+      "rule": "Required for 1003 URLA"
+    },
+    "1240": {
+      "field_name": "Borr Email",
+      "value": null,
+      "rule": "HARD STOP if missing - required for eDisclosures (G1)",
+      "failure_reason": "EMAIL MISSING - HARD STOP"
+    },
+    "FE0117": {
+      "field_name": "Borr Business Phone",
+      "value": null,
+      "rule": "HARD STOP if missing (G1)",
+      "failure_reason": "PHONE MISSING - HARD STOP"
+    },
+    "1402": {
+      "field_name": "Borr DOB",
+      "value": "1985-01-01",
+      "rule": "Required for 1003 URLA"
+    }
+  },
+
+  "property_fields": {
+    "11": {
+      "field_name": "Subject Property Address",
+      "value": "123 FAILURE ST",
+      "rule": "Required for disclosure"
+    },
+    "12": {
+      "field_name": "Subject Property City",
+      "value": "Houston",
+      "rule": "Required for disclosure"
+    },
+    "14": {
+      "field_name": "Subject Property State",
+      "value": "TX",
+      "rule": "Required for disclosure",
+      "failure_reason": "Texas excluded from MVP"
+    },
+    "15": {
+      "field_name": "Subject Property Zip",
+      "value": "77001",
+      "rule": "Required for disclosure"
+    },
+    "1041": {
+      "field_name": "Subject Property Type",
+      "value": "Detached",
+      "rule": "Required for disclosure"
+    },
+    "1811": {
+      "field_name": "Occupancy (P/S/I)",
+      "value": "PrimaryResidence",
+      "rule": "Required for disclosure"
+    }
+  },
+
+  "loan_fields": {
+    "1109": {
+      "field_name": "Loan Amount",
+      "value": 500000.00,
+      "rule": "Required for loan terms"
+    },
+    "3": {
+      "field_name": "Note Rate",
+      "value": 7.5,
+      "rule": "Required for loan terms"
+    },
+    "4": {
+      "field_name": "Loan Term",
+      "value": 360,
+      "rule": "Required for loan terms (months)"
+    },
+    "353": {
+      "field_name": "LTV",
+      "value": 95.0,
+      "rule": "If > 80%, MI calculation required for Conventional"
+    },
+    "976": {
+      "field_name": "Combined LTV",
+      "value": 95.0,
+      "rule": "Required for loan analysis"
+    },
+    "356": {
+      "field_name": "Appraised Value",
+      "value": 526315,
+      "rule": "Required for loan terms"
+    },
+    "136": {
+      "field_name": "Subject Property Purchase Price",
+      "value": 526315.00,
+      "rule": "Required for Purchase loans"
+    }
+  },
+
+  "regz_le_fields": {
+    "LE1.X1": {
+      "field_name": "LE Date Issued",
+      "value": null,
+      "rule": "Set to current date when preparing LE"
+    },
+    "1176": {
+      "field_name": "Interest Days Per Year",
+      "value": null,
+      "rule": "Per SOP"
+    },
+    "3514": {
+      "field_name": "0% Payment Option",
+      "value": null,
+      "rule": "Must be blank per SOP"
+    },
+    "3515": {
+      "field_name": "Use Simple Interest Accrual",
+      "value": null,
+      "rule": "Must be blank per SOP"
+    },
+    "3516": {
+      "field_name": "Biweekly/Interim Interest Days",
+      "value": null,
+      "rule": "Per SOP"
+    },
+    "672": {
+      "field_name": "Late Charge Days",
+      "value": null,
+      "rule": "Conventional = 15 days"
+    },
+    "673": {
+      "field_name": "Late Charge Percent",
+      "value": null,
+      "rule": "Conventional = 5% (FHA/VA = 4%, NC = 4% all)"
+    },
+    "3517": {
+      "field_name": "Assumption Text",
+      "value": null,
+      "rule": "Conventional = 'may not', FHA/VA = 'may, subject to conditions'"
+    },
+    "1751": {
+      "field_name": "Buydown Marked",
+      "value": false,
+      "rule": "If marked, buydown fields must be updated"
+    },
+    "664": {
+      "field_name": "Prepayment Indicator",
+      "value": "Will not",
+      "rule": "If 'Will/May/May be', update prepay penalty fields"
+    }
+  },
+
+  "ctc_fields": {
+    "19": {
+      "field_name": "Loan Purpose",
+      "value": "Purchase",
+      "rule": "Determines which CTC settings to apply"
+    },
+    "NEWHUD2.X55": {
+      "field_name": "Use Actual Down Payment",
+      "value": false,
+      "rule": "WRITE for Purchase loans"
+    },
+    "NEWHUD2.X56": {
+      "field_name": "Closing Costs Financed",
+      "value": false,
+      "rule": "WRITE for Purchase loans"
+    },
+    "NEWHUD2.X57": {
+      "field_name": "Include Payoffs in Adjustments",
+      "value": false,
+      "rule": "WRITE for Purchase loans"
+    },
+    "NEWHUD2.X58": {
+      "field_name": "Alternative Form Checkbox",
+      "value": false,
+      "rule": "WRITE for Refinance loans (N/A for Purchase)"
+    },
+    "LE1.X77": {
+      "field_name": "Displayed CTC (LE Page 2)",
+      "value": 25000.00,
+      "rule": "Must match calculated CTC"
+    }
+  },
+
+  "atr_qm_fields": {
+    "ATRQM.X1": {
+      "field_name": "Loan Features Flag",
+      "value": "Does Not Meet",
+      "rule": "MUST BE GREEN - Blocking if Red",
+      "failure_reason": "RED FLAG - BLOCKING"
+    },
+    "ATRQM.X2": {
+      "field_name": "Points and Fees Flag",
+      "value": "Does Not Meet",
+      "rule": "MUST BE GREEN - Blocking if Red",
+      "failure_reason": "RED FLAG - BLOCKING"
+    },
+    "ATRQM.X3": {
+      "field_name": "Price Limit Flag",
+      "value": "Does Not Meet",
+      "rule": "MUST BE GREEN - Blocking if Red",
+      "failure_reason": "RED FLAG - BLOCKING"
+    }
+  },
+
+  "lo_info": {
+    "317": {
+      "field_name": "Loan Officer",
+      "value": "Test LO",
+      "rule": "Required for disclosure"
+    },
+    "3238": {
+      "field_name": "NMLS Loan Originator ID",
+      "value": "999999",
+      "rule": "Must verify LO is licensed in property state (CA)"
+    },
+    "3330": {
+      "field_name": "Income Year 2 Total Variance Joint Income Borr and Co-Borrower",
+      "value": "999999",
+      "rule": "Company NMLS (verify field mapping)"
+    }
+  },
+
+  "status_fields": {
+    "2626": {
+      "field_name": "Loan Info Channel",
+      "value": "Retail",
+      "rule": "Must be set"
+    },
+    "1393": {
+      "field_name": "Loan Status",
+      "value": "Active",
+      "rule": "Must be Active for processing"
+    }
+  },
+
+  "_blocking_conditions": [
+    "Missing phone (FE0117) - HARD STOP (G1)",
+    "Missing email (1240) - HARD STOP (G1)",
+    "LE due date passed - Escalate to Supervisor",
+    "Closing date < 15 days - Violates 15-day rule (G8)",
+    "Non-Conventional loan (FHA) - MVP exclusion",
+    "Texas property - MVP exclusion",
+    "ATR/QM flags RED - Compliance failure",
+    "Mavent has Fails/Alerts/Warnings - Compliance failure"
+  ]
+}
+

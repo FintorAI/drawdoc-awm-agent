@@ -39,7 +39,7 @@ URLA_LENDER_FIELDS = {
 # 1003 URLA Part 1
 URLA_PART1_FIELDS = {
     "borrower_current_address": "FR0104",
-    "borrower_mailing_same_as_current": "FR0108",  # Should be marked "Same as Current"
+    "borrower_mailing_same_as_current": "1819",  # Fixed: FR0108 is "Borr Present Zip", 1819 is correct
 }
 
 # 1003 URLA Part 2
@@ -132,7 +132,7 @@ CRITICAL_FIELDS = {
 # =============================================================================
 
 HARD_STOP_FIELDS = {
-    "borrower_phone": "FE0117",   # Home Phone Number - HARD STOP if missing
+    "borrower_phone": "66",       # Fixed: FE0117 is Business Phone, 66 is Home Phone - HARD STOP if missing
     "borrower_email": "1240",     # Email Address - HARD STOP if missing
 }
 
@@ -233,7 +233,7 @@ class FormValidator:
         logger.info(f"[FORM] Validating {form_name} ({len(field_ids)} fields)...")
         
         # Read all fields
-        values = read_fields(loan_id, field_ids)
+        values = read_fields(loan_id, field_ids, context="[FORM_VALIDATOR]")
         
         # Check which are missing
         missing = []
@@ -329,7 +329,7 @@ class FormValidator:
         These fields are blocking if missing.
         """
         field_ids = list(CRITICAL_FIELDS.values())
-        values = read_fields(loan_id, field_ids)
+        values = read_fields(loan_id, field_ids, context="[CRITICAL_FIELDS]")
         
         missing = []
         for field_name, field_id in CRITICAL_FIELDS.items():
@@ -358,7 +358,7 @@ class FormValidator:
         logger.info(f"[FORM] Checking HARD STOP fields for loan {loan_id[:8]}...")
         
         field_ids = list(HARD_STOP_FIELDS.values())
-        values = read_fields(loan_id, field_ids)
+        values = read_fields(loan_id, field_ids, context="[HARD_STOP]")
         
         missing = []
         field_details = {}

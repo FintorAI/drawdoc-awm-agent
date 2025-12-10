@@ -225,6 +225,7 @@ export default function DrawDocsRunDetailPage() {
             <OverviewTab
               runDetail={runDetail}
               isLoading={isLoading && !runDetail}
+              agentType="drawdocs"
             />
           </TabsContent>
 
@@ -232,6 +233,7 @@ export default function DrawDocsRunDetailPage() {
             <TimelineTab
               runDetail={runDetail}
               isLoading={isLoading && !runDetail}
+              agentType="drawdocs"
             />
           </TabsContent>
 
@@ -239,6 +241,7 @@ export default function DrawDocsRunDetailPage() {
             <FinalReportTab
               runDetail={runDetail}
               isLoading={isLoading && !runDetail}
+              agentType="drawdocs"
             />
           </TabsContent>
 

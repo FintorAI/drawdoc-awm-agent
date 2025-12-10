@@ -89,9 +89,30 @@ def search_loan_fields(loan_id: str, search_term: str) -> dict:
     encompass = get_encompass_client()
     
     try:
-        # Get field mappings from CSV
-        from packages.shared import load_field_mappings
-        all_fields = load_field_mappings()
+        # Get field mappings from master CSV (all Encompass fields)
+        import csv
+        from pathlib import Path
+        
+        # Load from master_field_data.csv instead of DrawingDoc CSV
+        master_csv_path = Path(__file__).parent.parent.parent.parent.parent.parent / "master_field_data.csv"
+        logger.debug(f"[SEARCH] Using master CSV at: {master_csv_path}")
+        all_fields = []
+        
+        if master_csv_path.exists():
+            with open(master_csv_path, 'r', encoding='utf-8-sig') as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    all_fields.append({
+                        'name': row.get('Field Description', '').strip(),
+                        'field_id': row.get('Field ID', '').strip(),
+                    })
+        else:
+            logger.error(f"[SEARCH] master_field_data.csv not found at {master_csv_path}")
+            return {
+                "search_term": search_term,
+                "error": "Master field CSV not found",
+                "success": False
+            }
         
         # Search for matching fields by name (case-insensitive)
         search_lower = search_term.lower()
@@ -102,14 +123,23 @@ def search_loan_fields(loan_id: str, search_term: str) -> dict:
             field_name = field.get('name', '').lower()
             field_id = field.get('field_id', '')
             
-            # Skip empty field IDs
-            if not field_id or field_id.strip() == '':
-                continue
-            
             # Check if search term appears in field name
             if search_lower in field_name:
-                matching_field_ids_set.add(field_id)  # Add to set (auto-deduplicates)
-                field_id_to_name[field_id] = field.get('name', 'Unknown')
+                # Skip empty field IDs silently (no warning to avoid latency)
+                if not field_id or field_id.strip() == '':
+                    continue
+                
+                # Handle multi-field IDs (format: "1041 | 1553 | HMDA.X11")
+                # Split by pipe and add each field separately
+                if '|' in field_id:
+                    field_ids = [f.strip() for f in field_id.split('|')]
+                    for individual_id in field_ids:
+                        if individual_id:  # Skip empty strings
+                            matching_field_ids_set.add(individual_id)
+                            field_id_to_name[individual_id] = field.get('name', 'Unknown')
+                else:
+                    matching_field_ids_set.add(field_id)  # Add to set (auto-deduplicates)
+                    field_id_to_name[field_id] = field.get('name', 'Unknown')
         
         # Convert set back to list
         matching_field_ids = list(matching_field_ids_set)

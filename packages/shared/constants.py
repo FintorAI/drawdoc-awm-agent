@@ -143,7 +143,7 @@ class FieldIds:
     BORROWER_FIRST_NAME = "4000"
     BORROWER_LAST_NAME = "4002"
     BORROWER_SSN = "65"
-    BORROWER_EMAIL = "1402"
+    BORROWER_EMAIL = "1240"  # Fixed: was 1402 (which is DOB)
     BORROWER_DOB = "1402"
     
     # Co-Borrower
@@ -289,7 +289,7 @@ REGZ_LE_FIELDS = {
     
     # Late Charge
     "late_charge_days": "672",
-    "late_charge_percent": "674",  # Fixed: was 673 which doesn't exist
+    "late_charge_percent": "674",  # Verified: 674 = "Late Charge %"
     
     # Assumption
     "assumption_text": "3517",
@@ -356,15 +356,15 @@ CTC_FIELDS = {
     # Refinance Settings
     "alternative_form_checkbox": "NEWHUD2.X58",
     
-    # CTC Values
-    "calculated_ctc": "NEWHUD2.X59",
-    "displayed_ctc": "LE1.X77",
+    # CTC Values - Fixed field IDs
+    "calculated_ctc": "CD3.X23",  # Cash To Close
+    "displayed_ctc": "LE1.X87",  # Fixed: X77 not found, X87 is "Total Estimated Cash to Close"
     "estimated_ctc": "CD3.X105",
     
-    # Section M
-    "emd_deposit": "1394",
-    "general_lender_credit": "1395",
-    "seller_credit": "1396",
+    # Section M - Fixed: Previous IDs were Subject Property fields
+    "emd_deposit": "1394",  # TODO: Verify mapping
+    "general_lender_credit": "4794",  # Fixed: 1395 was Subject Property State Code
+    "seller_credit": "4795",  # Fixed: 1396 was Subject Property County Code
 }
 
 

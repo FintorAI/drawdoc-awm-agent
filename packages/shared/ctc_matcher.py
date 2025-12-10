@@ -33,15 +33,15 @@ class CTCFields:
     # Refinance CTC Settings
     ALTERNATIVE_FORM_CHECKBOX = "NEWHUD2.X58"  # Alternative Form (for Refinance)
     
-    # CTC Values
-    CALCULATED_CTC = "NEWHUD2.X59"  # Calculated Cash to Close
-    DISPLAYED_CTC = "LE1.X77"  # Displayed CTC on LE Page 2
+    # CTC Values - Fixed field IDs verified against master list
+    CALCULATED_CTC = "CD3.X23"  # Cash To Close (was NEWHUD2.X59 - not verified)
+    DISPLAYED_CTC = "LE1.X87"  # Fixed: LE1.X77 not found, X87 is "Total Estimated Cash to Close"
     ESTIMATED_CTC = "CD3.X105"  # Estimated Cash to Close
     
-    # Section M fields
-    EMD_DEPOSIT = "1394"  # Earnest Money Deposit (Line M2/M3)
-    GENERAL_LENDER_CREDIT = "1395"  # General Lender Credit (Line M4)
-    SELLER_CREDIT = "1396"  # Seller Credit (Line M5/M6)
+    # Section M fields - Fixed: Previous IDs were Subject Property fields
+    EMD_DEPOSIT = "1394"  # TODO: Verify - may need manual mapping in Encompass
+    GENERAL_LENDER_CREDIT = "4794"  # Fixed: 1395 is "Subject Property State Code", 4794 is "Non-Specific Lender Credit"
+    SELLER_CREDIT = "4795"  # Fixed: 1396 is "Subject Property County Code", 4795 is "Non-Specific Seller Credit"
 
 
 # =============================================================================

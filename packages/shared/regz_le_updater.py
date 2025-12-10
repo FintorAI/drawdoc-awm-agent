@@ -31,30 +31,34 @@ class RegZLEFields:
     
     # Interest Accrual
     INTEREST_DAYS_PER_YEAR = "1176"  # Days in Year
-    ZERO_PERCENT_PAYMENT_OPTION = "3514"  # 0% Payment Option
+    ZERO_PERCENT_PAYMENT_OPTION = "UNKNOWN"  # 0% Payment Option - UNKNOWN field ID (G18)
     USE_SIMPLE_INTEREST = "3515"  # Use Simple Interest Accrual
     BIWEEKLY_INTERIM_DAYS = "3516"  # Biweekly/Interim Days
+    DAYS_IN_YEAR_HELOC = "UNKNOWN"  # Days in Year for HELOC - UNKNOWN field ID (G18)
+    
+    # First Payment Date (G18)
+    FIRST_PAYMENT_DATE = "682"  # First Payment Date
     
     # Late Charge
     LATE_CHARGE_DAYS = "672"  # Late Charge Grace Period
     LATE_CHARGE_PERCENT = "674"  # Late Charge Percentage (fixed: was 673)
     
     # Assumption
-    ASSUMPTION_TEXT = "3517"  # Assumption clause
+    ASSUMPTION_TEXT = "677"  # Fixed: 3517 not found, 677 is "Assumption May/May Not"
     
-    # Buydown
-    BUYDOWN_MARKED = "1751"  # Is Buydown marked
-    BUYDOWN_CONTRIBUTOR = "1755"  # Buydown Contributor
-    BUYDOWN_TYPE = "1753"  # Buydown Type
-    BUYDOWN_RATE = "1754"  # Buydown Rate %
-    BUYDOWN_TERM = "1756"  # Buydown Term
-    BUYDOWN_FUNDS = "1757"  # Buydown Funds Amount
+    # Buydown - Fixed: Previous IDs were incorrect
+    BUYDOWN_MARKED = "425"  # Loan Info Buydown (was 1751 - not found)
+    BUYDOWN_CONTRIBUTOR = "CASASRN.X141"  # Freddie Mac Buydown Contributor (was 1755)
+    BUYDOWN_TYPE = "1557"  # Loan Info Buydown Terms (was 1753 - that's MIP/PMI field)
+    BUYDOWN_RATE = "1754"  # TODO: Verify - may need manual mapping
+    BUYDOWN_TERM = "1756"  # TODO: Verify - may need manual mapping
+    BUYDOWN_FUNDS = "4645"  # Temporary Buydown (was 1757)
     
-    # Prepayment
-    PREPAY_INDICATOR = "664"  # Prepayment Penalty Indicator
-    PREPAY_TYPE = "1762"  # Type of Prepay
-    PREPAY_PERIOD = "1763"  # Prepayment Period
-    PREPAY_PERCENT = "1764"  # Prepayment as %
+    # Prepayment - Fixed: Previous IDs were fee line fields
+    PREPAY_INDICATOR = "2216"  # Prepay Penalty (was 664 - not found)
+    PREPAY_TYPE = "2216"  # Using same as indicator - type embedded
+    PREPAY_PERIOD = "HMDA.X82"  # Prepayment Penalty Period (was 1763 - that's Fees Line 1111 Borr)
+    PREPAY_PERCENT = "3536"  # REGZ Prepay Penalty Mths Hard Prepayment Period (was 1764)
     
     # Loan metadata
     LOAN_TYPE = "1172"  # Loan Type
@@ -195,12 +199,24 @@ class RegZLEUpdater:
         - Use Simple Interest Accrual: blank
         - Number of Days (Biweekly): 365
         """
-        return {
+        updates = {
             RegZLEFields.INTEREST_DAYS_PER_YEAR: "360",
-            RegZLEFields.ZERO_PERCENT_PAYMENT_OPTION: "",
             RegZLEFields.USE_SIMPLE_INTEREST: "",
             RegZLEFields.BIWEEKLY_INTERIM_DAYS: "365",
         }
+        
+        # G18: Log warnings for unknown field IDs
+        if RegZLEFields.ZERO_PERCENT_PAYMENT_OPTION == "UNKNOWN":
+            logger.warning("[REGZ-LE] 0% Payment Option field ID UNKNOWN - requires manual verification")
+        else:
+            updates[RegZLEFields.ZERO_PERCENT_PAYMENT_OPTION] = ""
+        
+        if RegZLEFields.DAYS_IN_YEAR_HELOC == "UNKNOWN":
+            logger.warning("[REGZ-LE] Days in Year (HELOC) field ID UNKNOWN - requires manual verification")
+        else:
+            updates[RegZLEFields.DAYS_IN_YEAR_HELOC] = "360"
+        
+        return updates
     
     def _get_late_charge(self, loan_type: str, property_state: str) -> tuple:
         """Get late charge days and percentage.

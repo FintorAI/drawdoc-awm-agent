@@ -37,13 +37,11 @@ from packages.shared import (
 # Load environment variables
 load_dotenv(Path(__file__).parent.parent.parent.parent.parent / ".env")
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] [%(name)s] %(message)s',
-    datefmt='%H:%M:%S'
-)
+# Import logging utilities
+from packages.shared.logging_config import add_agent_context
+
 logger = logging.getLogger(__name__)
+add_agent_context(logger, "VERIFICATION")
 
 
 # =============================================================================
@@ -111,7 +109,7 @@ def check_critical_fields(loan_id: str) -> dict:
     
     # Read all fields at once
     try:
-        field_values = read_fields(loan_id, field_ids)
+        field_values = read_fields(loan_id, field_ids, context="[VERIFICATION]")
         
         for field_id in field_ids:
             value = field_values.get(field_id)
@@ -157,7 +155,7 @@ def check_field_value(loan_id: str, field_id: str) -> dict:
     logger.info(f"[CHECK] Getting field {field_id} for loan {loan_id[:8]}...")
     
     try:
-        field_values = read_fields(loan_id, [field_id])
+        field_values = read_fields(loan_id, [field_id], context="[VERIFICATION]")
         value = field_values.get(field_id)
         has_value = value is not None
         field_name = get_field_name(field_id)
@@ -494,6 +492,9 @@ REPORT SUMMARY INCLUDING:
 Be concise and clear in your report.
 """
 
+# Import GAPS validation tools
+from agents.disclosure.subagents.verification_agent.tools.form_validation_tools import form_validation_tools
+
 # Create the verification agent
 verification_agent = create_deep_agent(
     agent_type="Disclosure-Verification-SubAgent-v2",
@@ -510,6 +511,8 @@ verification_agent = create_deep_agent(
         check_critical_fields,
         check_field_value,
         check_mvp_eligibility,
+        # GAPS implementation tools
+        *form_validation_tools,  # G2, G9, G10, G11, G12, G13, G14, G15, G17
     ]
 )
 
@@ -551,11 +554,13 @@ def run_disclosure_verification(loan_id: str) -> Dict[str, Any]:
     logger.info(f"Loan ID: {loan_id}")
     
     try:
-        # Create task for agent (v2 workflow with G1/G8)
+        # Create task for agent (v2 workflow with G1/G8 and GAPS validations)
         task = f"""Verify Initial Loan Estimate (LE) disclosure prerequisites for loan {loan_id}.
 
-WORKFLOW:
-1. First, check TRID compliance using check_trid_dates()
+CRITICAL WORKFLOW - PERFORM ALL STEPS:
+
+=== CORE COMPLIANCE CHECKS ===
+1. Check TRID compliance using check_trid_dates()
 2. Check HARD STOPS (phone/email) using check_hard_stops() - G1
 3. Check closing date 15-day rule using check_closing_date_rule() - G8
 4. Check MVP eligibility using check_mvp_eligibility()
@@ -563,7 +568,35 @@ WORKFLOW:
 6. Validate form fields using validate_disclosure_form_fields()
 7. Check critical fields using check_critical_fields()
 
-Report any BLOCKING issues:
+=== GAPS VALIDATIONS (REQUIRED FOR SOP COMPLIANCE) ===
+G2: FACT Act Checkboxes
+  - Use validate_fact_act_checkboxes() to verify all required checkboxes
+
+G9: USPS Address Validation
+  - Use validate_usps_address() to standardize property address with USPS API
+
+G10: URLA Part 1 Validation
+  - Use validate_urla_part1() to check all borrower, property, and loan fields
+
+G11: Loan Officer NMLS Info
+  - Use validate_lo_nmls_info() to verify LO license and contact info
+
+G12: Borrower Summary
+  - Use validate_borrower_summary() to check borrower section completeness
+
+G13: Comments/Notes Required
+  - Use validate_comments_notes() to verify LO Comments field is populated
+
+G14: Credit Validation by Purpose
+  - Use validate_credit_by_purpose() to ensure correct credit type per loan purpose
+
+G15: Consent 60-Day Validity
+  - Use validate_consent_validity() to check disclosure consent is < 60 days old
+
+G17: Company License Info
+  - Use validate_company_license() to verify company NMLS and license details
+
+=== BLOCKING ISSUES TO REPORT ===
 - Application Date not set
 - LE Due Date has passed
 - Missing Phone/Email (HARD STOP - G1)
@@ -571,8 +604,9 @@ Report any BLOCKING issues:
 - Texas property
 - Non-Conventional loan
 - Critical fields missing
+- Any GAPS validation failures that block disclosure
 
-Provide a clear summary of all results.
+Provide a clear summary of all results including GAPS validation status.
 """
         
         # Invoke agent

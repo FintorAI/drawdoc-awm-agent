@@ -31,6 +31,7 @@ interface OverviewTabProps {
   runDetail: RunDetail | undefined;
   isLoading: boolean;
   className?: string;
+  agentType?: "drawdocs" | "disclosure" | "loa";
 }
 
 // Live elapsed time hook
@@ -81,12 +82,20 @@ function formatDate(isoString: string): string {
   });
 }
 
-function getTotalDuration(agents: RunDetail["agents"]): number {
+function getTotalDuration(agents: RunDetail["agents"], agentType: "drawdocs" | "disclosure" | "loa" = "drawdocs"): number {
   let total = 0;
-  if (agents.preparation?.elapsed_seconds) total += agents.preparation.elapsed_seconds;
-  if (agents.drawcore?.elapsed_seconds) total += agents.drawcore.elapsed_seconds;
-  if (agents.verification?.elapsed_seconds) total += agents.verification.elapsed_seconds;
-  if (agents.orderdocs?.elapsed_seconds) total += agents.orderdocs.elapsed_seconds;
+  if (agentType === "disclosure") {
+    // Disclosure sub-agents: verification, preparation, send
+    if (agents.verification?.elapsed_seconds) total += agents.verification.elapsed_seconds;
+    if (agents.preparation?.elapsed_seconds) total += agents.preparation.elapsed_seconds;
+    if (agents.send?.elapsed_seconds) total += agents.send.elapsed_seconds;
+  } else {
+    // DrawDocs sub-agents: preparation, drawcore, verification, orderdocs
+    if (agents.preparation?.elapsed_seconds) total += agents.preparation.elapsed_seconds;
+    if (agents.drawcore?.elapsed_seconds) total += agents.drawcore.elapsed_seconds;
+    if (agents.verification?.elapsed_seconds) total += agents.verification.elapsed_seconds;
+    if (agents.orderdocs?.elapsed_seconds) total += agents.orderdocs.elapsed_seconds;
+  }
   return total;
 }
 
@@ -186,30 +195,40 @@ interface TimingBreakdownProps {
   agents: RunDetail["agents"];
   progress?: ProgressData;
   executionTimestamp?: string;
+  agentType?: "drawdocs" | "disclosure" | "loa";
 }
 
-function TimingBreakdown({ agents, progress, executionTimestamp }: TimingBreakdownProps) {
+function TimingBreakdown({ agents, progress, executionTimestamp, agentType = "drawdocs" }: TimingBreakdownProps) {
   const isPrepRunning = agents.preparation?.status === "running";
   const isDrawcoreRunning = agents.drawcore?.status === "running";
   const isVerifRunning = agents.verification?.status === "running";
   const isOrderRunning = agents.orderdocs?.status === "running";
-  const anyRunning = isPrepRunning || isDrawcoreRunning || isVerifRunning || isOrderRunning;
+  const isSendRunning = agents.send?.status === "running";
+  const anyRunning = agentType === "disclosure" 
+    ? (isVerifRunning || isPrepRunning || isSendRunning)
+    : (isPrepRunning || isDrawcoreRunning || isVerifRunning || isOrderRunning);
   
   // Live elapsed time for overall
   const liveElapsed = useLiveElapsed(executionTimestamp, anyRunning);
   
   // Calculate total from completed agents + live elapsed
-  const completedTime = 
-    (agents.preparation?.status === "success" || agents.preparation?.status === "failed" 
-      ? agents.preparation?.elapsed_seconds || 0 : 0) +
-    (agents.drawcore?.status === "success" || agents.drawcore?.status === "failed" 
-      ? agents.drawcore?.elapsed_seconds || 0 : 0) +
-    (agents.verification?.status === "success" || agents.verification?.status === "failed" 
-      ? agents.verification?.elapsed_seconds || 0 : 0) +
-    (agents.orderdocs?.status === "success" || agents.orderdocs?.status === "failed" 
-      ? agents.orderdocs?.elapsed_seconds || 0 : 0);
+  const completedTime = agentType === "disclosure"
+    ? (agents.verification?.status === "success" || agents.verification?.status === "failed" 
+        ? agents.verification?.elapsed_seconds || 0 : 0) +
+      (agents.preparation?.status === "success" || agents.preparation?.status === "failed" 
+        ? agents.preparation?.elapsed_seconds || 0 : 0) +
+      (agents.send?.status === "success" || agents.send?.status === "failed" 
+        ? agents.send?.elapsed_seconds || 0 : 0)
+    : (agents.preparation?.status === "success" || agents.preparation?.status === "failed" 
+        ? agents.preparation?.elapsed_seconds || 0 : 0) +
+      (agents.drawcore?.status === "success" || agents.drawcore?.status === "failed" 
+        ? agents.drawcore?.elapsed_seconds || 0 : 0) +
+      (agents.verification?.status === "success" || agents.verification?.status === "failed" 
+        ? agents.verification?.elapsed_seconds || 0 : 0) +
+      (agents.orderdocs?.status === "success" || agents.orderdocs?.status === "failed" 
+        ? agents.orderdocs?.elapsed_seconds || 0 : 0);
   
-  const totalDuration = anyRunning ? liveElapsed : getTotalDuration(agents);
+  const totalDuration = anyRunning ? liveElapsed : getTotalDuration(agents, agentType);
   
   // Calculate progress percentage based on documents for preparation
   const prepProgress = React.useMemo(() => {
@@ -224,42 +243,69 @@ function TimingBreakdown({ agents, progress, executionTimestamp }: TimingBreakdo
     return 10; // Default to 10% if running but no progress data
   }, [agents.preparation?.status, progress?.documents_found, progress?.documents_processed]);
   
-  const agentTimings = [
-    { 
-      key: "preparation", 
-      name: "Preparation", 
-      seconds: agents.preparation?.elapsed_seconds || 0,
-      status: agents.preparation?.status,
-      progress: prepProgress,
-      progressText: isPrepRunning && progress?.documents_found 
-        ? `${progress.documents_processed}/${progress.documents_found} docs`
-        : undefined,
-    },
-    { 
-      key: "drawcore", 
-      name: "Drawcore", 
-      seconds: agents.drawcore?.elapsed_seconds || 0,
-      status: agents.drawcore?.status,
-      progress: agents.drawcore?.status === "success" || agents.drawcore?.status === "failed" ? 100 
-        : agents.drawcore?.status === "running" ? 50 : 0,
-    },
-    { 
-      key: "verification", 
-      name: "Verification", 
-      seconds: agents.verification?.elapsed_seconds || 0,
-      status: agents.verification?.status,
-      progress: agents.verification?.status === "success" || agents.verification?.status === "failed" ? 100 
-        : agents.verification?.status === "running" ? 50 : 0,
-    },
-    { 
-      key: "orderdocs", 
-      name: "OrderDocs", 
-      seconds: agents.orderdocs?.elapsed_seconds || 0,
-      status: agents.orderdocs?.status,
-      progress: agents.orderdocs?.status === "success" || agents.orderdocs?.status === "failed" ? 100 
-        : agents.orderdocs?.status === "running" ? 50 : 0,
-    },
-  ];
+  const agentTimings = agentType === "disclosure" 
+    ? [
+        { 
+          key: "verification", 
+          name: "Verification", 
+          seconds: agents.verification?.elapsed_seconds || 0,
+          status: agents.verification?.status,
+          progress: agents.verification?.status === "success" || agents.verification?.status === "failed" ? 100 
+            : agents.verification?.status === "running" ? 50 : 0,
+        },
+        { 
+          key: "preparation", 
+          name: "Preparation", 
+          seconds: agents.preparation?.elapsed_seconds || 0,
+          status: agents.preparation?.status,
+          progress: agents.preparation?.status === "success" || agents.preparation?.status === "failed" ? 100 
+            : agents.preparation?.status === "running" ? 50 : 0,
+        },
+        { 
+          key: "send", 
+          name: "Send", 
+          seconds: agents.send?.elapsed_seconds || 0,
+          status: agents.send?.status,
+          progress: agents.send?.status === "success" || agents.send?.status === "failed" ? 100 
+            : agents.send?.status === "running" ? 50 : 0,
+        },
+      ]
+    : [
+        { 
+          key: "preparation", 
+          name: "Preparation", 
+          seconds: agents.preparation?.elapsed_seconds || 0,
+          status: agents.preparation?.status,
+          progress: prepProgress,
+          progressText: isPrepRunning && progress?.documents_found 
+            ? `${progress.documents_processed}/${progress.documents_found} docs`
+            : undefined,
+        },
+        { 
+          key: "drawcore", 
+          name: "Drawcore", 
+          seconds: agents.drawcore?.elapsed_seconds || 0,
+          status: agents.drawcore?.status,
+          progress: agents.drawcore?.status === "success" || agents.drawcore?.status === "failed" ? 100 
+            : agents.drawcore?.status === "running" ? 50 : 0,
+        },
+        { 
+          key: "verification", 
+          name: "Verification", 
+          seconds: agents.verification?.elapsed_seconds || 0,
+          status: agents.verification?.status,
+          progress: agents.verification?.status === "success" || agents.verification?.status === "failed" ? 100 
+            : agents.verification?.status === "running" ? 50 : 0,
+        },
+        { 
+          key: "orderdocs", 
+          name: "OrderDocs", 
+          seconds: agents.orderdocs?.elapsed_seconds || 0,
+          status: agents.orderdocs?.status,
+          progress: agents.orderdocs?.status === "success" || agents.orderdocs?.status === "failed" ? 100 
+            : agents.orderdocs?.status === "running" ? 50 : 0,
+        },
+      ];
 
   return (
     <Card>
@@ -293,7 +339,7 @@ function TimingBreakdown({ agents, progress, executionTimestamp }: TimingBreakdo
               <div key={agent.key} className="space-y-1.5">
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2">
-                    <AgentIcon type={agent.key as "preparation" | "drawcore" | "verification" | "orderdocs"} size="sm" />
+                    <AgentIcon type={agent.key as any} size="sm" pipelineType={agentType} />
                     <span>{agent.name}</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -326,10 +372,11 @@ function TimingBreakdown({ agents, progress, executionTimestamp }: TimingBreakdo
                     className={cn(
                       "h-full rounded-full transition-all duration-300",
                       isFailed && "bg-red-500",
-                      !isFailed && agent.key === "preparation" && "bg-blue-500",
+                      !isFailed && agent.key === "preparation" && (agentType === "disclosure" ? "bg-emerald-500" : "bg-blue-500"),
                       !isFailed && agent.key === "drawcore" && "bg-orange-500",
-                      !isFailed && agent.key === "verification" && "bg-emerald-500",
+                      !isFailed && agent.key === "verification" && (agentType === "disclosure" ? "bg-blue-500" : "bg-emerald-500"),
                       !isFailed && agent.key === "orderdocs" && "bg-purple-500",
+                      !isFailed && agent.key === "send" && "bg-purple-500",
                     )}
                     style={{ 
                       width: `${agent.progress}%`,
@@ -351,6 +398,7 @@ function TimingBreakdown({ agents, progress, executionTimestamp }: TimingBreakdo
 
 interface MetricsCardProps {
   runDetail: RunDetail;
+  agentType?: "drawdocs" | "disclosure" | "loa";
 }
 
 type MetricKey = "documents_found" | "documents_processed" | "fields_extracted" | "fields_encompass";
@@ -412,7 +460,7 @@ function getProcessedDocumentsFromLogs(logs: RunDetail["logs"]): string[] {
   return [...docNames];
 }
 
-function MetricsCard({ runDetail }: MetricsCardProps) {
+function MetricsCard({ runDetail, agentType = "drawdocs" }: MetricsCardProps) {
   const [expandedMetric, setExpandedMetric] = React.useState<MetricKey | null>(null);
   
   const prepOutput = getPreparationOutput(runDetail.agents.preparation);
@@ -436,6 +484,17 @@ function MetricsCard({ runDetail }: MetricsCardProps) {
   const encompassFields = getEncompassFieldsDetail(runDetail.agents.orderdocs?.output);
   const processedDocs = getProcessedDocumentsFromLogs(runDetail.logs);
 
+  // Disclosure-specific metrics
+  const verificationOutput = runDetail.agents.verification?.output as any;
+  const preparationOutput = runDetail.agents.preparation?.output as any;
+  const sendOutput = runDetail.agents.send?.output as any;
+  
+  const tridCompliant = verificationOutput?.trid_compliance?.compliant === true ? 1 : 0;
+  const formsChecked = verificationOutput?.form_validation?.forms_checked || 0;
+  const formsPassed = verificationOutput?.form_validation?.forms_passed || 0;
+  const miCalculated = preparationOutput?.mi_result?.requires_mi ? 1 : 0;
+  const maventPassed = sendOutput?.mavent_result?.passed === true ? 1 : 0;
+
   const metrics: Array<{
     key: MetricKey;
     icon: typeof FileText;
@@ -447,56 +506,113 @@ function MetricsCard({ runDetail }: MetricsCardProps) {
     panelBg: string;
     subtext?: string;
     isLive: boolean;
-  }> = [
-    {
-      key: "documents_found",
-      icon: FileText,
-      label: "Documents Found",
-      value: documentsFound,
-      color: "text-blue-600",
-      bgColor: "bg-blue-100",
-      ringColor: "ring-blue-400",
-      panelBg: "bg-blue-50/50 border-blue-200 dark:bg-blue-950/20 dark:border-blue-800",
-      isLive: isPrepRunning && progress?.documents_found !== undefined,
-    },
-    {
-      key: "documents_processed",
-      icon: Gauge,
-      label: "Documents Processed",
-      value: documentsProcessed,
-      color: "text-emerald-600",
-      bgColor: "bg-emerald-100",
-      ringColor: "ring-emerald-400",
-      panelBg: "bg-emerald-50/50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-800",
-      isLive: isPrepRunning,
-    },
-    {
-      key: "fields_extracted",
-      icon: BarChart3,
-      label: "Fields Extracted",
-      value: fieldsExtracted,
-      color: "text-amber-600",
-      bgColor: "bg-amber-100",
-      ringColor: "ring-amber-400",
-      panelBg: "bg-amber-50/50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800",
-      subtext: isPrepRunning && progress?.current_document 
-        ? `from ${progress.current_document.slice(0, 20)}...` 
-        : undefined,
-      isLive: isPrepRunning,
-    },
-    {
-      key: "fields_encompass",
-      icon: Database,
-      label: "Fields in Encompass",
-      value: fieldsInEncompass,
-      color: "text-purple-600",
-      bgColor: "bg-purple-100",
-      ringColor: "ring-purple-400",
-      panelBg: "bg-purple-50/50 border-purple-200 dark:bg-purple-950/20 dark:border-purple-800",
-      subtext: "with values",
-      isLive: false,
-    },
-  ];
+  }> = agentType === "disclosure" 
+    ? [
+        {
+          key: "documents_found",
+          icon: CheckCircle2,
+          label: "TRID Compliance",
+          value: tridCompliant,
+          color: tridCompliant ? "text-emerald-600" : "text-red-600",
+          bgColor: tridCompliant ? "bg-emerald-100" : "bg-red-100",
+          ringColor: tridCompliant ? "ring-emerald-400" : "ring-red-400",
+          panelBg: tridCompliant 
+            ? "bg-emerald-50/50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-800"
+            : "bg-red-50/50 border-red-200 dark:bg-red-950/20 dark:border-red-800",
+          subtext: tridCompliant ? "Compliant" : "Issues detected",
+          isLive: false,
+        },
+        {
+          key: "documents_processed",
+          icon: FileText,
+          label: "Forms Validated",
+          value: formsPassed,
+          color: "text-blue-600",
+          bgColor: "bg-blue-100",
+          ringColor: "ring-blue-400",
+          panelBg: "bg-blue-50/50 border-blue-200 dark:bg-blue-950/20 dark:border-blue-800",
+          subtext: `of ${formsChecked} checked`,
+          isLive: false,
+        },
+        {
+          key: "fields_extracted",
+          icon: Database,
+          label: "MI Required",
+          value: miCalculated,
+          color: miCalculated ? "text-amber-600" : "text-slate-500",
+          bgColor: miCalculated ? "bg-amber-100" : "bg-slate-100",
+          ringColor: miCalculated ? "ring-amber-400" : "ring-slate-400",
+          panelBg: miCalculated
+            ? "bg-amber-50/50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800"
+            : "bg-slate-50/50 border-slate-200 dark:bg-slate-950/20 dark:border-slate-800",
+          subtext: miCalculated ? "Calculated" : "Not required",
+          isLive: false,
+        },
+        {
+          key: "fields_encompass",
+          icon: CheckCircle,
+          label: "Mavent Check",
+          value: maventPassed,
+          color: maventPassed ? "text-emerald-600" : "text-amber-600",
+          bgColor: maventPassed ? "bg-emerald-100" : "bg-amber-100",
+          ringColor: maventPassed ? "ring-emerald-400" : "ring-amber-400",
+          panelBg: maventPassed
+            ? "bg-emerald-50/50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-800"
+            : "bg-amber-50/50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800",
+          subtext: maventPassed ? "Passed" : "Issues found",
+          isLive: false,
+        },
+      ]
+    : [
+        {
+          key: "documents_found",
+          icon: FileText,
+          label: "Documents Found",
+          value: documentsFound,
+          color: "text-blue-600",
+          bgColor: "bg-blue-100",
+          ringColor: "ring-blue-400",
+          panelBg: "bg-blue-50/50 border-blue-200 dark:bg-blue-950/20 dark:border-blue-800",
+          isLive: isPrepRunning && progress?.documents_found !== undefined,
+        },
+        {
+          key: "documents_processed",
+          icon: Gauge,
+          label: "Documents Processed",
+          value: documentsProcessed,
+          color: "text-emerald-600",
+          bgColor: "bg-emerald-100",
+          ringColor: "ring-emerald-400",
+          panelBg: "bg-emerald-50/50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-800",
+          isLive: isPrepRunning,
+        },
+        {
+          key: "fields_extracted",
+          icon: BarChart3,
+          label: "Fields Extracted",
+          value: fieldsExtracted,
+          color: "text-amber-600",
+          bgColor: "bg-amber-100",
+          ringColor: "ring-amber-400",
+          panelBg: "bg-amber-50/50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800",
+          subtext: isPrepRunning && progress?.current_document 
+            ? `from ${progress.current_document.slice(0, 20)}...` 
+            : undefined,
+          isLive: isPrepRunning,
+        },
+        {
+          key: "fields_encompass",
+          icon: Database,
+          label: "Fields in Encompass",
+          value: fieldsInEncompass,
+          color: "text-purple-600",
+          bgColor: "bg-purple-100",
+          ringColor: "ring-purple-400",
+          panelBg: "bg-purple-50/50 border-purple-200 dark:bg-purple-950/20 dark:border-purple-800",
+          subtext: "with values",
+          isLive: false,
+        },
+      ];
 
   const selectedMetric = metrics.find(m => m.key === expandedMetric);
 
@@ -506,6 +622,120 @@ function MetricsCard({ runDetail }: MetricsCardProps) {
 
   // Render expanded content based on metric type
   const renderExpandedContent = (key: MetricKey) => {
+    if (agentType === "disclosure") {
+      switch (key) {
+        case "documents_found":
+          return (
+            <div className="text-sm text-muted-foreground space-y-3">
+              <p>
+                <span className={cn("text-3xl font-bold", tridCompliant ? "text-emerald-600" : "text-red-600")}>
+                  {tridCompliant ? "✓" : "✗"}
+                </span>
+                <span className="ml-2">TRID Compliance Status</span>
+              </p>
+              {verificationOutput?.trid_compliance && (
+                <div className="space-y-2 text-xs">
+                  <div className="flex justify-between">
+                    <span>Application Date:</span>
+                    <span className="font-mono">{verificationOutput.trid_compliance.application_date || "Not set"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>LE Due Date:</span>
+                    <span className="font-mono">{verificationOutput.trid_compliance.le_due_date || "Not set"}</span>
+                  </div>
+                  {verificationOutput.trid_compliance.is_past_due && (
+                    <p className="text-red-600 font-medium pt-2">
+                      ⚠️ {verificationOutput.trid_compliance.action}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        case "documents_processed":
+          return (
+            <div className="text-sm text-muted-foreground space-y-3">
+              <p>
+                <span className="text-3xl font-bold text-blue-600">{formsPassed}</span>
+                <span className="ml-2">of {formsChecked} forms validated</span>
+              </p>
+              {verificationOutput?.form_validation?.form_results && (
+                <div className="space-y-1 text-xs">
+                  {Object.values(verificationOutput.form_validation.form_results as any).slice(0, 5).map((form: any, idx: number) => (
+                    <div key={idx} className={cn("p-2 rounded", form.all_valid ? "bg-emerald-50" : "bg-amber-50")}>
+                      <div className="flex justify-between items-center">
+                        <span className="font-medium">{form.form_name}</span>
+                        <span className={form.all_valid ? "text-emerald-600" : "text-amber-600"}>
+                          {form.all_valid ? "✓" : `${form.missing_fields?.length || 0} missing`}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        case "fields_extracted":
+          return (
+            <div className="text-sm text-muted-foreground space-y-3">
+              <p>
+                <span className={cn("text-3xl font-bold", miCalculated ? "text-amber-600" : "text-slate-500")}>
+                  {miCalculated ? "Yes" : "No"}
+                </span>
+                <span className="ml-2">MI Required</span>
+              </p>
+              {preparationOutput?.mi_result && (
+                <div className="space-y-2 text-xs">
+                  <div className="flex justify-between">
+                    <span>LTV Ratio:</span>
+                    <span className="font-mono">{preparationOutput.mi_result.ltv_ratio?.toFixed(2) || "—"}%</span>
+                  </div>
+                  {preparationOutput.mi_result.requires_mi && (
+                    <>
+                      <div className="flex justify-between">
+                        <span>Monthly MI:</span>
+                        <span className="font-mono">${preparationOutput.mi_result.monthly_amount?.toFixed(2) || "0.00"}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Upfront MI:</span>
+                        <span className="font-mono">${preparationOutput.mi_result.upfront_amount?.toFixed(2) || "0.00"}</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        case "fields_encompass":
+          return (
+            <div className="text-sm text-muted-foreground space-y-3">
+              <p>
+                <span className={cn("text-3xl font-bold", maventPassed ? "text-emerald-600" : "text-amber-600")}>
+                  {maventPassed ? "✓" : "⚠"}
+                </span>
+                <span className="ml-2">Mavent Compliance</span>
+              </p>
+              {sendOutput?.mavent_result && (
+                <div className="space-y-2 text-xs">
+                  <div className="flex justify-between">
+                    <span>Total Issues:</span>
+                    <span className="font-mono">{sendOutput.mavent_result.total_issues || 0}</span>
+                  </div>
+                  {sendOutput.mavent_result.audit_id && (
+                    <div className="flex justify-between">
+                      <span>Audit ID:</span>
+                      <span className="font-mono text-[10px]">{sendOutput.mavent_result.audit_id}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        default:
+          return null;
+      }
+    }
+    
     switch (key) {
       case "documents_found":
         return (
@@ -801,17 +1031,20 @@ function OverviewSkeleton() {
 // MAIN COMPONENT
 // =============================================================================
 
-export function OverviewTab({ runDetail, isLoading, className }: OverviewTabProps) {
+export function OverviewTab({ runDetail, isLoading, className, agentType = "drawdocs" }: OverviewTabProps) {
   if (isLoading || !runDetail) {
     return <OverviewSkeleton />;
   }
 
-  // Check if any agent failed
-  const hasFailed = 
-    runDetail.agents.preparation?.status === "failed" ||
-    runDetail.agents.drawcore?.status === "failed" ||
-    runDetail.agents.verification?.status === "failed" ||
-    runDetail.agents.orderdocs?.status === "failed";
+  // Check if any agent failed (based on agent type)
+  const hasFailed = agentType === "disclosure"
+    ? runDetail.agents.verification?.status === "failed" ||
+      runDetail.agents.preparation?.status === "failed" ||
+      runDetail.agents.send?.status === "failed"
+    : runDetail.agents.preparation?.status === "failed" ||
+      runDetail.agents.drawcore?.status === "failed" ||
+      runDetail.agents.verification?.status === "failed" ||
+      runDetail.agents.orderdocs?.status === "failed";
 
   return (
     <div className={cn("space-y-4", className)}>
@@ -825,8 +1058,9 @@ export function OverviewTab({ runDetail, isLoading, className }: OverviewTabProp
           agents={runDetail.agents} 
           progress={runDetail.progress}
           executionTimestamp={runDetail.execution_timestamp}
+          agentType={agentType}
         />
-        <MetricsCard runDetail={runDetail} />
+        <MetricsCard runDetail={runDetail} agentType={agentType} />
 
         {/* Corrected Fields Summary (if available) */}
         {runDetail.corrected_fields_summary && runDetail.corrected_fields_summary.length > 0 && (

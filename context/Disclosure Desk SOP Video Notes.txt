@@ -1,0 +1,244 @@
+﻿Tools
+* In loan pipeline, pipeline shows DD Requested
+* Click a loan
+* Show Forms in Alpha Order
+* Disclosure Tracking
+   * Disclosure should not be sent and LE should be there
+   * Application Date and LE Due Date should be within 3 days of compliance
+* Check Borrower information (all borrower information should be updated)
+   * Address
+   * First Lien
+   * LTV 
+   * DTI
+   * Rate
+   * Loan is not Locked
+   * Loan Purpose
+   * Loan Type
+   * Mid Credit Score
+* Forms -> Show in Alpha Order -> Show All
+   * 1003 URLA - Lender
+      * Include lender information pages in borrower package
+      * These fields must be present and updated:
+         * Loan program
+         * Subject property address
+            * Verify in USPS
+         * Estimated value
+         * Appraisal value
+         * Project type
+         * Purpose of Loan
+         * Occupancy
+         * Refinance type
+         * Mortgage lenient type
+         * Amortization type
+         * Terms of Loan
+            * Loan Amount
+            * Total Loan Amount
+            * Note Rate
+            * Qual Rate
+            * MIP
+               * Conventional: If LTV > n?, has to be calculated in Monthly Mortgage Insurance
+                  * ??? How do they calculate?
+                  * If first <= 0.2, same for second also; else can differ
+               * If upfront -> calculate in Upfront MIP / Funding / Guarantee Fee
+               * MI (FHA and VA)
+               * Blank for other loans like NonQM
+         * TOTAL CREDITS
+         * L5. homeownership must be updated for conventional loan
+         * Borrower and Co-Borrower columns
+            * Can remove co-borrower if none
+   * 1003 URLA Part 1
+      * Section 1. Borrower Information
+         * First Name
+         * Last Name
+         * SSN
+         * DOB
+         * Citizenship
+         * Marital Status
+      * Contact Info
+         * Home Phone
+            * Hard stop
+         * Email
+            * If not present, will not be able to send disclosures
+      * Borrower current address
+      * Former address
+      * Mailing address: same as current
+      * Military Service
+         * May be yes or no depending on borrower
+      * Language Preference
+   * 1003 URLA Part 2
+   * 1003 URLA Part 3
+      * 2a. Assets
+      * 2c. Liabilities
+      * Check if borrower is paying deposit, will be updated here
+   * 1003 URLA Part 4
+      * Previous sections: Same info as Lender form
+      * Check from Section 5. Declarations
+         * Borrower/Co-Borrower questions must have answers
+      * Section 8. Demographic Information
+      * Section 9. Loan Originator Information
+         * Loan Originator NMLSR ID#
+            * Must be 14210
+         * Go to NMLS Consumer Access (may need external API)
+            * Check for Branch Location
+            * Update LO Address -> Street Address
+            * Verify if Loan Originator Name is same with name in NMLS Consumer Access
+   * Affiliate Business Arrangements
+      * If blank -> click on ‘Apply Template’ -> AWM Affiliate -> OK -> Mark Settlement and Purchase/Sale/Refinance boxes. All info will be auto populated
+   * Borrower Summary - Origination
+      * Verify application date
+      * Channel
+      * Current Status has to be Active Lian
+      * Vesting Type - Individual
+      * All borrower info should be reflected
+      * Purpose of the Transaction
+         * Seeking a mortgage from the company
+      * Consent valid days and reason for authorizing consent should not be blank
+      * Company’s Information
+         * If blank -> Click Lender/Broker Data
+      * Company’s Agent Information
+         * Should be CoreLogic Inc.
+         * IF something else or blank, click on blank, clear, enter Corelogic in company, click resulting row
+         * Address is 40 Pacifica Suite 900
+      * All details will reflect in Credit Summary
+      * If loan not locked, last rate set date will be same as application date
+      * Est closing date will be any date up until application date + 15 days
+      * In case of loan locked, all dates will be updated to lock
+      * Rate lock disclosure date will be same date as date loan is locked
+   * Disclosure Summary
+      * Look out for Comments/Notes, usually instructions, more info about fees, lender, etc. 
+   * FACT Act Disclosure
+      * Credit Report will be updated
+         * Credit score should be automatically updated but sometimes not so have to be manually updated
+         * Verify with Credit Report document
+      * Borrower
+         * Update date with Ordered Date in document
+         * Copy Factors from document in accompanying credit score to Key Factors field
+         * Material Terms of Credit Set by Credit Score and Credit Score for Disclosure Notice must both be marked (for co borrower as well)
+            * Only Credit Score Disclosure will be printed for borrower and co borrower
+      * Check Credit Repositories section in document
+         * Paste in Credit Bureau #2 / Trans Union
+            * Company Name
+            * Address
+            * City
+            * State
+            * Website
+            * Phone
+         * Each column corresponds to a specific section in the form? Like column website name -> Credit Bureau #n / [column website name] in the form
+         * Your Credit Score Ranks Higher than
+            * Look for Equifax -> 44% (regex match? I guess)
+   * Home Counseling Providers
+      * Click on Get Agencies
+         * Check if data is updated
+         * Service Name first three rows have to be checked
+            * First 3 rows start with F
+            * 3 rows that start with P
+         * Language is English
+      * 10 are minimum checked in Home Counselor list; If more are checked, increase distance (>= 500)
+   * RegZ - LE
+      * LE Data Issued is always current date
+      * 1st payment date is automatically updated when Borrower Summary - Origination is populated depending on Est Closing Date/ Borrower Est Closing Date
+      * If loan has buydown, populate Buydown Mortgage
+         * Buydown box is marked
+         * Contributor
+         * Rate and Term
+         * If purchase there is buydown; else if refinance, none
+      * 0% payment option blank
+      * Interest Days/Days in a Year 360/360
+      * Number of Days… is 365
+      * Click Get Late Fee
+         * 15 days late
+         * Charge is 5%
+         * Of the principal and interest overdue
+      * Assumption
+         * Conventional = may not (Someone buying your property)
+         * FHA = may, subject to conditions
+      * Prepayment
+         * Click prepayment penalty
+            * Info has to be updated
+   * Request for Transcript of Tax (Classic)
+      * Request Details
+         * If both borrower and co borrower -> both; else borrower/co..
+      * IVES participant name, participant ID, phone, address, city should be there
+      * Client name All Western Mortgage, Inc.
+      * Client phone 702-369-0905
+      * Client address 8345 W. Sunset Road #380
+      * Client city Las Vegas
+      * Client state NV
+      * Client Zip 89113
+      * Enter only one tax form number per request: 1040
+      * Check a Return Transcript
+      * Year or period requested
+         * Update year fields
+         * They entered 12/31/2024, 12/31/2023/12/31/2022
+   * Request for Transcript of Tax
+      * Add from Template click button
+      * Click 8821 form, select
+      * Only 1 borrower so select only Borrower in Request Details
+      * Click Copy from borrower Summary
+      * If with co-borrower, repeat for co-borrower
+      * First update 8821 then other form
+   *  2015 Itemization
+      * Loan Program is CF30
+      * Closing Cost Program is Conventional Refinance - Corporate
+      * Origination Charge -> PRocessing Fees; if not there confirm with Branch
+      * Itemize fees when printing box should always be marked
+      * Bona Fide box should be marked for all loans
+      * Appraisal Fee check
+      * Appraisal Re-inspection
+      * HOA/Condo Questionnaire ?? to confirm with branch
+      * Hybrid E-sign Fee will be required by lender??
+      * Conventional if not updated, consider this as waived
+      * For FHA, cannot be waived
+      * If Other box is marked, populate HOA Dues
+      * Recording Fees has to be there
+      * Transfer Tax need to be confirmed from Loan Processor
+      * Confirm with Estimated Cash to Close in Loan Estimate Page 2
+   * LE Page 2
+      * Check Title Fees in c. Services You can Shop For
+   * Settlement Service Providers
+      * If templates not applied, click Apply Template -> select Settlement Service Provider template
+      * Delete Pest Inspection, Home Inspection Services, Engineering Inspection, Land Survey
+      * Populate fee boxes in Settlement Service Provider with LE Page 2 title fees
+   * Compliance Review
+      * Click on Preview (preview is being processed…)
+      * All fields should PASS
+      * IF HMDA is ALERT, still proceed
+   * ATR/QM Management
+      * Check Qualification tab
+         * Points and Fees
+            * Limit of 3% for Current Qualified Mortgage Fee Threshold
+      * ATR/QM Eligibility tab
+         * All flags must be green
+         * If DTI is red, can proceed
+   * Blend Integration
+      * ORGID has to be updated
+         * Depends on LO
+* Pull disclosures:
+   * Make sure that printer is set up
+      * Settings -> Bluetooth & Devices -> Printers & Scanners -> Encompass printer set as default 
+      * Has to be 1 document open?
+   * Click on eFolder
+      * If loan is conventional -> Generic All Fixed Rate Conventional 1st Lien Loans -> Order eDisclosures
+      * Proceed with Audit, should clear audit before clicking order eDisclosures
+      * If pop up shows up in between click on yes
+   * In eDisclosure package (initial disclosure), if LTV < 80%, uncheck Fixed Rate Conventional PMI Disclosure
+   * Click eFolder, search for Disclosures, in document, click the three dots, click view original
+      * Manually check fees, information from forms
+* Access form again
+   * Disclosure Summary
+      * Initial Disclosures/LE/COC
+         * Click LO to Review
+* Send disclosures via email
+   * Have to save generated document and manually email to LO
+   * Get email from File Contacts form
+      * Check people in Disclosure Summary Initial Disclosures/LE/COC to get people to email
+   * Email to Loan Officer (Prospect), Loan Processor (Application), LOA
+* Access form again
+   * Put notes in Comments/Notes as needed
+   * Click Corrections Needed as needed
+   * Click LO to Review
+   * If LO approves, pull disclosure, hit Sent to Borrower, mention in comments as needed
+   * Should remove from queue when clicked LO to review, then comes back to queue when LO approves, pull disclosure and verify, and click Sent to Borrower with comments as needed
+   * Sometimes Encompass will approve, they will click Approved to Send button, Approved queue, will get date and time in comments/notes; same if they have corrections
+* Others
+   * Some state-specific forms etc. that are in the SOPs

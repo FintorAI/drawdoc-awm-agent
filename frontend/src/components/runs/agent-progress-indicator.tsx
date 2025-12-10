@@ -52,18 +52,24 @@ function StatusDot({ status, label, size }: StatusDotProps) {
       className: "bg-red-500 text-white",
       title: `${label}: Failed`,
     },
-    blocked: {
-      icon: "!",
-      className: "bg-amber-500 text-white",
-      title: `${label}: Blocked`,
-    },
     pending: {
       icon: "○",
       className: "bg-slate-200 text-slate-400 border border-slate-300",
       title: `${label}: Pending`,
     },
+    pending_review: {
+      icon: "⏸",
+      className: "bg-amber-500 text-white animate-pulse",
+      title: `${label}: Pending Review`,
+    },
+    blocked: {
+      icon: "⚠",
+      className: "bg-orange-500 text-white",
+      title: `${label}: Blocked`,
+    },
   };
 
+  // Fallback to pending if status not found
   const config = statusConfig[status] || statusConfig.pending;
 
   return (
@@ -89,6 +95,9 @@ function StatusDot({ status, label, size }: StatusDotProps) {
       {status === "blocked" && (
         <span className="text-[10px] font-extrabold">!</span>
       )}
+      {status === "pending_review" && (
+        <span className="text-[10px] font-extrabold">⏸</span>
+      )}
     </div>
   );
 }
@@ -109,6 +118,7 @@ function StatusDot({ status, label, size }: StatusDotProps) {
  * - ✗ (x) = failed
  * - ! (exclamation) = blocked
  * - ○ (empty circle) = pending
+ * - ⏸ (pause) = pending_review
  */
 export function AgentProgressIndicator({
   agents,
@@ -166,4 +176,3 @@ export function AgentProgressExpanded({ agents, agentType = "drawdocs", classNam
     </div>
   );
 }
-
