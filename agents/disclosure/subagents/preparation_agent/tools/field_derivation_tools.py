@@ -14,7 +14,7 @@ from langchain_core.tools import tool
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent.parent))
 
-from packages.shared import get_encompass_client
+from packages.shared import read_fields, read_field, write_field
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -42,11 +42,8 @@ def get_loan_field_value(loan_id: str, field_id: str) -> dict:
     """
     logger.info(f"[GET] Getting field {field_id} for loan {loan_id[:8]}...")
     
-    encompass = get_encompass_client()
-    
     try:
-        result = encompass.get_field(loan_id, [field_id])
-        value = result.get(field_id)
+        value = read_field(loan_id, field_id)
         has_value = value is not None and str(value).strip() != ""
         
         logger.debug(f"[GET] Field {field_id}: {value if has_value else '(empty)'}")
@@ -85,8 +82,6 @@ def search_loan_fields(loan_id: str, search_term: str) -> dict:
         other email fields that might have the value you need.
     """
     logger.info(f"[SEARCH] Searching for '{search_term}' in loan {loan_id[:8]}...")
-    
-    encompass = get_encompass_client()
     
     try:
         # Get field mappings from master CSV (all Encompass fields)
@@ -147,7 +142,7 @@ def search_loan_fields(loan_id: str, search_term: str) -> dict:
         # Read values for matching fields
         matches = {}
         if matching_field_ids:
-            field_values = encompass.get_field(loan_id, matching_field_ids)
+            field_values = read_fields(loan_id, matching_field_ids, context="[FIELD_DERIVATION]")
             
             for field_id in matching_field_ids:
                 value = field_values.get(field_id)
@@ -197,8 +192,6 @@ def write_field_value(loan_id: str, field_id: str, value: Any, dry_run: bool = T
     """
     logger.info(f"[WRITE] {'[DRY RUN] ' if dry_run else ''}Writing field {field_id} for loan {loan_id[:8]}...")
     
-    encompass = get_encompass_client()
-    
     if dry_run:
         logger.info(f"[WRITE] [DRY RUN] Would write {field_id} = {value}")
         return {
@@ -210,7 +203,7 @@ def write_field_value(loan_id: str, field_id: str, value: Any, dry_run: bool = T
         }
     
     try:
-        success = encompass.write_field(loan_id, field_id, value)
+        success = write_field(loan_id, field_id, value, dry_run=False, context="[FIELD_DERIVATION]")
         logger.info(f"[WRITE] Successfully wrote {field_id} = {value}")
         return {
             "field_id": field_id,
@@ -248,8 +241,6 @@ def get_multiple_field_values(loan_id: str, field_ids: List[str]) -> dict:
     """
     logger.info(f"[GET_MULTIPLE] Getting {len(field_ids)} fields for loan {loan_id[:8]}...")
     
-    encompass = get_encompass_client()
-    
     try:
         # Deduplicate field IDs to avoid API errors
         unique_field_ids = list(set(field_ids))
@@ -257,7 +248,7 @@ def get_multiple_field_values(loan_id: str, field_ids: List[str]) -> dict:
             logger.warning(f"[GET_MULTIPLE] Removed {len(field_ids) - len(unique_field_ids)} duplicate field IDs")
         
         # Read all fields at once (more efficient than individual calls)
-        field_values = encompass.get_field(loan_id, unique_field_ids)
+        field_values = read_fields(loan_id, unique_field_ids, context="[FIELD_DERIVATION]")
         
         results = {}
         for field_id in field_ids:

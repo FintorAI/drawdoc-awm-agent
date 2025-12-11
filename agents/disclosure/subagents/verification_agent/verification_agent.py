@@ -16,7 +16,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent.parent))
 
 from copilotagent import create_deep_agent
 from packages.shared import (
-    get_encompass_client,
     read_fields,
     get_loan_type,
     get_loan_summary,
@@ -760,6 +759,13 @@ Provide a clear summary of all results including GAPS validation status.
             "summary": summary,
             "agent_messages": result["messages"]
         }
+        
+        # Log agent messages for human readability
+        from packages.shared import log_agent_messages, log_agent_summary
+        log_agent_messages(result["messages"], "VERIFICATION", logger)
+        log_agent_summary(final_result, "VERIFICATION", logger)
+        
+        return final_result
         
     except Exception as e:
         logger.error(f"Verification failed: {e}")

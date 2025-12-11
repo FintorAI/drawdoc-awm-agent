@@ -71,11 +71,14 @@ from .disclosure_orderer import (
     get_disclosure_orderer,
 )
 from .csv_utils import load_field_mappings
+from .field_names import get_field_name as get_field_name_from_csv, get_field_names_batch
 
 # Logging utilities
 from .logging_config import (
     setup_logging,
     add_agent_context,
+    log_agent_messages,
+    log_agent_summary,
     get_recent_logs,
     get_agent_timeline,
 )
@@ -144,9 +147,13 @@ __all__ = [
     "get_disclosure_orderer",
     # CSV
     "load_field_mappings",
+    "get_field_name_from_csv",
+    "get_field_names_batch",
     # Logging
     "setup_logging",
     "add_agent_context",
+    "log_agent_messages",
+    "log_agent_summary",
     "get_recent_logs",
     "get_agent_timeline",
 ]

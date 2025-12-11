@@ -179,7 +179,7 @@ class RegZLEUpdater:
             logger.info(f"[REGZ-LE] [DRY RUN] Would update {len(updates)} fields")
             success = True
         else:
-            success = write_fields(loan_id, updates, dry_run=False)
+            success = write_fields(loan_id, updates, dry_run=False, form_name="RegZ-LE", context="[PREPARATION]")
             if not success:
                 errors.append("Failed to write updates to Encompass")
         
@@ -200,9 +200,9 @@ class RegZLEUpdater:
         - Number of Days (Biweekly): 365
         """
         updates = {
-            RegZLEFields.INTEREST_DAYS_PER_YEAR: "360",
+            RegZLEFields.INTEREST_DAYS_PER_YEAR: 360,  # Integer, not string
             RegZLEFields.USE_SIMPLE_INTEREST: "",
-            RegZLEFields.BIWEEKLY_INTERIM_DAYS: "365",
+            RegZLEFields.BIWEEKLY_INTERIM_DAYS: 365,  # Integer, not string
         }
         
         # G18: Log warnings for unknown field IDs

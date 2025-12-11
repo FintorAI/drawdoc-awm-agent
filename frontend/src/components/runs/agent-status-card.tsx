@@ -259,7 +259,7 @@ function AgentStatusCardSkeleton({ className }: { className?: string }) {
               <span className="text-blue-600">
                 <LiveDuration startTime={executionTimestamp} />
               </span>
-            ) : result?.elapsed_seconds !== undefined ? (
+            ) : (result?.elapsed_seconds !== undefined && result.elapsed_seconds > 0) ? (
               <span className={cn(
                 isFailed ? "text-red-600" : "text-muted-foreground"
               )}>

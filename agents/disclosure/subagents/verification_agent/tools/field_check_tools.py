@@ -10,7 +10,7 @@ from langchain_core.tools import tool
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent.parent))
 
-from packages.shared import get_encompass_client, load_field_mappings
+from packages.shared import read_fields, load_field_mappings
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -39,7 +39,6 @@ def check_required_fields(loan_id: str) -> dict:
     """
     logger.info(f"[CHECK] Checking required fields for loan {loan_id[:8]}...")
     
-    encompass = get_encompass_client()
     all_fields = load_field_mappings()
     
     # Filter to only disclosure-required fields
@@ -71,7 +70,7 @@ def check_required_fields(loan_id: str) -> dict:
     
     # Read all fields at once (more efficient)
     try:
-        field_values = encompass.get_field(loan_id, field_ids_to_check)
+        field_values = read_fields(loan_id, field_ids_to_check, context="[VERIFICATION]")
         
         for field_id in field_ids_to_check:
             field_name = field_id_to_name[field_id]

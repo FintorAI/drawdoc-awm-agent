@@ -456,6 +456,10 @@ def run_disclosure_preparation(
                     if message.name == "update_regz_le_fields":
                         regz_le_result = content
                         actions.append({"action": "regz_le_update", "result": content})
+                        # Track individual field updates from RegZ-LE
+                        if content.get("success") and content.get("updates_made"):
+                            for field_id in content.get("updates_made", {}).keys():
+                                fields_populated.append(field_id)
                         
                     elif message.name == "calculate_loan_mi":
                         mi_result = content
@@ -479,9 +483,13 @@ def run_disclosure_preparation(
                             
                     elif message.name == "populate_mi_fields":
                         if content.get("success"):
+                            # Track individual MI field updates
+                            mi_fields = content.get("fields_written", [])
+                            for field_id in mi_fields:
+                                fields_populated.append(field_id)
                             actions.append({
                                 "action": "populate_mi",
-                                "fields": content.get("fields_written", []),
+                                "fields": mi_fields,
                                 "dry_run": content.get("dry_run", True)
                             })
                         
@@ -543,6 +551,13 @@ def run_disclosure_preparation(
             "demo_mode": demo_mode,
             "agent_messages": result["messages"]
         }
+        
+        # Log agent messages for human readability
+        from packages.shared import log_agent_messages, log_agent_summary
+        log_agent_messages(result["messages"], "PREPARATION", logger)
+        log_agent_summary(final_result, "PREPARATION", logger)
+        
+        return final_result
         
     except Exception as e:
         logger.error(f"Preparation failed: {e}")
