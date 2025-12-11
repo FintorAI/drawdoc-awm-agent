@@ -3,6 +3,7 @@
 Fetch loan information from Encompass.
 
 Pulls loan context, key fields, and available documents for a given loan ID.
+Uses shared Encompass helpers for authentication consistency across the project.
 """
 
 import os
@@ -11,12 +12,16 @@ import json
 from pathlib import Path
 from datetime import datetime
 
+# Add project root to path for shared imports
+PROJECT_ROOT = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(PROJECT_ROOT))
+
 # Load environment variables
 from dotenv import load_dotenv
-load_dotenv(Path(__file__).parent / ".env")
+load_dotenv(PROJECT_ROOT / ".env")
 
-# Add project root to path
-sys.path.insert(0, str(Path(__file__).parent))
+# Import shared Encompass utilities for consistent auth across project
+from packages.shared import get_access_token
 
 # =============================================================================
 # LOAN ID TO FETCH
@@ -25,47 +30,17 @@ LOAN_ID = "59d7a711-70f4-4b12-a3b5-bbefb3ff7dbc"
 
 
 def get_http_client():
-    """Get HTTP client for Encompass API requests."""
-    import requests
-    from requests.auth import HTTPBasicAuth
-    
-    # Get credentials from environment
+    """Get HTTP client for Encompass API requests using shared auth."""
     api_base_url = os.getenv("ENCOMPASS_API_BASE_URL", "https://api.elliemae.com")
-    client_id = os.getenv("ENCOMPASS_CLIENT_ID")
-    client_secret = os.getenv("ENCOMPASS_CLIENT_SECRET")
-    instance_id = os.getenv("ENCOMPASS_INSTANCE_ID")
-    scope = os.getenv("ENCOMPASS_SCOPE", "lp")
     
     print(f"[AUTH] API Base URL: {api_base_url}")
-    print(f"[AUTH] Client ID: {client_id[:8] if client_id else 'MISSING'}...")
-    print(f"[AUTH] Instance ID: {instance_id or 'MISSING'}")
+    print(f"[AUTH] Using shared get_access_token() for authentication...")
     
-    # Get OAuth token using HTTPBasicAuth (correct Encompass OAuth2 flow)
-    token_url = f"{api_base_url}/oauth2/v1/token"
+    # Use shared auth module for consistency with rest of project
+    access_token = get_access_token()
     
-    # Client credentials flow with HTTPBasicAuth for client_id/secret
-    token_data = {
-        "grant_type": "client_credentials",
-        "instance_id": instance_id,
-        "scope": scope,
-    }
-    
-    print(f"[AUTH] Requesting token with grant_type: client_credentials")
-    
-    resp = requests.post(
-        token_url,
-        data=token_data,
-        auth=HTTPBasicAuth(client_id, client_secret),  # Use HTTPBasicAuth
-        timeout=30
-    )
-    
-    if resp.status_code != 200:
-        print(f"[AUTH] Token request failed: {resp.status_code}")
-        print(f"[AUTH] Response: {resp.text}")
-        raise RuntimeError(f"Failed to get token: {resp.status_code} - {resp.text}")
-    
-    token_response = resp.json()
-    access_token = token_response.get("access_token")
+    if not access_token:
+        raise RuntimeError("Failed to get access token from shared auth module")
     
     print(f"[AUTH] ✓ Got access token: {access_token[:20]}...")
     
@@ -395,10 +370,11 @@ def fetch_loan_documents(api_base_url: str, token: str, loan_id: str) -> list:
 
 
 def fetch_milestones(api_base_url: str, token: str, loan_id: str) -> list:
-    """Fetch loan milestones."""
+    """Fetch loan milestones using v3 API."""
     import requests
     
-    url = f"{api_base_url}/encompass/v1/loans/{loan_id}/milestones"
+    # Use v3 API for consistency with rest of project
+    url = f"{api_base_url}/encompass/v3/loans/{loan_id}/milestones"
     
     print(f"\n[MILESTONES] Fetching milestones from loan {loan_id[:8]}...")
     
@@ -545,9 +521,11 @@ def main():
         print("\n📊 MILESTONES:")
         if milestones:
             for ms in milestones[:10]:
-                name = ms.get('milestoneName', 'Unknown')
-                status = ms.get('status', 'Unknown')
-                status_date = ms.get('statusDate', '')
+                # v3 API uses "name", v1 used "milestoneName" - support both for compatibility
+                name = ms.get('name') or ms.get('milestoneName', 'Unknown')
+                done = ms.get('doneIndicator', False)
+                status = "Completed" if done else "Pending"
+                status_date = ms.get('startDate', '')
                 print(f"   - {name}: {status}" + (f" ({status_date[:10]})" if status_date else ""))
         else:
             print("   No milestones found")

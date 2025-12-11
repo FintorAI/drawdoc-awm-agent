@@ -1,0 +1,595 @@
+# Encompass Field ID → LoanFacts Field Mapping
+# 
+# This configuration maps Encompass field IDs to normalized LoanFacts field paths.
+# Used by fetch_loan_context.py to normalize Encompass responses.
+#
+# Format:
+#   encompass_field_id:
+#     path: "loan_facts.field_path"  # Dot-notation path in LoanFacts
+#     type: "string|number|boolean|date"  # Data type for conversion
+#     description: "Human-readable description"
+
+# =============================================================================
+# LOAN IDENTIFICATION & PROGRAM
+# =============================================================================
+
+"364":
+  path: "loan_number"
+  type: "string"
+  description: "Loan Number"
+
+"1172":
+  path: "loan_type"
+  type: "string"
+  description: "Loan Type (Conventional, FHA, VA, USDA)"
+
+"1401":
+  path: "loan_program"
+  type: "string"
+  description: "Loan Program"
+
+"19":
+  path: "loan_purpose"
+  type: "string"
+  description: "Loan Purpose (Purchase, Refinance, etc.)"
+
+"608":
+  path: "amortization_type"
+  type: "string"
+  description: "Amortization Type"
+
+# =============================================================================
+# PRIMARY BORROWER
+# =============================================================================
+
+"4000":
+  path: "borrowers[0].first_name"
+  type: "string"
+  description: "Borrower First Name"
+
+"4001":
+  path: "borrowers[0].middle_name"
+  type: "string"
+  description: "Borrower Middle Name"
+
+"4002":
+  path: "borrowers[0].last_name"
+  type: "string"
+  description: "Borrower Last Name"
+
+"4003":
+  path: "borrowers[0].suffix"
+  type: "string"
+  description: "Borrower Suffix"
+
+"65":
+  path: "borrowers[0].ssn"
+  type: "string"
+  description: "Borrower SSN"
+
+"52":
+  path: "borrowers[0].dob"
+  type: "date"
+  description: "Borrower Date of Birth"
+
+"1268":
+  path: "borrowers[0].email"
+  type: "string"
+  description: "Borrower Email"
+
+"66":
+  path: "borrowers[0].phone"
+  type: "string"
+  description: "Borrower Home Phone"
+
+"1490":
+  path: "borrowers[0].cell_phone"
+  type: "string"
+  description: "Borrower Cell Phone"
+
+"84":
+  path: "borrowers[0].work_phone"
+  type: "string"
+  description: "Borrower Work Phone"
+
+"471":
+  path: "borrowers[0].marital_status"
+  type: "string"
+  description: "Borrower Marital Status"
+
+"1523":
+  path: "borrowers[0].citizenship_status"
+  type: "string"
+  description: "Borrower Citizenship Status"
+
+"1199":
+  path: "borrowers[0].dependents_count"
+  type: "number"
+  description: "Borrower Number of Dependents"
+
+# Borrower Current Address
+"FR0104":
+  path: "borrowers[0].current_address_street"
+  type: "string"
+  description: "Borrower Current Street Address"
+
+"FR0106":
+  path: "borrowers[0].current_address_city"
+  type: "string"
+  description: "Borrower Current City"
+
+"FR0107":
+  path: "borrowers[0].current_address_state"
+  type: "string"
+  description: "Borrower Current State"
+
+"FR0108":
+  path: "borrowers[0].current_address_zip"
+  type: "string"
+  description: "Borrower Current Zip"
+
+"1402":
+  path: "borrowers[0].years_at_current_address"
+  type: "number"
+  description: "Borrower Years at Current Address"
+
+# Borrower Employment
+"BE0015":
+  path: "borrowers[0].employer_name"
+  type: "string"
+  description: "Borrower Employer Name"
+
+"BE0003":
+  path: "borrowers[0].job_title"
+  type: "string"
+  description: "Borrower Job Title"
+
+"BE0016":
+  path: "borrowers[0].employer_address_street"
+  type: "string"
+  description: "Borrower Employer Street"
+
+"BE0018":
+  path: "borrowers[0].employer_address_city"
+  type: "string"
+  description: "Borrower Employer City"
+
+"BE0019":
+  path: "borrowers[0].employer_address_state"
+  type: "string"
+  description: "Borrower Employer State"
+
+"BE0020":
+  path: "borrowers[0].employer_address_zip"
+  type: "string"
+  description: "Borrower Employer Zip"
+
+"BE0012":
+  path: "borrowers[0].employer_phone"
+  type: "string"
+  description: "Borrower Employer Phone"
+
+"BE0002":
+  path: "borrowers[0].is_self_employed"
+  type: "boolean"
+  description: "Borrower Self Employed"
+
+"BE0005":
+  path: "borrowers[0].years_on_job"
+  type: "number"
+  description: "Borrower Years on Job"
+
+"BE0006":
+  path: "borrowers[0].months_on_job"
+  type: "number"
+  description: "Borrower Months on Job"
+
+"1756":
+  path: "borrowers[0].years_in_profession"
+  type: "number"
+  description: "Borrower Years in Profession"
+
+# Borrower Income
+"1":
+  path: "borrowers[0].base_income"
+  type: "number"
+  description: "Borrower Base Income"
+
+"1048":
+  path: "borrowers[0].overtime_income"
+  type: "number"
+  description: "Borrower Overtime Income"
+
+"1049":
+  path: "borrowers[0].bonus_income"
+  type: "number"
+  description: "Borrower Bonus Income"
+
+"1050":
+  path: "borrowers[0].commission_income"
+  type: "number"
+  description: "Borrower Commission Income"
+
+"1051":
+  path: "borrowers[0].dividends_income"
+  type: "number"
+  description: "Borrower Dividends/Interest Income"
+
+"1052":
+  path: "borrowers[0].rental_income"
+  type: "number"
+  description: "Borrower Net Rental Income"
+
+"1053":
+  path: "borrowers[0].other_income"
+  type: "number"
+  description: "Borrower Other Income"
+
+"1759":
+  path: "borrowers[0].total_monthly_income"
+  type: "number"
+  description: "Borrower Total Monthly Income"
+
+# =============================================================================
+# CO-BORROWER
+# =============================================================================
+
+"4004":
+  path: "borrowers[1].first_name"
+  type: "string"
+  description: "Co-Borrower First Name"
+
+"4005":
+  path: "borrowers[1].middle_name"
+  type: "string"
+  description: "Co-Borrower Middle Name"
+
+"4006":
+  path: "borrowers[1].last_name"
+  type: "string"
+  description: "Co-Borrower Last Name"
+
+"4007":
+  path: "borrowers[1].suffix"
+  type: "string"
+  description: "Co-Borrower Suffix"
+
+"68":
+  path: "borrowers[1].ssn"
+  type: "string"
+  description: "Co-Borrower SSN"
+
+"1496":
+  path: "borrowers[1].dob"
+  type: "date"
+  description: "Co-Borrower Date of Birth"
+
+"1519":
+  path: "borrowers[1].email"
+  type: "string"
+  description: "Co-Borrower Email"
+
+"97":
+  path: "borrowers[1].phone"
+  type: "string"
+  description: "Co-Borrower Home Phone"
+
+"1520":
+  path: "borrowers[1].cell_phone"
+  type: "string"
+  description: "Co-Borrower Cell Phone"
+
+"98":
+  path: "borrowers[1].work_phone"
+  type: "string"
+  description: "Co-Borrower Work Phone"
+
+# Co-Borrower Employment
+"CE0015":
+  path: "borrowers[1].employer_name"
+  type: "string"
+  description: "Co-Borrower Employer Name"
+
+"CE0003":
+  path: "borrowers[1].job_title"
+  type: "string"
+  description: "Co-Borrower Job Title"
+
+# =============================================================================
+# SUBJECT PROPERTY
+# =============================================================================
+
+"11":
+  path: "property.address"
+  type: "string"
+  description: "Subject Property Address"
+
+"12":
+  path: "property.city"
+  type: "string"
+  description: "Subject Property City"
+
+"14":
+  path: "property.state"
+  type: "string"
+  description: "Subject Property State"
+
+"15":
+  path: "property.zip"
+  type: "string"
+  description: "Subject Property Zip"
+
+"13":
+  path: "property.county"
+  type: "string"
+  description: "Subject Property County"
+
+"1041":
+  path: "property.property_type"
+  type: "string"
+  description: "Property Type"
+
+"1811":
+  path: "property.occupancy_type"
+  type: "string"
+  description: "Occupancy Type"
+
+"16":
+  path: "property.number_of_units"
+  type: "number"
+  description: "Number of Units"
+
+"18":
+  path: "property.year_built"
+  type: "number"
+  description: "Year Built"
+
+"1396":
+  path: "property.legal_description"
+  type: "string"
+  description: "Legal Description"
+
+"1397":
+  path: "property.apn"
+  type: "string"
+  description: "Assessor Parcel Number"
+
+"1981":
+  path: "property.is_manufactured"
+  type: "boolean"
+  description: "Is Manufactured Home"
+
+"1026":
+  path: "property.condo_project_type"
+  type: "string"
+  description: "Condo Project Type"
+
+"696":
+  path: "property.has_hoa"
+  type: "boolean"
+  description: "Has HOA"
+
+"232":
+  path: "property.monthly_hoa_dues"
+  type: "number"
+  description: "Monthly HOA Dues"
+
+# =============================================================================
+# LOAN AMOUNTS & TERMS
+# =============================================================================
+
+"1109":
+  path: "loan_amount"
+  type: "number"
+  description: "Loan Amount"
+
+"136":
+  path: "purchase_price"
+  type: "number"
+  description: "Purchase Price"
+
+"356":
+  path: "appraised_value"
+  type: "number"
+  description: "Appraised Value"
+
+"353":
+  path: "ltv"
+  type: "number"
+  description: "LTV Ratio"
+
+"976":
+  path: "cltv"
+  type: "number"
+  description: "CLTV Ratio"
+
+"3":
+  path: "interest_rate"
+  type: "number"
+  description: "Interest Rate"
+
+"4":
+  path: "loan_term_months"
+  type: "number"
+  description: "Loan Term (months)"
+
+"337":
+  path: "cash_to_close"
+  type: "number"
+  description: "Cash to Close"
+
+"1335":
+  path: "down_payment"
+  type: "number"
+  description: "Down Payment"
+
+"1771":
+  path: "down_payment_percent"
+  type: "number"
+  description: "Down Payment Percentage"
+
+"740":
+  path: "dti_front"
+  type: "number"
+  description: "Front Ratio (DTI)"
+
+"742":
+  path: "dti_back"
+  type: "number"
+  description: "Back Ratio (DTI)"
+
+# =============================================================================
+# DATES
+# =============================================================================
+
+"745":
+  path: "application_date"
+  type: "date"
+  description: "Application Date"
+
+"682":
+  path: "estimated_closing_date"
+  type: "date"
+  description: "Estimated Closing Date"
+
+"762":
+  path: "lock_date"
+  type: "date"
+  description: "Lock Date"
+
+"763":
+  path: "lock_expiration_date"
+  type: "date"
+  description: "Lock Expiration Date"
+
+# =============================================================================
+# LOAN OFFICER & TEAM
+# =============================================================================
+
+"317":
+  path: "lo_name"
+  type: "string"
+  description: "Loan Officer Name"
+
+"88":
+  path: "lo_email"
+  type: "string"
+  description: "Loan Officer Email"
+
+"362":
+  path: "lo_nmls"
+  type: "string"
+  description: "Loan Officer NMLS"
+
+"318":
+  path: "processor_name"
+  type: "string"
+  description: "Processor Name"
+
+# =============================================================================
+# CREDIT
+# =============================================================================
+
+"1056":
+  path: "credit_score"
+  type: "number"
+  description: "Credit Score (Used)"
+
+"1057":
+  path: "credit_score_date"
+  type: "date"
+  description: "Credit Score Date"
+
+# =============================================================================
+# MILESTONE MAPPING (not from fieldReader, but from milestones API)
+# =============================================================================
+# Milestones are fetched separately and mapped by name
+
+# =============================================================================
+# QUESTIONNAIRE FIELD MAPPING
+# =============================================================================
+# These map questionnaire required_fields to the LoanFacts field paths
+# Used by the gap analyzer to check field presence
+
+questionnaire_field_mapping:
+  # Account Setup (Section 0)
+  first_name: "borrowers[0].first_name"
+  last_name: "borrowers[0].last_name"
+  primary_phone: "borrowers[0].phone"
+  email: "borrowers[0].email"
+  
+  # Borrower Profile (Section 3)
+  borrower_first_name: "borrowers[0].first_name"
+  borrower_last_name: "borrowers[0].last_name"
+  borrower_middle_name: "borrowers[0].middle_name"
+  borrower_marital_status: "borrowers[0].marital_status"
+  borrower_citizenship_status: "borrowers[0].citizenship_status"
+  borrower_ssn: "borrowers[0].ssn"
+  borrower_dob: "borrowers[0].dob"
+  
+  # Borrower Address (Section 3)
+  borrower_current_address_street: "borrowers[0].current_address_street"
+  borrower_current_address_city: "borrowers[0].current_address_city"
+  borrower_current_address_state: "borrowers[0].current_address_state"
+  borrower_current_address_zip: "borrowers[0].current_address_zip"
+  borrower_years_at_current_address: "borrowers[0].years_at_current_address"
+  
+  # Employment (Section 8)
+  is_self_employed_boolean: "borrowers[0].is_self_employed"
+  employer_name: "borrowers[0].employer_name"
+  employer_address_street: "borrowers[0].employer_address_street"
+  employer_address_city: "borrowers[0].employer_address_city"
+  employer_address_state: "borrowers[0].employer_address_state"
+  employer_address_zip: "borrowers[0].employer_address_zip"
+  hr_contact_phone: "borrowers[0].employer_phone"
+  employer_tenure_years: "borrowers[0].years_on_job"
+  annual_income_amount: "borrowers[0].total_monthly_income"  # Note: needs conversion
+  
+  # Property (Section 9)
+  subject_property_type: "property.property_type"
+  subject_property_occupancy: "property.occupancy_type"
+  
+  # Loan fields
+  loan_amount: "loan_amount"
+  purchase_price: "purchase_price"
+  loan_type: "loan_type"
+  loan_purpose: "loan_purpose"
+  
+  # Co-borrower fields (for joint applications)
+  co_borrower_first_name: "borrowers[1].first_name"
+  co_borrower_last_name: "borrowers[1].last_name"
+  co_borrower_ssn: "borrowers[1].ssn"
+  co_borrower_dob: "borrowers[1].dob"
+
+# =============================================================================
+# SEVERITY MAPPING
+# =============================================================================
+# Maps fields to their severity level when missing
+
+severity_mapping:
+  critical:
+    - borrower_ssn
+    - borrower_dob
+    - first_name
+    - last_name
+    - borrower_first_name
+    - borrower_last_name
+    - loan_amount
+    - subject_property_type
+    
+  warn:
+    - email
+    - primary_phone
+    - borrower_current_address_street
+    - borrower_current_address_city
+    - borrower_current_address_state
+    - borrower_current_address_zip
+    - employer_name
+    - hr_contact_phone
+    - borrower_marital_status
+    - borrower_citizenship_status
+    
+  info:
+    - borrower_middle_name
+    - borrower_years_at_current_address
+

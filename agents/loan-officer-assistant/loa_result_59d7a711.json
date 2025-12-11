@@ -1,0 +1,2588 @@
+{
+  "loan_id": "59d7a711-70f4-4b12-a3b5-bbefb3ff7dbc",
+  "execution_timestamp": "2025-12-11T18:20:49.581893",
+  "mode": "fast",
+  "status": "complete",
+  "loan_facts": {
+    "loan_id": "59d7a711-70f4-4b12-a3b5-bbefb3ff7dbc",
+    "loan_number": "2512926137",
+    "loan_purpose": "Purchase",
+    "loan_type": "FHA",
+    "loan_amount": 150000.0,
+    "purchase_price": 290000.0,
+    "appraised_value": 290000.0,
+    "ltv": 51.724,
+    "cltv": 51.724,
+    "dti_front": 43.62,
+    "dti_back": 48.636,
+    "interest_rate": 5.625,
+    "loan_term_months": 360,
+    "amortization_type": "Fixed",
+    "down_payment": 140000.0,
+    "down_payment_percent": 48.276,
+    "cash_to_close": 2625.0,
+    "application_date": "09/30/2025",
+    "estimated_closing_date": "//",
+    "lock_date": "//",
+    "lock_expiration_date": "//",
+    "borrowers": [
+      {
+        "borrower_type": "PRIMARY",
+        "first_name": "Alva",
+        "last_name": "Sorensen",
+        "middle_name": "Scott",
+        "ssn": "529-55-3694",
+        "dob": "Married",
+        "phone": "970-631-6317",
+        "marital_status": "Male",
+        "citizenship_status": "Not Hispanic or Latino",
+        "current_address_street": "539 W 200 S",
+        "current_address_city": "Vernal",
+        "current_address_state": "UT",
+        "current_address_zip": "84078",
+        "dividends_income": 1.0069090000086216e+17
+      }
+    ],
+    "subject_property": {
+      "address": "2068 W 1000 S",
+      "city": "Vernal",
+      "state": "UT",
+      "zip": "84078",
+      "county": "Uintah",
+      "occupancy_type": "PrimaryResidence",
+      "number_of_units": 1,
+      "year_built": 1951,
+      "legal_description": "047"
+    },
+    "current_milestone": "Prospect",
+    "milestones": [
+      {
+        "name": "Started",
+        "status": "Completed",
+        "status_date": "2025-12-08T20:53:41Z"
+      },
+      {
+        "name": "Prospect",
+        "status": "Pending",
+        "status_date": "2025-12-08T20:54:41Z"
+      },
+      {
+        "name": "Application",
+        "status": "Pending",
+        "status_date": "2025-12-11T20:54:41Z"
+      },
+      {
+        "name": "In Processing/Submitted",
+        "status": "Pending",
+        "status_date": "2025-12-11T20:55:41Z"
+      },
+      {
+        "name": "In UW/UW Completed",
+        "status": "Pending",
+        "status_date": "2025-12-13T20:55:41Z"
+      },
+      {
+        "name": "Approval Review/Conds Sub",
+        "status": "Pending",
+        "status_date": "2025-12-16T20:55:41Z"
+      },
+      {
+        "name": "Conds in Review/CTC",
+        "status": "Pending",
+        "status_date": "2025-12-17T20:55:41Z"
+      },
+      {
+        "name": "Docs Ordered/Docs Out",
+        "status": "Pending",
+        "status_date": "2025-12-19T20:55:41Z"
+      },
+      {
+        "name": "Docs at Escrow/Docs are Back",
+        "status": "Pending",
+        "status_date": "2025-12-20T20:55:41Z"
+      },
+      {
+        "name": "Docs in Review/Doc Rvw Complete",
+        "status": "Pending",
+        "status_date": "2025-12-21T20:55:41Z"
+      },
+      {
+        "name": "Fund Cond Needed/Fund Cond Sub",
+        "status": "Pending",
+        "status_date": "2025-12-24T20:55:41Z"
+      },
+      {
+        "name": "Fund Rvw/Funded",
+        "status": "Pending",
+        "status_date": "2025-12-25T20:55:41Z"
+      },
+      {
+        "name": "Ship Hold/Ship Rlsd",
+        "status": "Pending",
+        "status_date": "2025-12-26T20:55:41Z"
+      },
+      {
+        "name": "Ship Rcvd/Shipped",
+        "status": "Pending",
+        "status_date": "2025-12-28T20:55:41Z"
+      },
+      {
+        "name": "Waiting for Purchase/Purchased",
+        "status": "Pending",
+        "status_date": "2026-01-11T20:55:41Z"
+      },
+      {
+        "name": "Completion",
+        "status": "Pending",
+        "status_date": "2026-01-11T20:56:41Z"
+      }
+    ],
+    "efolder_docs": [
+      {
+        "attachment_id": "002dc7bc-cf92-48b9-9cc6-95aef947c00b",
+        "title": "1708608524.FINDINGS",
+        "date_created": "2025-12-08T20:58:26Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "011fd17e-825a-4e75-8242-8eb8bbbd3d23",
+        "title": "COD.pdf",
+        "date_created": "2025-12-08T21:05:21Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "0127e315-3b47-44a5-8dd0-8873c8e3c60a",
+        "title": "Generated Letter of Explanation - Credit Inquiry - Blend Sign Certificate of Completion - 2025-09-30 823 pm EDT",
+        "date_created": "2025-12-08T20:56:53Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "013a5f5b-1724-460b-95e0-fc8c4dfffb06",
+        "title": "Fedex original start date.pdf",
+        "date_created": "2025-12-08T21:02:09Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "01a5c653-f764-49c5-9bbf-c6fa15fb0080",
+        "title": "Generated Letter of Explanation - Large Deposit - Blend Sign Certificate of Completion - 2025-09-08 335 pm EDT",
+        "date_created": "2025-12-08T20:53:52Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "0291ea1f-f277-4d28-8669-5d0b63591d55",
+        "title": "Sorensen - W-2 - Jimmy John - 2024",
+        "date_created": "2025-12-08T21:05:27Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "029e43f3-21eb-489d-abad-715a41db148b",
+        "title": "Closing Disclosure",
+        "date_created": "2025-12-08T20:54:50Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "04a82fc6-59cf-46fa-87f4-d583266b7615",
+        "title": "2020 URLA (1003/65) - All Pages",
+        "date_created": "2025-12-08T21:09:46Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "0580d6de-54fa-4ef7-a766-c9b119e08e06",
+        "title": "FHA Notice to Homeowner Release of Personal Liability for Assumptions",
+        "date_created": "2025-12-08T21:00:34Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "05afb354-310a-4ed7-9881-f8af175481b9",
+        "title": "2509946673 Alva Scott Sorensen.pdf",
+        "date_created": "2025-12-08T20:59:46Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "064235c7-95a6-42ea-bd97-94186de5b762",
+        "title": "Amendatory clause- Scotty.pdf",
+        "date_created": "2025-12-08T20:54:54Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "073ae5c5-4e0a-432b-9259-7595481c791b",
+        "title": "Closing Disclosure",
+        "date_created": "2025-12-08T20:55:44Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "07b23bcf-4c37-49e4-873b-a048489b0416",
+        "title": "Bank Statement - BELLCO1JUNE.pdf",
+        "date_created": "2025-12-08T21:00:40Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "0801e028-0c54-4d7e-8252-4ad98999910b",
+        "title": "FHA Informed Consumer Choice Disclosure Notice",
+        "date_created": "2025-12-08T21:02:31Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "09352844-21e9-4fff-b841-db16765241b1",
+        "title": "Verification of Employment - 1005.pdf",
+        "date_created": "2025-12-08T21:04:27Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "09c53b57-97ff-43f2-999b-02b6d9ef819c",
+        "title": "1761072440_SSR_FHA_A0005HF285.pdf",
+        "date_created": "2025-12-08T21:05:30Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "09d5d367-1262-44f5-a554-44d20fad4f37",
+        "title": "IRS 4506C - Trans Request",
+        "date_created": "2025-12-08T21:06:56Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "0a201b26-9ae5-4e71-a51c-920aea1e2937",
+        "title": "Uniform Residential Loan Application (2020)",
+        "date_created": "2025-12-08T21:07:49Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "0a78542a-1731-4abd-b5d6-5906f2f03b47",
+        "title": "Tax Record Information Sheet",
+        "date_created": "2025-12-08T21:00:05Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "0c436c63-69f7-4e36-94e1-520de1d3ca6b",
+        "title": "Generated Letter of Explanation - Late Payment - Blend Sign Certificate of Completion - 2025-10-20 835 pm EDT - Alva Sorensen",
+        "date_created": "2025-12-08T21:05:00Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "0e2cbc1d-77f1-4913-b908-24963a24fdec",
+        "title": "HUDV.A. Addendum to Uniform Residential Loan Application",
+        "date_created": "2025-12-08T20:55:37Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "0fce8b9c-0d77-4cfc-8d8d-6dbc134ca4a6",
+        "title": "Acknowledgement of Receipt of Loan Estimate",
+        "date_created": "2025-12-08T21:00:47Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "0fe35c18-47cb-4e4e-bb3e-a96bc83299a2",
+        "title": "Hazard Insurance Authorization, Requirements and Disclosure",
+        "date_created": "2025-12-08T21:09:25Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "0fea3f58-4f6c-44b6-8bd2-d0b9f17fcb03",
+        "title": "prenote-alva.pdf",
+        "date_created": "2025-12-08T21:05:12Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "1048a924-719f-48d8-b963-23d9906c56ab",
+        "title": "2509946673 proof of note delivery.jpg",
+        "date_created": "2025-12-08T21:03:38Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "1095689a-7cfe-4716-a710-273e1465631b",
+        "title": "Request for Taxpayer ID Number & Certification (IRS W-9)",
+        "date_created": "2025-12-08T21:04:20Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "10c7aef7-7cfe-4111-b54b-ccfb9945c6a2",
+        "title": "Berger - Generated Asset Statement - Chase Bank - 0256 - September 2025",
+        "date_created": "2025-12-08T20:54:26Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "113a3ebb-0e2c-4652-898e-48304f16eba4",
+        "title": "Sorensen - Generated Letter of Explanation - Late Payment",
+        "date_created": "2025-12-08T21:04:17Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "116aba7e-712e-4c0d-9637-8a4fe1dea4e2",
+        "title": "Halcyon Consent  &  8821 Disclosure",
+        "date_created": "2025-12-08T20:59:02Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "11f02a3b-563b-43ab-825c-4ec9190155b1",
+        "title": "Fair Credit Reporting Act",
+        "date_created": "2025-12-08T21:03:25Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "12574df5-4f75-45b1-a58b-e7cefac62d1c",
+        "title": "Current VOEs",
+        "date_created": "2025-12-08T21:06:19Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "126a6317-75ed-4084-9e27-fbe1bb869b96",
+        "title": "Sorensen_-_W-2_-_Jimmy_John_-_2024.pdf",
+        "date_created": "2025-12-08T20:56:43Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "12b69eac-3262-4217-8db7-56e88e346cf2",
+        "title": "Wire Fraud Disclosure",
+        "date_created": "2025-12-08T20:59:17Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "13d369ae-3dcd-4a94-98f6-9d33fb7ac96f",
+        "title": "FullFeedback",
+        "date_created": "2025-12-08T21:09:38Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "144c9cbb-c387-4371-af71-70552854b352",
+        "title": "Letter Of Explanation.pdf",
+        "date_created": "2025-12-08T20:55:40Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "145ce566-aea4-4599-a4eb-b0f6f16eaf96",
+        "title": "HUD Appraised Value Disclosure",
+        "date_created": "2025-12-08T21:09:09Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "152c7ac3-6efa-4807-a3d0-5ea47880986a",
+        "title": "Tax Information Authorization",
+        "date_created": "2025-12-08T21:03:13Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "1544f13f-feac-401e-8004-5ff0780ef1ee",
+        "title": "GSa 3.pdf",
+        "date_created": "2025-12-08T21:02:15Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "154a78cc-6570-45df-8b9e-8d46d7f2f161",
+        "title": "1708608524.FINDINGS",
+        "date_created": "2025-12-08T21:08:35Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "154b2835-eea9-4058-901c-537216dcb4e4",
+        "title": "Sorensen - Request for Transcript of Tax Return",
+        "date_created": "2025-12-08T21:07:18Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "17dc0e02-92da-4c10-b04d-c55565ac1aea",
+        "title": "FHA Notice to Settlement Agents",
+        "date_created": "2025-12-08T21:04:04Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "18999616-6955-410b-9c65-93424a749ad2",
+        "title": "VOE-Hynds Bros.pdf",
+        "date_created": "2025-12-08T20:58:23Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "18af514b-33f8-4f0a-90c8-11a7be95a3f7",
+        "title": "Equal Credit Opportunity Act Notice",
+        "date_created": "2025-12-08T20:54:34Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "19c00629-0101-4431-ad3b-74361e74f75f",
+        "title": "General Letter of Explanation",
+        "date_created": "2025-12-08T21:03:07Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "1ab00897-450d-49fe-82fc-94f2ceaedeab",
+        "title": "Request for Transcript of Tax Return - Blend Sign Certificate of Completion - 2025-10-20 835 pm EDT - Alva Sorensen",
+        "date_created": "2025-12-08T20:59:55Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "1b59e2c7-1f6d-47fd-b061-bfcf2ef85b5f",
+        "title": "HUD/V.A. Addendum to Uniform Residential Loan Application",
+        "date_created": "2025-12-08T21:06:46Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "1c575684-e533-435c-9196-ef9f31716a6b",
+        "title": "Compliance Report",
+        "date_created": "2025-12-08T21:04:42Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "1e5f0d4d-aeb9-4235-a143-3217c1733adf",
+        "title": "Payment Details Result.pdf",
+        "date_created": "2025-12-08T21:09:03Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "218a25f7-98e4-402e-a95f-301a9e1d043f",
+        "title": "IRS 4506C - Trans Request",
+        "date_created": "2025-12-08T20:54:29Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "222f8e2a-6d79-4519-a352-d564abb66932",
+        "title": "Appraisal Logging Results.pdf",
+        "date_created": "2025-12-08T20:56:34Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "242f1a75-73aa-49d1-b589-6435c1293035",
+        "title": "page 3.pdf",
+        "date_created": "2025-12-08T21:07:02Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "2596778e-4b58-43a8-8345-47ca430a64ef",
+        "title": "Closing Disclosure.pdf",
+        "date_created": "2025-12-08T21:00:38Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "263d4d9f-b5ab-4947-9629-ba82719d336c",
+        "title": "Sorensen - Bank Statement - BANK_STATEMENT - Alva Sorensen.pdf",
+        "date_created": "2025-12-08T21:09:35Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "269b741b-7670-495c-98f3-e3d72f472d04",
+        "title": "PURCHASE CONTRACT.pdf",
+        "date_created": "2025-12-08T21:02:58Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "280c022b-9be1-4357-ae9a-17711bbfc043",
+        "title": "1708608524.FINDINGS",
+        "date_created": "2025-12-08T21:03:52Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "293897bb-a539-4e29-867d-717c66554729",
+        "title": "Closing Disclosure",
+        "date_created": "2025-12-08T21:02:44Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "297b2c98-35c3-4ac2-b080-04279b2bb24b",
+        "title": "Sorensen - Request for Transcript of Tax Return",
+        "date_created": "2025-12-08T21:07:46Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "2b52b922-f15b-4c78-82a1-e0c58902ee71",
+        "title": "shipping confirmation.pdf",
+        "date_created": "2025-12-08T20:56:29Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "2ccf52aa-903b-4929-899b-5a5b9189bf79",
+        "title": "Sorensen, Berger - Generated Letter of Explanation - Late Payment",
+        "date_created": "2025-12-08T20:56:07Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "2d0e0da5-1162-43c3-8869-97cde9440c71",
+        "title": "Firm pg 3.pdf",
+        "date_created": "2025-12-08T20:56:37Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "2d774084-65a2-4676-829c-394cc4bf50a1",
+        "title": "RealQuest.com \ufffd - Report-7.pdf",
+        "date_created": "2025-12-08T20:58:00Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "2dcf96ae-150e-49cc-b152-ce2cd3d22dee",
+        "title": "Wire Fraud Disclosure",
+        "date_created": "2025-12-08T21:02:36Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "2e5ff30c-ed9f-444f-8d6d-7e96e21bdf6c",
+        "title": "Lender Query by Case Number.pdf",
+        "date_created": "2025-12-08T21:05:03Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "2eeace49-cc2f-4661-ab66-5b05775ec9d5",
+        "title": "FHA Loan Transmittal",
+        "date_created": "2025-12-08T21:07:31Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "2ef5626c-8783-4345-a573-831dc61e5ea1",
+        "title": "Sorensen_-_Compliance_Report_-_090525_105033pm.pdf",
+        "date_created": "2025-12-08T20:57:12Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "2f19e69b-817c-41c4-ab7d-fb4a2f95446f",
+        "title": "HUD-92800.5B Appraised Value",
+        "date_created": "2025-12-08T21:05:24Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "2f73430a-edcd-4f44-ac2c-e03b3d263575",
+        "title": "SHIP - Funding Letter",
+        "date_created": "2025-12-08T20:58:17Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "2f7bb310-9002-42ad-bd0d-afc31e6dbe00",
+        "title": "Credit Report Invoice.pdf",
+        "date_created": "2025-12-08T20:54:40Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "2ff0d92c-8bc6-4f96-98ab-c0fd68c180e2",
+        "title": "Borrower Consent to the Use of Tax Return Information",
+        "date_created": "2025-12-08T21:00:25Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "30033d2c-3826-4e41-a6ce-3d48eb67d02e",
+        "title": "s1.pdf",
+        "date_created": "2025-12-08T21:01:37Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "30d8b800-578a-4596-b68c-f7aeea613826",
+        "title": "Letter of Explanation - Credit Inquiry",
+        "date_created": "2025-12-08T21:01:25Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "324144d6-9598-4b2d-99f6-a6cf15c4b3de",
+        "title": "SKM_C450i25102814243.pdf",
+        "date_created": "2025-12-08T21:04:57Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "3327df4c-f964-473e-95a0-426125f71f17",
+        "title": "LQI 3.pdf",
+        "date_created": "2025-12-08T20:56:16Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "337bff13-66d2-4b71-8fba-f693fa4448f3",
+        "title": "ship1.pdf",
+        "date_created": "2025-12-08T21:04:14Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "34bc08dd-7f74-4a49-9c0a-392c4eed2c91",
+        "title": "Borrower Authorization - Blend Sign Certificate of Completion - 2025-09-09 1043 am EDT - Alva Sorensen",
+        "date_created": "2025-12-08T21:09:28Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "34efc9ec-22d6-4aac-8317-d117cebc3e39",
+        "title": "Letter Of Explanation.pdf",
+        "date_created": "2025-12-08T20:54:00Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "35527c20-fbde-4b4a-bcd1-910cf79e07b4",
+        "title": "Closing Disclosures - Blend Sign Certificate of Completion - 2025-10-24 558 pm EDT - Alva Sorensen",
+        "date_created": "2025-12-08T20:54:22Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "35b151eb-ce40-4a39-aedf-e2c28c84d090",
+        "title": "GSA AKA.pdf",
+        "date_created": "2025-12-08T21:00:31Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "35c1858c-2922-4d19-bfd1-ac777802f01b",
+        "title": "W2 LOE.pdf",
+        "date_created": "2025-12-08T21:03:47Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "365b772f-365f-415a-bd6f-93651a3c09dd",
+        "title": "2020 URLA (1003/65) - All Pages",
+        "date_created": "2025-12-08T21:07:27Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "37090d1d-c10c-4f23-84b8-5dd3b1e91f4a",
+        "title": "FullFeedback",
+        "date_created": "2025-12-08T20:54:19Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "3906412c-654f-4c52-8fb7-069962746720",
+        "title": "Earnest Money Receipt.pdf",
+        "date_created": "2025-12-08T20:57:37Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "394bcee4-3d77-46f6-af60-97dc6aa21f3f",
+        "title": "Servicing Transfer Letter - 2509946673.pdf",
+        "date_created": "2025-12-08T20:54:17Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "39e7cb88-555a-4a47-a4f3-b2c3723f2ac4",
+        "title": "Sorensen - Generated Letter of Explanation - Late Payment",
+        "date_created": "2025-12-08T20:57:16Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "3b8cbb1c-f40f-4f4e-bed7-5d06455546de",
+        "title": "Trash",
+        "date_created": "2025-12-08T21:02:41Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "3bf37dab-8cf2-42b1-8002-a9a7cf8014e2",
+        "title": "Fedex paystub.pdf",
+        "date_created": "2025-12-08T20:58:48Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "3f8d1c80-01e3-4ff6-8254-58f9eae68a54",
+        "title": "Sorensen - HMDA Report - hmda_report - 090625 124803am",
+        "date_created": "2025-12-08T20:56:56Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "404eef9e-b713-4da8-a968-57c7c4b082d0",
+        "title": "Sorensen, Alva Scott  Checklist Updated .pdf",
+        "date_created": "2025-12-08T21:07:55Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "41246d08-d298-4745-910c-19ea1ec53c16",
+        "title": "Closing_Package.pdf",
+        "date_created": "2025-12-08T21:03:32Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "4169de0e-d301-43ad-8419-b6a80c8cc59b",
+        "title": "Homeownership Counseling Org List",
+        "date_created": "2025-12-08T21:01:29Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "427c2678-3a15-41ad-ae2a-d3e57ba6502f",
+        "title": "IRS 4506C - Trans Request",
+        "date_created": "2025-12-08T21:00:59Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "42aee637-67b0-450f-ad51-87cbb7090f1c",
+        "title": "Compliance Report",
+        "date_created": "2025-12-08T21:08:33Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "43b8aae9-92d7-44a7-b0f2-87aa85c87bb1",
+        "title": "Compliance Report",
+        "date_created": "2025-12-08T20:59:40Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "4475a75f-9325-42c6-888f-a447d6ab00c6",
+        "title": "Compliance Report",
+        "date_created": "2025-12-08T20:58:13Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "45953971-8234-4b8b-a8f5-4c138f32b83f",
+        "title": "Compliance Report",
+        "date_created": "2025-12-08T20:58:45Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "459acdcb-6923-4692-a10a-a35b3f4244cd",
+        "title": "USA Patriot Act Information Disclosure",
+        "date_created": "2025-12-08T21:03:04Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "466b3e76-6121-444a-b937-09f4ee1f82c8",
+        "title": "Intention to Pay - WET",
+        "date_created": "2025-12-08T21:10:12Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "46806053-c4d9-438c-856f-f6b2abc876cd",
+        "title": "Letter of Explanation - Credit Inquiry - Blend Sign Certificate of Completion - 2025-10-14 537 pm EDT - Alva Sorensen",
+        "date_created": "2025-12-08T21:07:21Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "46f6d0a5-9598-4122-8444-9c59ba01c2ed",
+        "title": "1708608524.FINDINGS",
+        "date_created": "2025-12-08T21:08:07Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "4756630f-70cf-47f5-916b-61c1ce081b3a",
+        "title": "Wiring Instructions.pdf",
+        "date_created": "2025-12-08T20:55:31Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "4a6a4039-5fb4-46b5-a641-677a87b45668",
+        "title": "Credit Report",
+        "date_created": "2025-12-08T20:55:00Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "4b7fc307-4d17-40b4-abcb-1defe8c63901",
+        "title": "Letter Of Explanation.pdf",
+        "date_created": "2025-12-08T21:01:49Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "4d0df626-3eb5-47e9-b624-30ef4af2d6c4",
+        "title": "Sorensen - W-2 - Fedex Ground - 2023",
+        "date_created": "2025-12-08T20:54:08Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "4f4cb5e2-b5aa-4d68-b668-2051b541ebfa",
+        "title": "Privacy Policy Notice.pdf",
+        "date_created": "2025-12-08T20:59:09Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "5008c0fc-ec59-49af-a072-2703746bccc6",
+        "title": "Sorensen - Paystub - Fedex Ground",
+        "date_created": "2025-12-08T21:03:56Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "50228a16-b6b7-483f-a316-6fbd4aaf9acc",
+        "title": "DocCheckList",
+        "date_created": "2025-12-08T21:02:53Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "50310490-a15d-40fd-ae60-316f659bd101",
+        "title": "HUD Appraised Value Disclosure",
+        "date_created": "2025-12-08T21:07:59Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "50b1fb62-cdab-4995-b997-1a86063aaff2",
+        "title": "Decline- Fedex.pdf",
+        "date_created": "2025-12-08T21:01:02Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "50b5b1b1-5b2b-4a99-ba8b-38c39481ece1",
+        "title": "Borrower's Certification & Authorization",
+        "date_created": "2025-12-08T20:59:24Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "51230fc4-2d5b-4156-9bcd-0713fd2231f2",
+        "title": "Sorensen - Credit Report",
+        "date_created": "2025-12-08T20:54:57Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "52e817dc-c6ee-4c87-ac96-61e1ed52f972",
+        "title": "FHA Fixed Rate Note",
+        "date_created": "2025-12-08T21:05:52Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "55dd2404-3202-4f0c-964b-45930c159cc0",
+        "title": "Intention to Pay",
+        "date_created": "2025-12-08T21:00:50Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "56428b52-5d68-4853-8a1c-2502161875ac",
+        "title": "Berger - Request for Transcript of Tax Return",
+        "date_created": "2025-12-08T21:08:41Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "5655dc07-dea6-4316-a211-11bdc3cf4a91",
+        "title": "Address Verification - Documentation",
+        "date_created": "2025-12-08T21:06:40Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "5662a9a4-31e8-4d92-aca5-580f517494dc",
+        "title": "Closing Package - Blend Sign Certificate of Completion - 2025-10-28 854 pm EDT - Alva Sorensen",
+        "date_created": "2025-12-08T20:59:12Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "56e3392f-0fd5-47db-9c49-708cf8219693",
+        "title": "IVES Request for Transcript of Tax Return (IRS 4506-C), 2",
+        "date_created": "2025-12-08T21:00:53Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "57f66146-dee7-4f8a-98dc-fc98697c8f0c",
+        "title": "LOE 3000 GIFT.pdf",
+        "date_created": "2025-12-08T21:01:54Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "595d2ea5-9d12-4b78-bef6-2b87ada246d6",
+        "title": "Affidavit of Occupancy",
+        "date_created": "2025-12-08T21:02:01Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "5968310d-2ded-4d22-aacb-e1871ea8cce0",
+        "title": "Affiliated Business Arrangement Disclosure Statement",
+        "date_created": "2025-12-08T20:59:27Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "5983441f-8ca2-4cd2-920e-748f99b90ca5",
+        "title": "Appraisal",
+        "date_created": "2025-12-08T20:55:51Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "59c0f9e9-4876-4c52-b0c6-019d31c6e924",
+        "title": "USA Patriot Act Information Form",
+        "date_created": "2025-12-08T20:53:56Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "5a06a44e-39c2-4d68-a00c-15da8d408fd0",
+        "title": "SHIP - Seller Signed HUD",
+        "date_created": "2025-12-08T21:01:17Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "5a9f509b-93a3-4666-9cf4-08359e2289c1",
+        "title": "Scotty ID.jpg",
+        "date_created": "2025-12-08T21:08:52Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "5c0f549d-9d07-4522-92c3-e70921cef60b",
+        "title": "HUD-92800.5B Appraised Value",
+        "date_created": "2025-12-08T20:57:08Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "5cd88b02-dce7-45e6-864d-3967ef4783f7",
+        "title": "Flood Hazard Determination",
+        "date_created": "2025-12-08T20:58:53Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "5dcebc2a-d6d3-41f7-be1a-72cc914d5e2a",
+        "title": "Credit Report",
+        "date_created": "2025-12-08T21:09:31Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "5f0059e5-2198-4266-9aee-6a99a2634c86",
+        "title": "Commitment 1st Revision .pdf",
+        "date_created": "2025-12-08T21:01:40Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "5f53b5ea-5dc6-441d-98d9-2261025a53cb",
+        "title": "Lock Confirmation Document",
+        "date_created": "2025-12-08T20:57:51Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "60283187-f293-45eb-aeba-dc46873a1d50",
+        "title": "Income.pdf",
+        "date_created": "2025-12-08T21:05:18Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "6083ec85-ed93-41ce-8a3f-cb857b3fcb95",
+        "title": "Credit Score Disclosure Exception for Loans Secured by One to Four Units of Residential Real Property, 2",
+        "date_created": "2025-12-08T21:02:50Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "60d3f5dd-9e24-4fc6-9510-bc17b5911801",
+        "title": "IWL $162,500.00-buyer funds.pdf",
+        "date_created": "2025-12-08T21:06:38Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "618bb976-87e9-4c63-843c-dc0823b6d1e0",
+        "title": "2015 Settlement Service Provider List",
+        "date_created": "2025-12-08T20:54:47Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "627f2477-ea89-449e-b775-3ced1af23b09",
+        "title": "Sorensen - W-2 - Fedex Ground - 2024",
+        "date_created": "2025-12-08T20:56:40Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "635d3b79-cf08-4496-8206-98f1c416af12",
+        "title": "FHA Amendatory Statement and Real Estate Certification",
+        "date_created": "2025-12-08T21:05:36Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "66020b91-05af-4e27-8c1b-3bfa3be97c7c",
+        "title": "SHIP - Grant Bargain Sale Deed/Warranty Deed",
+        "date_created": "2025-12-08T20:58:38Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "67c7626e-75b1-41f0-bf23-d587acf257f4",
+        "title": "Instructions to Escrow/Title/Closing Agent",
+        "date_created": "2025-12-08T20:55:28Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "682b8367-349c-4d9e-a4fe-b534e9f124e1",
+        "title": "Trash",
+        "date_created": "2025-12-08T21:06:48Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "6889745f-10f7-4125-b935-933857e4a1f3",
+        "title": "Occupancy and Financial Statement",
+        "date_created": "2025-12-08T21:01:08Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "68a41932-0d89-4493-91c5-c45f00fd5bec",
+        "title": "Canvas statement.pdf",
+        "date_created": "2025-12-08T21:06:53Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "68fff4db-1a95-4f20-89ea-b8a6714fa5ea",
+        "title": "Borrower Income and Employment Certification",
+        "date_created": "2025-12-08T20:59:49Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "6aea19ce-ce04-4c2d-8553-8f2076e29e22",
+        "title": "Letter Of Explanation.pdf",
+        "date_created": "2025-12-08T20:55:25Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "6aec9789-6833-472b-a19c-e11db63d4c35",
+        "title": "1.pdf",
+        "date_created": "2025-12-08T20:57:32Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "6bc6f8c8-df1c-4e32-8b78-db1be8baf255",
+        "title": "Sorensen - W-2 - Jimmy John - 2024",
+        "date_created": "2025-12-08T20:55:09Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "6d425ca5-e672-4264-9873-4a727165c7d5",
+        "title": "Loan Disbursement Instructions",
+        "date_created": "2025-12-08T20:55:58Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "6db61aa3-e707-4a1b-be58-d02f5cf2688a",
+        "title": "CPL.pdf",
+        "date_created": "2025-12-08T21:01:20Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "6dd01645-f026-47fa-9bc3-0fe0ea56b523",
+        "title": "Disclosures",
+        "date_created": "2025-12-08T20:56:47Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "6e456029-699d-4840-aba0-a4d488cc6dc6",
+        "title": "Letter Of Explanation.pdf",
+        "date_created": "2025-12-08T21:09:13Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "6f0047e1-70de-4b09-bbaf-d223eebc7e6f",
+        "title": "IWL $162,500.00-buyer funds.pdf",
+        "date_created": "2025-12-08T21:07:43Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "6f00b86c-bfcd-47eb-ae4f-63d166f57067",
+        "title": "Address Verification - Documentation",
+        "date_created": "2025-12-08T21:07:29Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "6f160e36-84e5-4cc3-8bad-1aba03e16f0d",
+        "title": "Document Package Audit Report - DocumentPackageAuditReport-2025-10-04T231816.819Z",
+        "date_created": "2025-12-08T20:56:59Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "6f2ecf8d-d511-4f58-b6e8-f2492c72879a",
+        "title": "Letter Of Explanation.pdf",
+        "date_created": "2025-12-08T20:56:19Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "6fe4890b-1b7a-4988-b2cd-d3237b59046d",
+        "title": "Amendatory clause- Scotty.pdf",
+        "date_created": "2025-12-08T20:58:29Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "714faef5-52dd-4bde-9fc3-260897ad4dfc",
+        "title": "FHA Important Notice to Homebuyers",
+        "date_created": "2025-12-08T21:02:47Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "71824fb6-5b9e-4f8a-8e47-29b09009ac50",
+        "title": "Amortization Schedule",
+        "date_created": "2025-12-08T21:04:48Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "71e8c609-d5f2-4bae-90ef-8c71dbe420f0",
+        "title": "Chris' ID.jpg",
+        "date_created": "2025-12-08T21:08:26Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "73dfa067-9cd5-46ed-8a14-7edb17b47b55",
+        "title": "A_4506_C.pdf",
+        "date_created": "2025-12-08T20:59:58Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "7456755a-9fdb-44de-a49c-32be25e78670",
+        "title": "Gift Letter - Blend Sign Certificate of Completion - 2025-10-20 837 pm EDT - Alva Sorensen",
+        "date_created": "2025-12-08T20:57:29Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "74b11825-f103-40b7-814e-a1f031f14650",
+        "title": "DocCheckList",
+        "date_created": "2025-12-08T21:04:51Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "75b6df9c-f04c-43c6-8128-2ad2877d3c13",
+        "title": "sdr.pdf",
+        "date_created": "2025-12-08T21:09:07Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "7617ac4b-1091-410f-83e7-bc47d28828a2",
+        "title": "PCCD.pdf",
+        "date_created": "2025-12-08T21:05:16Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "76652821-6cd4-416b-b3ea-5113be329745",
+        "title": "Sorensen - W-2 - Jimmy John - 2023",
+        "date_created": "2025-12-08T21:04:29Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "77258c23-6463-4993-8190-42dfaaeb95cf",
+        "title": "FHA Identity of Interest Certification",
+        "date_created": "2025-12-08T21:06:43Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "788824bc-e459-4c0c-b60c-ed5d26ebd6f1",
+        "title": "HOI Eff 10/29",
+        "date_created": "2025-12-08T20:57:48Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "7a1d22bf-83cc-42c1-a56a-b0831951c16b",
+        "title": "QA Checklist - 2509946673 - Sorensen.pdf",
+        "date_created": "2025-12-08T21:09:50Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "7abe7a57-1fa3-41a6-899f-500843661dd1",
+        "title": "Compliance Report",
+        "date_created": "2025-12-08T21:00:28Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "7b598316-0a42-4488-827b-1c41c54ad9f1",
+        "title": "Hynds Bros VOE.pdf",
+        "date_created": "2025-12-08T21:03:41Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "7b80d3e4-d84b-43bd-9076-5065a275b83d",
+        "title": "Social Security Number Certification",
+        "date_created": "2025-12-08T21:06:04Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "7be488df-e278-49ee-84f7-1cb88ee968a3",
+        "title": "2509946673 Bank Statements.pdf",
+        "date_created": "2025-12-08T21:04:00Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "7c0a461f-6d7e-4d44-a9e8-d7f3e764083d",
+        "title": "Property Tax Info Sheet.pdf",
+        "date_created": "2025-12-08T21:01:31Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "7d7daed2-06e0-448a-a715-17e32395022a",
+        "title": "Social Security Administration Authorization",
+        "date_created": "2025-12-08T20:56:13Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "7e47698d-8b85-4e25-8bf6-7f225d2f7f5c",
+        "title": "Loan Disbursement Instructions",
+        "date_created": "2025-12-08T21:03:22Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "7ee42ec3-8d8b-4834-a634-56d509e2596f",
+        "title": "HomeBase Invoice.pdf",
+        "date_created": "2025-12-08T20:59:37Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "7f943b7d-993c-4022-9bc4-7b4791d29467",
+        "title": "MERS\ufffd System.pdf",
+        "date_created": "2025-12-08T20:53:49Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "81a39d13-beae-43ea-8764-f7ccb58968ee",
+        "title": "Invoices",
+        "date_created": "2025-12-08T21:02:25Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "81b93d36-edfc-42b9-bd07-6e14a2d3a75c",
+        "title": "1708608524.FINDINGS",
+        "date_created": "2025-12-08T21:00:10Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "81c04dd2-e169-47a3-ac55-01dc856c99af",
+        "title": "TSP_Withdrawal.pdf",
+        "date_created": "2025-12-08T21:08:05Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "824442a7-00de-4825-849f-293705cce7bb",
+        "title": "Privacy Policy Notice.pdf",
+        "date_created": "2025-12-08T21:01:57Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "82f30f54-720b-4789-be9e-eb0a804f27f7",
+        "title": "Plat Map.pdf_1.pdf",
+        "date_created": "2025-12-08T20:57:35Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "82f33855-fdf2-4161-b63c-3915845c0871",
+        "title": "Decline- Fedex.pdf",
+        "date_created": "2025-12-08T21:02:04Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "83807f73-96a2-4556-b9b0-7ec44f098a47",
+        "title": "Oct15thjimmyjohn.pdf",
+        "date_created": "2025-12-08T21:09:40Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "84302509-debd-495b-a391-5c38d6dc0d0c",
+        "title": "Borrower Consent to the Use of Tax Return Information",
+        "date_created": "2025-12-08T21:08:58Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "843ffbf9-6bd0-40f1-ac6d-37ba168f08b0",
+        "title": "FHA For Your Protection: Get a Home Inspection",
+        "date_created": "2025-12-08T20:58:51Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "844050b4-c2ad-41b0-8856-8d9e544a11f4",
+        "title": "Acknowledgement of Intent to Proceed",
+        "date_created": "2025-12-08T20:54:37Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "84950dbf-91e8-4182-8362-edde75fc58eb",
+        "title": "A_4506_C.pdf",
+        "date_created": "2025-12-08T21:09:18Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "86e137c9-5af2-4a3b-a54c-e5bf7b25f3f3",
+        "title": "UT Notice of No Oral Agreements",
+        "date_created": "2025-12-08T21:08:38Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "87218bae-b3bc-4cce-8778-ebbe41bfb170",
+        "title": "1708608524.FINDINGS",
+        "date_created": "2025-12-08T21:02:12Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "89ae9c66-50d4-4b3c-a774-850ca5a8c0a0",
+        "title": "Case Number Assignment.pdf",
+        "date_created": "2025-12-08T20:56:00Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "8a759701-136e-4e02-a855-6c7a434d4886",
+        "title": "Air Cert.pdf",
+        "date_created": "2025-12-08T21:08:16Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "8b7c063c-659e-4de0-903d-1d639c9bb353",
+        "title": "Initial_Disclosures_-_Blend_Sign_Certificate_of_Completion_-_2025-10-04_717_pm_EDT_-_Alva_Sorensen__Blu_Trujillo.pdf",
+        "date_created": "2025-12-08T20:55:22Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "8cbbeeec-587a-4178-93aa-e1abab800eb0",
+        "title": "W2s- Jimmy/Hynds",
+        "date_created": "2025-12-08T21:06:07Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "8e739a3c-83e3-4796-b1d6-6b2ee4af3eed",
+        "title": "Verbal Constent for Credit",
+        "date_created": "2025-12-08T20:54:43Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "8f57f4d9-adf9-469d-a406-4c5d291a39b0",
+        "title": "Credit Score Disclosure Exception for Loans Secured by One to Four Units of Residential Real Property",
+        "date_created": "2025-12-08T21:09:00Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "8fbdbc68-62f0-4c05-922c-41ff34705a52",
+        "title": "2509946673 Alva Scott Sorensen..pdf",
+        "date_created": "2025-12-08T21:05:10Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "90242e22-a3bf-4106-ad59-f22297ccd04a",
+        "title": "Sorensen - Compliance Report - 090525 105033pm",
+        "date_created": "2025-12-08T21:03:35Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "9058daf6-6342-4502-a3de-817bdf5d2440",
+        "title": "Loan Estimate",
+        "date_created": "2025-12-08T20:55:03Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "9270d4d6-aae4-49e3-8f08-f43ae822e302",
+        "title": "Hazard Insurance Authorization, Requirements and Disclosure",
+        "date_created": "2025-12-08T21:08:14Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "93585aac-294f-4b2e-97d3-69f01018c08d",
+        "title": "Sorensen - Borrower Authorization",
+        "date_created": "2025-12-08T20:57:21Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "93829360-d938-44e9-bada-fec324c98edc",
+        "title": "No HUD Warranty",
+        "date_created": "2025-12-08T20:57:26Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "93dbb641-57a4-4f53-8167-1e72fc88e7bf",
+        "title": "Cover Letter",
+        "date_created": "2025-12-08T20:57:18Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "95bb1363-1aa4-4a9a-ab5e-eaabfd9482fd",
+        "title": "1003",
+        "date_created": "2025-12-08T21:06:32Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "95ff9ddd-1219-4dfc-9671-01f72021d04d",
+        "title": "1708608524.FINDINGS",
+        "date_created": "2025-12-08T20:54:02Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "984fd06b-024b-4d23-876b-ad1c29b958fb",
+        "title": "Sorensen, Berger - Generated Letter of Explanation - Credit Inquiry",
+        "date_created": "2025-12-08T21:06:01Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "98d7afc6-3aed-4e0c-99c0-808ce7c390fb",
+        "title": "Compliance Agreement",
+        "date_created": "2025-12-08T21:08:11Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "99632e49-1d39-455c-a3ae-b932c46d61c6",
+        "title": "Generated Letter of Explanation - Late Payment - Blend Sign Certificate of Completion - 2025-09-30 825 pm EDT - Alva Sorensen",
+        "date_created": "2025-12-08T21:08:44Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "99c3ddec-e153-4388-8f8c-0b68fad32ab2",
+        "title": "Sorensen - Paystub - Jimmy John",
+        "date_created": "2025-12-08T20:56:10Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "9a26ae43-c16b-4001-841e-abe512548309",
+        "title": "WORK_NUMBER__FedEx Ground (11649).pdf",
+        "date_created": "2025-12-08T20:54:05Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "9a3ca509-b527-4858-92b3-2f768194d562",
+        "title": "WORK_NUMBER__D&D Management Group LLC (21518110).pdf",
+        "date_created": "2025-12-08T21:04:32Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "9a71dd8e-d2c4-4003-8df4-d3cb06c24b10",
+        "title": "TSP_Account Activity.pdf",
+        "date_created": "2025-12-08T20:58:20Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "9c0315db-edb0-4f1c-b1ff-307380f622ca",
+        "title": "1708608524.FINDINGS",
+        "date_created": "2025-12-08T20:55:46Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "9c464056-83cb-4126-a699-44684e716762",
+        "title": "2024-12-24.PDF",
+        "date_created": "2025-12-08T20:59:14Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "9f22c698-8c73-4291-b38c-4e323cac811b",
+        "title": "SHIP - Final HUD/V.A. Addendum to Uniform Residential Loan Application",
+        "date_created": "2025-12-08T20:58:42Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "9ff24c51-e317-4efd-a03a-5d4b29aff9b4",
+        "title": "CAIVRS",
+        "date_created": "2025-12-08T21:06:14Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "a07bb62b-667a-4769-9fa6-a69d3e0cccda",
+        "title": "Sorensen - Paystub - Fedex Ground",
+        "date_created": "2025-12-08T20:55:19Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "a0c34265-5401-494d-a978-e22919a2ad7b",
+        "title": "Wire Fraud Disclosure",
+        "date_created": "2025-12-08T21:01:12Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "a2239363-b0a8-4861-880c-4eb811bed66e",
+        "title": "Sorensen Alva HO Dec page.pdf",
+        "date_created": "2025-12-08T21:04:07Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "a22a01cf-81fe-415f-8343-388e692269db",
+        "title": "Fair Lending Notice",
+        "date_created": "2025-12-08T21:00:43Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "a3cfe411-e867-48c6-ac08-7d4c219c76ba",
+        "title": "B Documents to be Recorded-DOT.pdf",
+        "date_created": "2025-12-08T21:05:07Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "a3d81b53-afca-4140-b0ee-11a366ef1fa5",
+        "title": "urla1.pdf",
+        "date_created": "2025-12-08T21:07:52Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "a47f1a74-9f7c-40c6-a854-947fe45a72f1",
+        "title": "Sept MA Statement.pdf",
+        "date_created": "2025-12-08T20:57:05Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "a84e3472-bb3b-4345-9219-693786132900",
+        "title": "UT FHA Deed of Trust",
+        "date_created": "2025-12-08T20:54:14Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "a8fafa8b-597c-4a29-a3a8-3113fe62da7b",
+        "title": "Equal Credit Opportunity Act Notice",
+        "date_created": "2025-12-08T21:00:18Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "aa470381-f356-47cf-adf5-084c2b42a60b",
+        "title": "Notice of Right to Receive Copy of Written AppraisalValuation",
+        "date_created": "2025-12-08T21:09:56Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "ab364d49-913c-44e8-884d-70caf5166fe5",
+        "title": "Initial Escrow Account Disclosure Statement",
+        "date_created": "2025-12-08T21:00:15Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "ab81d93d-edba-4580-8053-921cb69f7efd",
+        "title": "FHA Settlement Certification",
+        "date_created": "2025-12-08T21:10:03Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "ac26cc45-d045-4c39-9dbd-d2fe62007175",
+        "title": "UW ICW OC.pdf",
+        "date_created": "2025-12-08T21:01:14Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "ac88c5f5-fca5-481e-a0e0-45768cc919eb",
+        "title": "FHA For Your Protection: Get a Home Inspection",
+        "date_created": "2025-12-08T20:56:23Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "ade2a5a6-948e-42cf-9b79-44ed5a69c783",
+        "title": "ldpgsa-2.pdf",
+        "date_created": "2025-12-08T21:08:30Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "afdea817-31a8-424a-89b1-d93ed52f46c8",
+        "title": "Gift Letter",
+        "date_created": "2025-12-08T21:02:07Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "b18cfb51-fdc1-4003-8dd2-0d86d050cda5",
+        "title": "Closing Package",
+        "date_created": "2025-12-08T21:06:28Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "b1fe8d0f-a32b-45ec-93aa-80b24acfb7b1",
+        "title": "Borrower's Certification & Authorization",
+        "date_created": "2025-12-08T21:05:41Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "b2e9b11e-4ada-41c8-95f4-f0ad61661f9e",
+        "title": "First Payment Letter",
+        "date_created": "2025-12-08T21:01:52Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "b34d624c-79fe-4730-a6fd-c9d3cb02cab8",
+        "title": "SHIP - Funding Letter",
+        "date_created": "2025-12-08T21:06:22Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "b53587e8-b4a7-401a-aa09-7ee057cae34a",
+        "title": "CTC Sorenson 2509946673.pdf",
+        "date_created": "2025-12-08T21:06:25Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "b56e7699-4245-462e-a2e1-6123fd9933d7",
+        "title": "Generated Letter of Explanation - Late Payment - Blend Sign Certificate of Completion - 2025-10-20 833 pm EDT - Alva Sorensen",
+        "date_created": "2025-12-08T21:03:50Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "b5778647-2529-4a98-a367-e1381db26daa",
+        "title": "Signature/Name Affidavit",
+        "date_created": "2025-12-08T21:10:16Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "b71cfba0-4326-4edc-a5ed-6d3deea54f60",
+        "title": "Consummation CD.pdf",
+        "date_created": "2025-12-08T21:00:56Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "b8db90df-3ae3-41b7-987b-4661005fbaaa",
+        "title": "Loan Estimate",
+        "date_created": "2025-12-08T21:05:48Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "b9094cca-acf0-46e2-93df-23e6aa69f413",
+        "title": "IVES Request for Transcript of Tax Return (IRS 4506-C)",
+        "date_created": "2025-12-08T21:07:40Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "b9930d5c-e16f-4ad9-95b9-292af261da2e",
+        "title": "FHA Conditional Commitment",
+        "date_created": "2025-12-08T21:06:58Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "b9c42add-6581-496f-8dba-1210440b0baa",
+        "title": "FHA Notice to Homeowner: Release of Personal Liability for Assumptions",
+        "date_created": "2025-12-08T21:03:01Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "ba2677b4-f71f-43bf-a6ab-3a05ac5d1455",
+        "title": "Sorensen - W-2 - Fedex Ground - 2024",
+        "date_created": "2025-12-08T21:06:17Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "ba5bb26d-b980-46cf-b569-2c8db0749f30",
+        "title": "Compliance Report",
+        "date_created": "2025-12-08T21:01:43Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "bab4d917-bb82-42c7-a735-38cd621547aa",
+        "title": "FHA Informed Consumer Choice Disclosure Notice",
+        "date_created": "2025-12-08T21:05:45Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "bd3c3e6d-45ee-4214-88a8-70a27804766a",
+        "title": "Change of Circumstance",
+        "date_created": "2025-12-08T21:08:02Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "bd51e3bb-cc4e-4228-b3c3-b0b5eae6c63d",
+        "title": "Title Commitment.pdf",
+        "date_created": "2025-12-08T20:59:52Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "bfbc61b3-be8a-41e1-b3af-7d306ee1b6e3",
+        "title": "FHA Loan Transmittal",
+        "date_created": "2025-12-08T20:57:23Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "c04ca470-f6b4-4da7-83c1-dda901209312",
+        "title": "Revised Initial Disclosures - Blend Sign Certificate of Completion - 2025-10-20 834 pm EDT - Alva Sorensen",
+        "date_created": "2025-12-08T20:58:56Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "c051c6a2-b9c5-4e0a-bef7-e5a8d648cf88",
+        "title": "Letter Of Explanation.pdf",
+        "date_created": "2025-12-08T21:01:05Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "c0ff52cb-a5bc-4555-8511-5510b5895329",
+        "title": "Plat Map.pdf",
+        "date_created": "2025-12-08T20:53:47Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "c1ea7bfd-c65c-4036-8b5b-9a8842d0c096",
+        "title": "FHA Notice to Purchasers - The Importance of a Home Inspection",
+        "date_created": "2025-12-08T20:55:12Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "c2a6955c-f923-4052-8db8-f7bb5b694d92",
+        "title": "Home-Owndership Counseling Acknowledgement",
+        "date_created": "2025-12-08T21:04:11Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "c2e9a990-0d93-4cb7-8290-9991715e06fc",
+        "title": "Commitment-2nd Revision.pdf",
+        "date_created": "2025-12-08T20:58:35Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "c54019f2-773a-4a8a-921e-f11a3f5f3b64",
+        "title": "Trash",
+        "date_created": "2025-12-08T20:55:54Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "c7c00d73-d435-4274-b845-be3f6e37db54",
+        "title": "LOE- Credit Card tips.pdf",
+        "date_created": "2025-12-08T20:55:33Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "c89ab296-fdec-43cb-a859-b1d89c84952e",
+        "title": "Compliance Report",
+        "date_created": "2025-12-08T20:58:59Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "c920976c-827f-4dad-8f8b-c08db5bc341c",
+        "title": "UT Right to Choose Insurance Provider",
+        "date_created": "2025-12-08T20:58:32Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "c97a78dc-4890-4efa-b92c-da4558c33585",
+        "title": "FHA Conditional Commitment",
+        "date_created": "2025-12-08T20:58:04Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "c9c58bf8-9daa-4dfe-b66a-5690779fb62f",
+        "title": "Conditional Approval Sorenson 2509946673.pdf",
+        "date_created": "2025-12-08T20:58:07Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "ca1c5904-dbb4-4e74-9d36-90240ae5015c",
+        "title": "Sorensen - Paystub - Jimmy John",
+        "date_created": "2025-12-08T21:00:12Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "cc11e011-ff53-4d87-b57c-565dc413bd0e",
+        "title": "Bank Statement - BANK_STATEMENT - Christopher Berger.pdf",
+        "date_created": "2025-12-08T21:07:24Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "cc6af840-67bf-43a9-8307-140841d92e10",
+        "title": "Bank Statement - TSP_JUN_SEP.pdf",
+        "date_created": "2025-12-08T21:04:23Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "cc828fdb-9608-4ba2-aabd-e14b60f99c89",
+        "title": "Request for Transcript of Tax Return - Blend Sign Certificate of Completion - 2025-09-09 1042 am EDT",
+        "date_created": "2025-12-08T21:03:19Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "cc86c749-d4a0-41bf-8baa-8a8a3cc0d7a0",
+        "title": "Mortgage Fraud is Investigated by the FBI",
+        "date_created": "2025-12-08T21:03:45Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "cd99b0a3-ccca-4e39-a600-f69770c2f58f",
+        "title": "Disclosures",
+        "date_created": "2025-12-08T20:56:31Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "ce08a6ca-5a92-4c52-9543-b08e6a3814c4",
+        "title": "FHAV.A. Notice to Applicants",
+        "date_created": "2025-12-08T20:55:15Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "cf5b6c7d-e9ea-40b3-90c4-669150351e90",
+        "title": "Sorensen - Compliance Report - 090525 105033pm",
+        "date_created": "2025-12-08T21:09:22Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "cf9c7fc7-18aa-418d-807f-a0391b8e8163",
+        "title": "MergedCredit",
+        "date_created": "2025-12-08T21:04:35Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "d068a76f-612e-42ad-be2c-5bca055e8d1d",
+        "title": "Acknowledgement of Receipt of Loan Estimate",
+        "date_created": "2025-12-08T21:07:37Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "d091bc94-6acd-4989-ae1b-82c163497acb",
+        "title": "Request for Transcript of Tax Return - Blend Sign Certificate of Completion - 2025-09-08 331 pm EDT - Alva Sorensen",
+        "date_created": "2025-12-08T21:09:52Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "d41f0f48-c524-42b2-a401-f3707d2c18a3",
+        "title": "Sorensen_-_W-2_-_Fedex_Ground_-_2024.pdf",
+        "date_created": "2025-12-08T20:57:56Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "d428f7a9-aaf0-4315-a436-2121049b361d",
+        "title": "Mortgage Insurance Certificate.pdf",
+        "date_created": "2025-12-08T21:05:33Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "d430cde2-287f-4d80-ad78-aba6640a750e",
+        "title": "Sorensen - Bank Statement - BANK_STATEMENT - Alva Sorensen.pdf",
+        "date_created": "2025-12-08T20:56:50Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "d4400fc0-9382-4b51-ba43-48ac75306a00",
+        "title": "2509946673 condition.jpg",
+        "date_created": "2025-12-08T21:03:16Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "d4785ea4-b156-4739-bb03-bbe3b9f6ed41",
+        "title": "Compliance Report",
+        "date_created": "2025-12-08T21:05:39Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "d4e9688f-b1c7-4e03-b4e1-017231274b52",
+        "title": "Trash",
+        "date_created": "2025-12-08T21:07:05Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "d504a9f5-0b19-4ad5-9cf4-f6506320013e",
+        "title": "e48ac79377a70a052d9201adac4793c7 (1).pdf",
+        "date_created": "2025-12-08T20:59:06Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "d5225ccf-ed12-4d1a-962d-c96b72076806",
+        "title": "E&O.pdf",
+        "date_created": "2025-12-08T21:07:08Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "d5536a2b-446d-447a-86cf-710e8f0e82e4",
+        "title": "Generated Letter of Explanation - Late Payment - Blend Sign Certificate of Completion - 2025-10-20 835 pm EDT - Alva Sorensen",
+        "date_created": "2025-12-08T21:09:59Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "d5c057dd-3e7c-48f1-a1aa-ad460bf524ab",
+        "title": "Addendum 6- Scotty.pdf",
+        "date_created": "2025-12-08T21:09:43Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "d64768ae-8a41-42eb-8182-f740ec311efe",
+        "title": "Chase_Sept.pdf",
+        "date_created": "2025-12-08T21:02:18Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "d66dcaef-c580-442a-8adf-a0016cf6b0d4",
+        "title": "Initial Disclosures - Blend Sign Certificate of Completion - 2025-10-04 717 pm EDT - Alva Sorensen, Blu Trujillo",
+        "date_created": "2025-12-08T21:02:34Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "d6f33adb-50f4-4f27-8804-674193398bb9",
+        "title": "1708608524.FINDINGS",
+        "date_created": "2025-12-08T21:03:09Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "d74381f4-1e1c-4034-be65-51ec3c4512c6",
+        "title": "Addendum 4- Scotty.pdf",
+        "date_created": "2025-12-08T21:07:15Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "d9950302-0f2e-415f-a1ca-29d938eb5291",
+        "title": "FHA Loan Transmittal",
+        "date_created": "2025-12-08T20:54:31Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "d9e8304e-9f03-44da-b1b0-4dac1820fa72",
+        "title": "Tax Information Authorization (IRS 8821)",
+        "date_created": "2025-12-08T21:10:05Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "dd26920d-b4ef-4182-9b30-dcafeec71915",
+        "title": "Gift letter.pdf",
+        "date_created": "2025-12-08T20:56:03Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "ddb22af6-7854-42cc-93dc-a0c073955926",
+        "title": "UT Servicer Information Disclosure",
+        "date_created": "2025-12-08T20:59:30Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "dea83493-6f24-42f4-b765-e348293d1e01",
+        "title": "Acknowledgement of Intent to Proceed",
+        "date_created": "2025-12-08T20:56:26Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "deb25ad2-5eb0-4fb9-9340-f63e28584646",
+        "title": "Sorensen_-_W-2_-_Fedex_Ground_-_2024_(1).pdf",
+        "date_created": "2025-12-08T21:10:08Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "df25c98c-4d30-4214-8ce8-4344184c1119",
+        "title": "Wire Fraud Disclosure (esignable)",
+        "date_created": "2025-12-08T21:01:35Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "df2fd8da-b843-4bb2-b367-fce784baeb9b",
+        "title": "Generated Letter of Explanation - Late Payment - Blend Sign Certificate of Completion - 2025-10-20 832 pm EDT - Alva Sorensen",
+        "date_created": "2025-12-08T21:08:55Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "e1e8f37e-054c-47c2-9261-80ef23b90758",
+        "title": "FHA For Your Protection: Get a Home Inspection",
+        "date_created": "2025-12-08T20:55:06Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "e2adc9ed-a030-4fdd-9ae0-e57f8450a538",
+        "title": "Paystub Fedex.pdf",
+        "date_created": "2025-12-08T21:00:01Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "e6b4f6ed-e077-4b7f-8063-88de747f6051",
+        "title": "MergedCredit",
+        "date_created": "2025-12-08T21:00:07Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "ea463c29-4d51-4e3e-96d9-79a8f4eb4b45",
+        "title": "Taxes .pdf",
+        "date_created": "2025-12-08T21:01:46Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "ec8f0d32-5dce-4e1a-b9a6-ecdbf6231f4c",
+        "title": "Wiring Instructions.pdf",
+        "date_created": "2025-12-08T20:54:10Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "ee83bb85-5be1-4ae8-92c9-94804ca2b55c",
+        "title": "Closing Protection Letter.pdf",
+        "date_created": "2025-12-08T21:07:34Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "eecf0f45-8cdd-4d70-941b-abcfda3ac478",
+        "title": "Earnest Money Deposit.pdf",
+        "date_created": "2025-12-08T20:57:54Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "effd95f9-b56e-4b17-97f2-257b2dcaa42b",
+        "title": "Allonge to Note",
+        "date_created": "2025-12-08T20:57:03Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "f033d168-63ba-42b3-ad56-d34dc11307c6",
+        "title": "Sorensen - Generated Letter of Explanation - Late Payment",
+        "date_created": "2025-12-08T21:02:21Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "f0cd6d18-e36e-4437-88b1-0e9b823d0123",
+        "title": "FHA Important Notice to Homebuyers",
+        "date_created": "2025-12-08T21:05:58Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "f1bdfb1e-d60a-4926-b606-29f98bf96ceb",
+        "title": "Certificate Of Liability Insurance.pdf",
+        "date_created": "2025-12-08T21:06:35Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "f2d744b2-71d9-4285-8eff-7aaf4a4ce817",
+        "title": "REPC- Scotty.pdf",
+        "date_created": "2025-12-08T21:04:39Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "f2f20a7d-cce9-46d6-9704-747f72c9b8ec",
+        "title": "Your Home Loan Toolkit",
+        "date_created": "2025-12-08T20:59:34Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "f37194be-2318-4ac3-9526-49d8f276dddf",
+        "title": "2024-12-24 JJ.PDF",
+        "date_created": "2025-12-08T21:01:22Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "f4886c5a-a4c7-4961-bb55-0bf8097e8546",
+        "title": "Printer Settings Document",
+        "date_created": "2025-12-08T21:06:11Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "f4aa1274-a820-4290-978b-4ddb407d9b22",
+        "title": "Hynds Bros and Jimmy johns - Google Search.pdf",
+        "date_created": "2025-12-08T21:08:19Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "f73efa96-5d41-47ce-869a-64b6eb25babf",
+        "title": "Case Query Results.pdf",
+        "date_created": "2025-12-08T21:09:15Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "f750998a-eebe-4e7c-beb0-de1bbf130737",
+        "title": "Insurance Application Results.pdf",
+        "date_created": "2025-12-08T20:57:40Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "f9215737-71da-4160-9ca6-0e26518fe99f",
+        "title": "Trash",
+        "date_created": "2025-12-08T20:57:45Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "f9938760-6fb5-4819-90a9-56f8c8454cd3",
+        "title": "UT Notice of Loan Sale, Assignment or Servicing",
+        "date_created": "2025-12-08T21:04:54Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "f99f9009-5158-4eac-823f-78c28a7ae3df",
+        "title": "Privacy Policy",
+        "date_created": "2025-12-08T20:58:10Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "f9f9b796-17c4-4b03-a363-4e3700d5a622",
+        "title": "Letter Of Explanation.pdf",
+        "date_created": "2025-12-08T21:04:45Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "fab2e263-1288-48ff-aa32-c096f0966478",
+        "title": "Compliance Report",
+        "date_created": "2025-12-08T20:59:43Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "fae12157-ff04-44db-8f45-36759296410d",
+        "title": "Compliance Report",
+        "date_created": "2025-12-08T21:05:55Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "fb8a5348-d7ce-46af-bf05-8f8cd34ccc9c",
+        "title": "cd.pdf",
+        "date_created": "2025-12-08T21:08:47Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "fd94bc48-cba2-4288-8a98-b2934b13182b",
+        "title": "1761330699_SSR_FHA_A0005HF285.pdf",
+        "date_created": "2025-12-08T21:07:11Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "fdead71d-e610-4c39-96fb-ad55c17d38d5",
+        "title": "Flood Certificate",
+        "date_created": "2025-12-08T21:03:28Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "fecf873d-95e9-499f-937d-b1fa13d73c5b",
+        "title": "Notice of Furnishing Negative Information",
+        "date_created": "2025-12-08T21:00:21Z",
+        "date_modified": null,
+        "is_active": true
+      },
+      {
+        "attachment_id": "fee56ab7-b109-48b5-afb5-90a89187d6ef",
+        "title": "Lock Confirmation Document",
+        "date_created": "2025-12-08T21:02:28Z",
+        "date_modified": null,
+        "is_active": true
+      }
+    ],
+    "scenario_tag": "FHA_PURCHASE_PRIMARY",
+    "is_mvp_supported": false,
+    "fetch_timestamp": "2025-12-11T18:20:54.211895"
+  },
+  "doc_coverage": null,
+  "needs_list": {
+    "timestamp": "2025-12-11T18:20:54.220802",
+    "phases_completed": [
+      "DATA"
+    ],
+    "items": [
+      {
+        "id": "DATA_account_setup_basic_contact_info_email",
+        "category": "BORROWER",
+        "type": "DATA",
+        "status": "MISSING",
+        "severity": "WARN",
+        "label": "Missing: email",
+        "reason": "Please provide your basic contact information.",
+        "action": "Collect Email from borrower",
+        "field_id": "email",
+        "section_id": "account_setup",
+        "question_id": "basic_contact_info"
+      },
+      {
+        "id": "DATA_borrower_profile_current_address_borrower_years_at_current_address",
+        "category": "BORROWER",
+        "type": "DATA",
+        "status": "MISSING",
+        "severity": "WARN",
+        "label": "Missing: borrower_years_at_current_address",
+        "reason": "What is your current address?",
+        "action": "Collect Years At Current Address from borrower",
+        "field_id": "borrower_years_at_current_address",
+        "section_id": "borrower_profile",
+        "question_id": "current_address"
+      },
+      {
+        "id": "DATA_credit_information_credit_score_range_borrower_credit_score_range",
+        "category": "BORROWER",
+        "type": "DATA",
+        "status": "MISSING",
+        "severity": "WARN",
+        "label": "Missing: borrower_credit_score_range",
+        "reason": "What is your current Credit Score?",
+        "action": "Collect Credit Score Range from borrower",
+        "field_id": "borrower_credit_score_range",
+        "section_id": "credit_information",
+        "question_id": "credit_score_range"
+      },
+      {
+        "id": "DATA_income_and_employment_self_employed_is_self_employed_boolean",
+        "category": "INCOME",
+        "type": "DATA",
+        "status": "MISSING",
+        "severity": "WARN",
+        "label": "Missing: is_self_employed_boolean",
+        "reason": "Are you self employed?",
+        "action": "Collect Self Employed from borrower",
+        "field_id": "is_self_employed_boolean",
+        "section_id": "income_and_employment",
+        "question_id": "self_employed"
+      },
+      {
+        "id": "DATA_income_and_employment_annual_income_annual_income_amount",
+        "category": "INCOME",
+        "type": "DATA",
+        "status": "MISSING",
+        "severity": "WARN",
+        "label": "Missing: annual_income_amount",
+        "reason": "Approximately what is your annual income?",
+        "action": "Collect Annual Income from borrower",
+        "field_id": "annual_income_amount",
+        "section_id": "income_and_employment",
+        "question_id": "annual_income"
+      },
+      {
+        "id": "DATA_income_and_employment_w2_employer_duration_employer_tenure_years",
+        "category": "INCOME",
+        "type": "DATA",
+        "status": "MISSING",
+        "severity": "WARN",
+        "label": "Missing: employer_tenure_years",
+        "reason": "How long have you been with your current employer?",
+        "action": "Collect Employer Tenure Years from borrower",
+        "field_id": "employer_tenure_years",
+        "section_id": "income_and_employment",
+        "question_id": "w2_employer_duration"
+      },
+      {
+        "id": "DATA_income_and_employment_employer_info_employer_name",
+        "category": "INCOME",
+        "type": "DATA",
+        "status": "MISSING",
+        "severity": "WARN",
+        "label": "Missing: employer_name",
+        "reason": "Please provide employer contact info.",
+        "action": "Collect Employer Name from borrower",
+        "field_id": "employer_name",
+        "section_id": "income_and_employment",
+        "question_id": "employer_info"
+      },
+      {
+        "id": "DATA_income_and_employment_employer_info_employer_address_street",
+        "category": "INCOME",
+        "type": "DATA",
+        "status": "MISSING",
+        "severity": "WARN",
+        "label": "Missing: employer_address_street",
+        "reason": "Please provide employer contact info.",
+        "action": "Collect Employer Address Street from borrower",
+        "field_id": "employer_address_street",
+        "section_id": "income_and_employment",
+        "question_id": "employer_info"
+      },
+      {
+        "id": "DATA_income_and_employment_employer_info_employer_address_city",
+        "category": "INCOME",
+        "type": "DATA",
+        "status": "MISSING",
+        "severity": "WARN",
+        "label": "Missing: employer_address_city",
+        "reason": "Please provide employer contact info.",
+        "action": "Collect Employer Address City from borrower",
+        "field_id": "employer_address_city",
+        "section_id": "income_and_employment",
+        "question_id": "employer_info"
+      },
+      {
+        "id": "DATA_income_and_employment_employer_info_employer_address_state",
+        "category": "INCOME",
+        "type": "DATA",
+        "status": "MISSING",
+        "severity": "WARN",
+        "label": "Missing: employer_address_state",
+        "reason": "Please provide employer contact info.",
+        "action": "Collect Employer Address State from borrower",
+        "field_id": "employer_address_state",
+        "section_id": "income_and_employment",
+        "question_id": "employer_info"
+      },
+      {
+        "id": "DATA_income_and_employment_employer_info_employer_address_zip",
+        "category": "INCOME",
+        "type": "DATA",
+        "status": "MISSING",
+        "severity": "WARN",
+        "label": "Missing: employer_address_zip",
+        "reason": "Please provide employer contact info.",
+        "action": "Collect Employer Address Zip from borrower",
+        "field_id": "employer_address_zip",
+        "section_id": "income_and_employment",
+        "question_id": "employer_info"
+      },
+      {
+        "id": "DATA_income_and_employment_hr_contact_info_hr_contact_phone",
+        "category": "INCOME",
+        "type": "DATA",
+        "status": "MISSING",
+        "severity": "WARN",
+        "label": "Missing: hr_contact_phone",
+        "reason": "Please provide Employer / Human Resources Contact info.",
+        "action": "Collect HR Contact Phone from borrower",
+        "field_id": "hr_contact_phone",
+        "section_id": "income_and_employment",
+        "question_id": "hr_contact_info"
+      },
+      {
+        "id": "DATA_subject_property_subject_property_type_subject_property_type",
+        "category": "PROPERTY",
+        "type": "DATA",
+        "status": "MISSING",
+        "severity": "CRITICAL",
+        "label": "Missing: subject_property_type",
+        "reason": "What type of property are you intending on purchasing?",
+        "action": "Collect Property Type from borrower",
+        "field_id": "subject_property_type",
+        "section_id": "subject_property",
+        "question_id": "subject_property_type"
+      }
+    ],
+    "summary": {
+      "total": 13,
+      "by_status": {
+        "MISSING": 13
+      },
+      "by_severity": {
+        "WARN": 12,
+        "CRITICAL": 1
+      },
+      "by_category": {
+        "BORROWER": 3,
+        "INCOME": 9,
+        "PROPERTY": 1
+      },
+      "by_type": {
+        "DATA": 13
+      },
+      "critical_count": 1,
+      "warn_count": 12,
+      "can_proceed": false
+    }
+  },
+  "summary": "Found 13 data gaps:\n\nCRITICAL ISSUES:\n  \u274c Missing: subject_property_type\n\nNEEDS ATTENTION:\n  \u26a0\ufe0f Missing: email\n  \u26a0\ufe0f Missing: borrower_years_at_current_address\n  \u26a0\ufe0f Missing: borrower_credit_score_range\n  \u26a0\ufe0f Missing: is_self_employed_boolean\n  \u26a0\ufe0f Missing: annual_income_amount\n  \u26a0\ufe0f Missing: employer_tenure_years\n  \u26a0\ufe0f Missing: employer_name\n  \u26a0\ufe0f Missing: employer_address_street\n  \u26a0\ufe0f Missing: employer_address_city\n  \u26a0\ufe0f Missing: employer_address_state\n  \u26a0\ufe0f Missing: employer_address_zip\n  \u26a0\ufe0f Missing: hr_contact_phone\n\n\u26d4 Loan BLOCKED - resolve critical issues first",
+  "write_proposals": null,
+  "errors": []
+}
