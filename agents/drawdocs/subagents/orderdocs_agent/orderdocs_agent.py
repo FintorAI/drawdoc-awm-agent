@@ -18,32 +18,10 @@ from pathlib import Path
 from typing import Dict, Any, Optional, List
 from datetime import datetime
 
-# Load environment variables
-try:
-    from dotenv import load_dotenv
-    env_paths = [
-        Path(__file__).parent.parent.parent.parent / ".env",
-        Path(__file__).parent.parent.parent.parent.parent / ".env",
-    ]
-    for env_path in env_paths:
-        if env_path.exists():
-            load_dotenv(env_path)
-            break
-except ImportError:
-    pass
-
-# Add MCP server to path for imports
-mcp_server_path = Path(__file__).parent.parent.parent.parent.parent / "encompass-mcp-server"
-if mcp_server_path.exists():
-    sys.path.insert(0, str(mcp_server_path))
-    # Load MCP server .env
-    mcp_env = mcp_server_path / ".env"
-    if mcp_env.exists():
-        load_dotenv(mcp_env, override=False)
-
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
-sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent.parent))
+# Add project root to path
+project_root = Path(__file__).parent.parent.parent.parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
 
 # Configure logging
 logging.basicConfig(
@@ -53,78 +31,53 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Try to import primitives HTTP client (which works for API calls)
-PRIMITIVES_AVAILABLE = False
+# Import primitives (handles environment loading internally)
 try:
-    from agents.drawdocs.tools.primitives import _get_http_client
+    from agents.drawdocs.tools.primitives import _get_http_client, run_preflight_checks
     PRIMITIVES_AVAILABLE = True
-    logger.info("[OrderDocs] ✓ Primitives HTTP client available")
+    logger.info("[OrderDocs] ✓ Primitives tools available")
 except ImportError as e:
-    logger.warning(f"[OrderDocs] Primitives not available: {e}")
-    # Try alternative import path
-    try:
-        import sys
-        from pathlib import Path
-        tools_path = Path(__file__).parent.parent.parent / "tools"
-        sys.path.insert(0, str(tools_path.parent))
-        from drawdocs.tools.primitives import _get_http_client
-        PRIMITIVES_AVAILABLE = True
-        logger.info("[OrderDocs] ✓ Primitives HTTP client available (alt path)")
-    except ImportError as e2:
-        logger.warning(f"[OrderDocs] Primitives alt import also failed: {e2}")
+    PRIMITIVES_AVAILABLE = False
+    logger.error(f"[OrderDocs] ❌ Cannot import primitives: {e}")
+    raise RuntimeError("OrderDocs requires primitives.py - ensure agents/drawdocs/tools/primitives.py exists")
 
 
 def _make_api_request(method: str, path: str, json_body: Any = None) -> Dict[str, Any]:
     """Make an API request using the primitives HTTP client.
     
-    This uses the same working HTTP client that primitives.py uses.
-    
     Returns:
         Dict with keys: status_code, headers, body
     """
-    if not PRIMITIVES_AVAILABLE:
-        raise RuntimeError("Primitives HTTP client not available")
+    http_client = _get_http_client()
+    token = http_client.auth_manager.get_client_credentials_token()
     
-    try:
-        http_client = _get_http_client()
-        token = http_client.auth_manager.get_client_credentials_token()
-        
-        headers = {"Content-Type": "application/json"} if json_body else {}
-        
-        response = http_client.request(
-            method=method,
-            path=path,
-            token=token,
-            headers=headers,
-            json_body=json_body
-        )
-        
-        # Parse response
-        status_code = response.status_code
-        resp_headers = dict(response.headers) if hasattr(response, 'headers') else {}
-        
-        # Try to parse body as JSON
-        body = {}
-        if hasattr(response, 'text') and response.text:
-            try:
-                body = json.loads(response.text)
-            except json.JSONDecodeError:
-                body = {"raw": response.text}
-        elif hasattr(response, 'json'):
-            try:
-                body = response.json()
-            except:
-                pass
-        
-        return {
-            "status_code": status_code,
-            "headers": resp_headers,
-            "body": body
-        }
-        
-    except Exception as e:
-        logger.error(f"[_make_api_request] Error: {e}")
-        raise
+    headers = {"Content-Type": "application/json"} if json_body else {}
+    
+    response = http_client.request(
+        method=method,
+        path=path,
+        token=token,
+        headers=headers,
+        json_body=json_body
+    )
+    
+    # Parse response
+    status_code = response.status_code
+    resp_headers = dict(response.headers) if hasattr(response, 'headers') else {}
+    
+    # Parse body as JSON
+    body = {}
+    if hasattr(response, 'text') and response.text:
+        try:
+            body = json.loads(response.text)
+        except json.JSONDecodeError:
+            body = {"raw": response.text}
+    
+    return {
+        "status_code": status_code,
+        "headers": resp_headers,
+        "body": body
+    }
 
 
 def _poll_until_complete(
@@ -559,41 +512,63 @@ def run_orderdocs_agent(
         "preflight_warnings": []  # Warnings about loan readiness
     }
     
+    def _process_checks(check_dict: Dict[str, Any], prefix: str = "") -> None:
+        """Helper to process and log check results"""
+        for check_name, check_data in check_dict.items():
+            flag_name = f"{prefix}_{check_name}" if prefix else check_name
+            field_name = check_data.get("field_name", check_name)
+            
+            if check_data.get("passed"):
+                logger.info(f"[PRE-FLIGHT] ✓ {prefix.upper()} {field_name}: {check_data.get('value', 'OK')}" if prefix else f"[PRE-FLIGHT] ✓ {field_name}: {check_data.get('value', 'OK')}")
+            else:
+                warning = {
+                    "flag": flag_name,
+                    "name": field_name,
+                    "field_id": check_data.get("field_id"),
+                    "value": check_data.get("value"),
+                    "expected": check_data.get("expected_value"),
+                    "status": False,
+                    "message": check_data.get("failure_reason", f"{field_name} check failed")
+                }
+                results["preflight_warnings"].append(warning)
+                logger.warning(f"[PRE-FLIGHT] ⚠️ {prefix.upper()} {warning['message']}" if prefix else f"[PRE-FLIGHT] ⚠️ {warning['message']}")
+    
     try:
         # Pre-flight check: Verify loan readiness flags
         logger.info("\n[PRE-FLIGHT] Checking loan readiness for closing docs...")
         try:
-            from agents.drawdocs.tools.primitives import get_loan_context
-            loan_context = get_loan_context(loan_id)
-            flags = loan_context.get("flags", {})
+            preflight_results = run_preflight_checks(loan_id)
+            results["preflight_checks"] = preflight_results
             
-            # Check critical flags for closing document ordering
-            preflight_checks = [
-                ("is_ctc", "Clear to Close", flags.get("is_ctc", False)),
-                ("cd_approved", "Closing Disclosure Approved", flags.get("cd_approved", False)),
-                ("cd_acknowledged", "Closing Disclosure Acknowledged", flags.get("cd_acknowledged", False)),
-            ]
+            # Process all check types using helper
+            _process_checks(preflight_results.get("checks", {}))
+            _process_checks(preflight_results.get("g1_requirements", {}), prefix="g1")
+            _process_checks(preflight_results.get("mvp_eligibility", {}), prefix="mvp")
             
-            for flag_id, flag_name, flag_value in preflight_checks:
-                if not flag_value:
-                    warning = {
-                        "flag": flag_id,
-                        "name": flag_name,
-                        "status": False,
-                        "message": f"{flag_name} is not complete - closing documents may fail to generate"
-                    }
-                    results["preflight_warnings"].append(warning)
-                    logger.warning(f"[PRE-FLIGHT] ⚠️ {warning['message']}")
-                else:
-                    logger.info(f"[PRE-FLIGHT] ✓ {flag_name}: Complete")
-            
-            if results["preflight_warnings"]:
-                logger.warning(f"[PRE-FLIGHT] Found {len(results['preflight_warnings'])} warning(s) - proceeding anyway")
-            else:
+            # Summary
+            if preflight_results.get("all_passed"):
                 logger.info("[PRE-FLIGHT] ✓ All readiness checks passed")
+            else:
+                blocker_count = len(preflight_results.get("blockers", []))
+                warning_count = len(results["preflight_warnings"])
+                logger.warning(f"[PRE-FLIGHT] Found {blocker_count} blocker(s) and {warning_count} warning(s)")
                 
         except Exception as preflight_error:
             logger.warning(f"[PRE-FLIGHT] Could not verify loan flags: {preflight_error}")
+            import traceback
+            logger.debug(traceback.format_exc())
+        
+        # Helper to check step result for errors
+        def _check_step_error(step_result: Dict[str, Any], step_name: str) -> Optional[str]:
+            """Check if step has error and return error message if found"""
+            status = str(step_result.get("status", "")).lower()
+            error = step_result.get("error") or step_result.get(f"{step_name}_data", {}).get("error")
+            
+            if step_result.get("error") or status in ["failed", "error"]:
+                if error and isinstance(error, dict):
+                    return f"{error.get('summary', 'Unknown error')}: {error.get('details', '')}"
+                return step_result.get("error") or f"{step_name.title()} status: {status}"
+            return None
         
         # Step 1: Run Mavent Check
         logger.info("\n[STEP 1/3] Running Mavent compliance check...")
@@ -605,23 +580,18 @@ def run_orderdocs_agent(
         )
         results["steps"]["mavent_check"] = mavent_result
         
-        # Check for errors (can be in "error" field or "status" field)
-        mavent_status = str(mavent_result.get("status", "")).lower()
-        mavent_error = mavent_result.get("error") or mavent_result.get("audit_data", {}).get("error")
-        
-        if mavent_result.get("error") or mavent_status in ["failed", "error"]:
-            error_msg = mavent_result.get("error") or f"Mavent check status: {mavent_status}"
-            if mavent_error and isinstance(mavent_error, dict):
-                error_msg = f"{mavent_error.get('summary', 'Unknown error')}: {mavent_error.get('details', '')}"
-            logger.error(f"[ORDERDOCS AGENT] Mavent check failed: {error_msg}")
-            # Don't return early - continue to try ordering (some loans may work)
+        # Check for errors
+        mavent_error = _check_step_error(mavent_result, "audit")
+        if mavent_error:
+            logger.error(f"[ORDERDOCS AGENT] Mavent check failed: {mavent_error}")
             logger.warning("[ORDERDOCS AGENT] Continuing despite Mavent failure...")
         
-        # Check for critical issues
+        # Log compliance issues
         issues = mavent_result.get("issues", [])
         if issues:
             logger.warning(f"[ORDERDOCS AGENT] Found {len(issues)} compliance issues")
         
+        # Verify audit ID
         audit_id = mavent_result.get("audit_id")
         if not audit_id:
             logger.error("[ORDERDOCS AGENT] No audit ID returned from Mavent check")
@@ -639,17 +609,12 @@ def run_orderdocs_agent(
         )
         results["steps"]["order_documents"] = order_result
         
-        # Check for order errors (can be in "error" field or "status" field)
-        order_status = str(order_result.get("status", "")).lower()
-        order_error = order_result.get("error") or order_result.get("order_data", {}).get("error")
+        # Check for errors
+        order_error = _check_step_error(order_result, "order")
+        if order_error:
+            logger.error(f"[ORDERDOCS AGENT] Document ordering failed: {order_error}")
         
-        if order_result.get("error") or order_status in ["failed", "error"]:
-            error_msg = order_result.get("error") or f"Document order status: {order_status}"
-            if order_error and isinstance(order_error, dict):
-                error_msg = f"{order_error.get('summary', 'Unknown error')}: {order_error.get('details', '')}"
-            logger.error(f"[ORDERDOCS AGENT] Document ordering failed: {error_msg}")
-            # Don't attempt delivery if ordering failed
-        
+        # Verify doc_set_id
         doc_set_id = order_result.get("doc_set_id")
         documents = order_result.get("documents", [])
         

@@ -43,7 +43,7 @@ class RunStatus(str, Enum):
 
 # Sub-agents for each agent type
 AGENT_TYPE_SUB_AGENTS = {
-    AgentType.DRAWDOCS: ["preparation", "drawcore", "verification", "orderdocs"],
+    AgentType.DRAWDOCS: ["preparation", "drawcore", "discrepancy", "verification", "orderdocs"],
     AgentType.DISCLOSURE: ["verification", "preparation", "send"],
     AgentType.LOA: ["verification", "generation", "delivery"],  # Placeholder for future
 }
@@ -101,9 +101,10 @@ class SubmitFieldReviewRequest(BaseModel):
 # =============================================================================
 
 class DrawDocsAgentSummary(BaseModel):
-    """Summary of DrawDocs agent statuses (4 sub-agents)."""
+    """Summary of DrawDocs agent statuses (5 sub-agents)."""
     preparation: AgentStatus = AgentStatus.PENDING
     drawcore: AgentStatus = AgentStatus.PENDING
+    discrepancy: AgentStatus = AgentStatus.PENDING
     verification: AgentStatus = AgentStatus.PENDING
     orderdocs: AgentStatus = AgentStatus.PENDING
 

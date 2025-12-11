@@ -560,6 +560,60 @@ def extract_document_entities(
     logger.info(f"[EXTRACT] Available mappings: {list(all_mappings.keys())}")
     logger.info(f"[EXTRACT] Extracted fields: {list(extracted_data.keys())}")
     
+    # CRITICAL FIELD RETRY LOGIC
+    # Define critical fields that should be retried if missing
+    critical_field_keywords = ['address', 'addr', 'name', 'ssn', 'social_security']
+    
+    # Identify which critical fields are expected but missing
+    expected_critical_fields = [
+        field_name for field_name in all_mappings.keys()
+        if any(keyword in field_name.lower() for keyword in critical_field_keywords)
+    ]
+    
+    missing_critical_fields = [
+        field_name for field_name in expected_critical_fields
+        if field_name not in extracted_data or not extracted_data[field_name]
+    ]
+    
+    # If critical fields are missing, retry extraction ONCE
+    if missing_critical_fields and attempt == 1:  # Only retry after first successful extraction
+        logger.warning(f"[EXTRACT] ⚠️  Missing {len(missing_critical_fields)} critical field(s): {missing_critical_fields}")
+        logger.info(f"[EXTRACT] 🔄 Retrying extraction for critical fields...")
+        
+        try:
+            # Retry extraction with same schema (LandingAI's AI might extract differently)
+            retry_start = time.time()
+            retry_result = client.extract_document_data(
+                document_bytes=document_bytes,
+                schema=schema,
+                doc_type=document_type,
+                filename=filename,
+            )
+            retry_time = time.time() - retry_start
+            
+            retry_extracted_data = retry_result.get("extracted_schema", {})
+            logger.info(f"[EXTRACT] Retry extracted fields: {list(retry_extracted_data.keys())}")
+            
+            # Check if retry found any of the missing critical fields
+            newly_found = []
+            for field_name in missing_critical_fields:
+                if field_name in retry_extracted_data and retry_extracted_data[field_name]:
+                    # Update with newly found data
+                    extracted_data[field_name] = retry_extracted_data[field_name]
+                    newly_found.append(field_name)
+            
+            if newly_found:
+                logger.info(f"[EXTRACT] ✅ Retry SUCCESS! Found {len(newly_found)} critical field(s): {newly_found}")
+                extraction_time += retry_time
+            else:
+                logger.warning(f"[EXTRACT] ⚠️  Retry did not find missing critical fields")
+                
+        except Exception as retry_error:
+            logger.warning(f"[EXTRACT] Retry failed: {retry_error}. Continuing with original extraction.")
+    
+    elif missing_critical_fields:
+        logger.warning(f"[EXTRACT] ⚠️  Missing {len(missing_critical_fields)} critical field(s): {missing_critical_fields} (no retry - already attempted)")
+    
     # Identify which extracted fields have mappings
     mapped_fields = {}
     unmapped_fields = {}
@@ -1061,7 +1115,17 @@ def process_loan_documents(
     process_start_time = time.time()
     
     logger.info(f"[PROCESS] Starting - Loan: {loan_id[:8]}...")
-    logger.info(f"[PROCESS] Document types filter: {document_types or 'ALL (with schemas)'}")
+    
+    # Log initial document_types value
+    if document_types:
+        logger.info(f"[PROCESS] Document types filter: {document_types}")
+    elif document_types == []:
+        # Empty array means "All Documents Needed from SOP"
+        logger.info(f"[PROCESS] Document types filter: ALL DOCUMENTS NEEDED (from SOP CSV - will match against extraction schemas)")
+    else:
+        # document_types is None - will load from CSV after imports
+        logger.info(f"[PROCESS] Document types filter: ALL TYPES (will load from CSV)")
+    
     logger.info(f"[PROCESS] Dry run: {dry_run}")
     
     # ==========================================================================
@@ -1110,20 +1174,27 @@ def process_loan_documents(
     
     logger.info(f"[PROCESS] Found {len(all_documents)} total documents in loan")
     
-    # Notify progress: documents found
-    _notify_progress(documents_found=len(all_documents), documents_processed=0, fields_extracted=0)
-    
     # Step 2: Filter documents to only those matching requested types
     try:
         from tools.extraction_schemas import list_supported_document_types
     except ImportError:
         from agents.drawdocs.subagents.preparation_agent.tools.extraction_schemas import list_supported_document_types
     
+    # If document_types is None (All Types), load supported types from CSV
+    # This prevents processing all 320+ documents - only process docs with schemas
+    if document_types is None:
+        csv_supported_types = list_supported_document_types()
+        logger.info(f"[PROCESS] 'All Types' selected - loading {len(csv_supported_types)} document types from CSV")
+        document_types = csv_supported_types
+        logger.info(f"[PROCESS] Will only process documents matching these {len(document_types)} types")
+    
     matching_documents = []
     MAX_DOCS_PER_TYPE = 5  # Process up to 5 documents per requested type
     
     if document_types:
         # Filter to only documents that match the requested types
+        # NOTE: If document_types is empty list [] (not None), this will be False
+        # and we'll process ALL documents in the else block below
         # Use strict matching to avoid false positives
         # Track which documents match which requested types
         documents_by_requested_type = {req_type: [] for req_type in document_types}
@@ -1288,22 +1359,63 @@ def process_loan_documents(
             if len(docs) > MAX_DOCS_PER_TYPE:
                 logger.info(f"[PROCESS] Selected {len(selected_docs)} best document(s) for '{requested_type}' (skipped {len(docs) - MAX_DOCS_PER_TYPE} lower-scoring documents)")
     else:
-        # No filter - use all documents that have schemas
+        # document_types is empty list [] or None
+        # Empty list [] = "All Documents Needed" from SOP
+        # None = no filter specified (legacy behavior)
         supported_types = list_supported_document_types()
+        
+        logger.info(f"[PROCESS] 'All Documents Needed' mode - attempting to match {len(all_documents)} documents against {len(supported_types)} SOP document types")
+        
         for doc in all_documents:
             doc_title = doc.get("title", "Unknown")
             doc_type = doc.get("documentType") or doc.get("type", "Unknown")
             doc_title_lower = doc_title.lower()
+            doc_type_lower = doc_type.lower()
             
-            # Check if document has a schema
-            has_schema = False
+            # Check if document matches ANY supported schema
+            # Use fuzzy matching to catch variations
+            best_match = None
+            best_score = 0
+            
             for supported_type in supported_types:
-                if supported_type.lower() in doc_title_lower or supported_type.lower() in doc_type.lower():
-                    has_schema = True
-                    break
+                supported_lower = supported_type.lower()
+                
+                # Calculate match score
+                score = 0
+                
+                # Exact match in title (highest priority)
+                if supported_lower == doc_title_lower:
+                    score = 100
+                # Exact match in type
+                elif supported_lower == doc_type_lower:
+                    score = 90
+                # Contains full supported type name
+                elif supported_lower in doc_title_lower:
+                    score = 80
+                # Supported type contains title (e.g., "ID" matches "Driver License - ID")
+                elif doc_title_lower in supported_lower:
+                    score = 70
+                # Word overlap (e.g., "Closing Disclosure" matches "CD")
+                else:
+                    supported_words = set(supported_lower.split())
+                    title_words = set(doc_title_lower.split())
+                    overlap = len(supported_words.intersection(title_words))
+                    if overlap > 0:
+                        score = 50 + (overlap * 5)
+                
+                if score > best_score:
+                    best_score = score
+                    best_match = supported_type
             
-            if has_schema:
-                matching_documents.append(doc)
+            # Accept if score is above threshold
+            if best_score >= 50:
+                doc_with_match = doc.copy()
+                doc_with_match["_matched_type"] = best_match
+                doc_with_match["_match_score"] = best_score
+                matching_documents.append(doc_with_match)
+                logger.debug(f"[PROCESS] ✓ Matched '{doc_title}' → '{best_match}' (score: {best_score})")
+        
+        logger.info(f"[PROCESS] 'All Documents Needed' mode: Matched {len(matching_documents)} out of {len(all_documents)} documents to SOP schemas")
     
     logger.info(f"[PROCESS] Filtered to {len(matching_documents)} matching documents to process")
     
@@ -1326,6 +1438,9 @@ def process_loan_documents(
     prioritized_matching_documents = matching_documents
     
     logger.info(f"[OPTIMIZE] Processing {len(prioritized_matching_documents)} best-matched documents (up to {MAX_DOCS_PER_TYPE} per requested type)")
+    
+    # Notify progress: show FILTERED document count, not total in loan
+    _notify_progress(documents_found=len(prioritized_matching_documents), documents_processed=0, fields_extracted=0)
     
     # Preload extraction schemas for all document types we'll process (cache optimization)
     step2_start = time.time()
@@ -1490,6 +1605,61 @@ def process_loan_documents(
     except ImportError:
             from agents.drawdocs.subagents.preparation_agent.tools.field_mappings import get_preferred_documents_for_field, should_extract_from_document
     
+    def is_more_complete(new_value: Any, existing_value: Any) -> bool:
+        """Check if new_value is more complete than existing_value.
+        
+        For strings: checks if it has more components (e.g., full address with city/state/ZIP vs partial)
+        For numbers: checks if one is non-zero vs zero
+        
+        Args:
+            new_value: The new extracted value
+            existing_value: The existing value to compare against
+            
+        Returns:
+            True if new_value is more complete, False otherwise
+        """
+        # Both must be valid (not None, not empty string)
+        if new_value is None or new_value == "":
+            return False
+        if existing_value is None or existing_value == "":
+            return True
+        
+        # For strings, check component count (commas, spaces, length)
+        if isinstance(new_value, str) and isinstance(existing_value, str):
+            new_str = str(new_value).strip()
+            existing_str = str(existing_value).strip()
+            
+            # Count address components (commas often separate city, state, ZIP)
+            new_commas = new_str.count(',')
+            existing_commas = existing_str.count(',')
+            
+            if new_commas > existing_commas:
+                return True  # More commas = more address components
+            elif new_commas < existing_commas:
+                return False
+            
+            # If same comma count, check word count (more words = more detailed)
+            new_words = len(new_str.split())
+            existing_words = len(existing_str.split())
+            
+            if new_words > existing_words:
+                return True
+            elif new_words < existing_words:
+                return False
+            
+            # If same word count, prefer longer string (more characters = more detail)
+            return len(new_str) > len(existing_str)
+        
+        # For numbers, prefer non-zero over zero
+        if isinstance(new_value, (int, float)) and isinstance(existing_value, (int, float)):
+            if new_value != 0 and existing_value == 0:
+                return True
+            if new_value == 0 and existing_value != 0:
+                return False
+        
+        # Default: not more complete
+        return False
+    
     # First pass: Collect all extractions, prioritizing preferred documents
     for result in processing_results:
         doc_type = result.get("document_type", "Unknown")
@@ -1519,7 +1689,7 @@ def process_loan_documents(
                         for pref in preferred_docs
                     ) if preferred_docs else False
                     
-                    # Store extraction (prefer preferred documents, but prefer non-zero values)
+                    # Store extraction (prefer preferred documents, but prefer non-zero values and more complete values)
                     # Check if value is valid (not None, not empty string) - 0 is a valid value
                     is_valid = value is not None and value != ""
                     is_non_zero = is_valid and value != 0
@@ -1529,20 +1699,38 @@ def process_loan_documents(
                     else:
                         existing_value, existing_doc, existing_att_id, existing_preferred, existing_valid, existing_non_zero = field_extractions[field_id]
                         
-                        # Prefer non-zero values over zero values
+                        # NEW: Check if new value is more complete than existing
+                        is_new_more_complete = is_more_complete(value, existing_value)
+                        
+                        # Decision logic:
+                        # 1. Prefer non-zero over zero
+                        # 2. Prefer more complete values (e.g., full address vs partial)
+                        # 3. Prefer preferred documents
+                        # 4. Keep first extraction as fallback
+                        
+                        should_replace = False
+                        
+                        # Rule 1: Non-zero wins over zero
                         if is_non_zero and not existing_non_zero:
-                            field_extractions[field_id] = (value, doc_type, attachment_id, is_preferred, is_valid, is_non_zero)
+                            should_replace = True
+                            logger.debug(f"[AGGREGATE] Field {field_id}: Replacing zero value from {existing_doc} with non-zero from {doc_type}")
                         elif not is_non_zero and existing_non_zero:
-                            # Keep existing non-zero value
-                            pass
+                            should_replace = False
+                        # Rule 2: More complete value wins (even if from secondary source)
+                        elif is_new_more_complete:
+                            should_replace = True
+                            logger.info(f"[AGGREGATE] Field {field_id}: Replacing less complete value from {existing_doc} with more complete value from {doc_type}")
+                            logger.info(f"[AGGREGATE]   Old: '{existing_value}' → New: '{value}'")
+                        # Rule 3: Preferred document wins
                         elif is_preferred and not existing_preferred:
-                            # Replace with preferred document extraction
+                            should_replace = True
+                            logger.debug(f"[AGGREGATE] Field {field_id}: Replacing from {existing_doc} with preferred document {doc_type}")
+                        # Rule 4: Keep existing if both non-preferred and equal completeness
+                        else:
+                            should_replace = False
+                        
+                        if should_replace:
                             field_extractions[field_id] = (value, doc_type, attachment_id, is_preferred, is_valid, is_non_zero)
-                        elif not existing_preferred and not is_preferred:
-                            # Both are non-preferred, prefer non-zero value
-                            if is_non_zero and not existing_non_zero:
-                                field_extractions[field_id] = (value, doc_type, attachment_id, is_preferred, is_valid, is_non_zero)
-                            # Otherwise keep first one
     
     # Second pass: Build final field_mappings (prioritized) - include all valid values (including 0)
     # Format: {field_id: {"value": value, "attachment_id": attachment_id}}
@@ -1598,11 +1786,53 @@ def process_loan_documents(
         if cleaned_entities:  # Only include document types with non-empty extracted fields
             cleaned_extracted_entities[doc_type] = cleaned_entities
     
+    # =========================================================================
+    # P1 ENHANCEMENT: Extract File Contacts (SOP Step 9)
+    # =========================================================================
+    try:
+        from tools.file_contacts_extractor import extract_file_contacts
+        
+        logger.info("[P1] Starting File Contacts extraction (SOP Step 9)...")
+        
+        # Build document list for File Contacts extractor
+        # Include downloaded document contents if available
+        documents_for_extraction = []
+        for result in processing_results:
+            if result and "document" in result:
+                doc = result["document"]
+                doc_dict = {
+                    "title": doc.get("title", "Unknown"),
+                    "type": doc.get("documentType") or doc.get("type", "Unknown"),
+                    "content": result.get("document_text", ""),  # Downloaded text
+                }
+                documents_for_extraction.append(doc_dict)
+        
+        # Extract File Contacts
+        file_contacts = extract_file_contacts(documents_for_extraction, loan_id)
+        
+        # Add to field_mappings
+        for field_id, field_data in file_contacts.items():
+            if field_data.get("value"):
+                aggregated_results["field_mappings"][field_id] = {
+                    "value": field_data["value"],
+                    "source": field_data.get("source", "File Contacts"),
+                    "confidence": field_data.get("confidence", 0.8)
+                }
+                logger.info(f"[P1] Added File Contact field {field_id}: {field_data['value'][:50]}...")
+        
+        logger.info(f"[P1] ✅ File Contacts extraction complete: {len(file_contacts)} fields added")
+        
+    except ImportError as e:
+        logger.warning(f"[P1] File Contacts extractor not available: {e}")
+    except Exception as e:
+        logger.error(f"[P1] Error extracting File Contacts: {e}", exc_info=True)
+    # =========================================================================
+    
     # Build final clean results - only mapped fields
     aggregation_start = time.time()
     final_results = {
         "extracted_entities": cleaned_extracted_entities,
-        "field_mappings": aggregated_results["field_mappings"],  # Only non-empty mapped fields
+        "field_mappings": aggregated_results["field_mappings"],  # Only non-empty mapped fields (includes File Contacts)
     }
     aggregation_time = time.time() - aggregation_start
     

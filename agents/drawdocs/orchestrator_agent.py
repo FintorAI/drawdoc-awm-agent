@@ -40,6 +40,7 @@ sys.path.insert(0, str(project_root / "agents" / "drawdocs" / "subagents" / "ord
 # Import sub-agents
 from agents.drawdocs.subagents.preparation_agent.preparation_agent import process_loan_documents
 from agents.drawdocs.subagents.drawcore_agent.drawcore_agent import run_drawcore_agent
+from agents.drawdocs.subagents.discrepancy_agent.discrepancy_agent import run_discrepancy_detection
 from agents.drawdocs.subagents.verification_agent.verification_agent import run_verification
 from agents.drawdocs.subagents.orderdocs_agent.orderdocs_agent import run_orderdocs_agent
 
@@ -262,6 +263,44 @@ class OrchestratorAgent:
         result = run_drawcore_agent(
             loan_id=self.config.loan_id,
             doc_context=prep_data,
+            dry_run=self.config.demo_mode
+        )
+        
+        return result
+    
+    def _run_discrepancy_agent(self, prep_output: Dict[str, Any]) -> Dict[str, Any]:
+        """Execute discrepancy detection agent.
+        
+        Compares extracted field values against Encompass values.
+        Detects HARD STOPS (loan amount, interest rate) and SOFT discrepancies.
+        Auto-generates PTF conditions for soft issues.
+        
+        Args:
+            prep_output: Output from preparation agent
+            
+        Returns:
+            Discrepancy agent output with hard_stops, soft_discrepancies, and PTF conditions
+        """
+        logger.info(f"[DISCREPANCY] Starting discrepancy detection")
+        
+        # Extract prep output from wrapper if needed
+        if "output" in prep_output:
+            prep_data = prep_output["output"]
+        else:
+            prep_data = prep_output
+        
+        # Extract doc_context (contains field_mappings)
+        doc_context = prep_data.get("results", {})
+        if not doc_context:
+            doc_context = prep_data  # Already in doc_context format
+        
+        # Get loan type from prep output if available
+        loan_type = prep_data.get("loan_context", {}).get("loan_type")
+        
+        result = run_discrepancy_detection(
+            loan_id=self.config.loan_id,
+            doc_context=doc_context,
+            loan_type=loan_type,
             dry_run=self.config.demo_mode
         )
         
@@ -535,6 +574,55 @@ class OrchestratorAgent:
                 lines.append(f"- Error: {drawcore_result.get('error', 'Unknown')}")
             lines.append("")
         
+        # Discrepancy Detection Agent
+        discrepancy_result = self.results["agents"].get("discrepancy", {})
+        if discrepancy_result:
+            status = discrepancy_result.get("status", "unknown")
+            symbol = "✓" if status == "success" else "⚠" if status == "proceed_with_conditions" else "🛑"
+            lines.append(f"[DISCREPANCY DETECTION AGENT]")
+            lines.append(f"{symbol} {status.title()} ({discrepancy_result.get('attempts', 0)} attempt(s))")
+            
+            if status == "success":
+                discrepancy_output = discrepancy_result.get("output", {})
+                output_status = discrepancy_output.get("status", "unknown")
+                
+                if output_status == "blocked":
+                    # HARD STOPS
+                    hard_stops = discrepancy_output.get("hard_stops", [])
+                    lines.append(f"🛑 HARD STOPS FOUND: {len(hard_stops)}")
+                    for stop in hard_stops:
+                        lines.append(f"  • {stop['field_name']}: {stop['message'][:60]}...")
+                        lines.append(f"    Action: {stop['action']}")
+                    lines.append("")
+                    lines.append("⚠️  PIPELINE HALTED - Immediate escalation required")
+                
+                elif output_status == "proceed_with_conditions":
+                    # PTF CONDITIONS ADDED
+                    ptf_count = discrepancy_output.get("ptf_conditions_added", 0)
+                    soft_discreps = discrepancy_output.get("soft_discrepancies", [])
+                    lines.append(f"- PTF Conditions Added: {ptf_count}")
+                    lines.append(f"- Soft Discrepancies Found: {len(soft_discreps)}")
+                    
+                    # Show first few PTF conditions
+                    for i, discrep in enumerate(soft_discreps[:3]):
+                        field_name = discrep.get("field_name", "Unknown")
+                        ptf_text = discrep.get("ptf_text", "")[:60]
+                        lines.append(f"  • {field_name}: {ptf_text}...")
+                    
+                    if len(soft_discreps) > 3:
+                        lines.append(f"  ... and {len(soft_discreps) - 3} more")
+                
+                else:
+                    # NO DISCREPANCIES
+                    fields_checked = discrepancy_output.get("fields_checked", 0)
+                    lines.append(f"- Fields Checked: {fields_checked}")
+                    lines.append(f"- No discrepancies found ✓")
+            
+            elif status == "failed":
+                lines.append(f"- Error: {discrepancy_result.get('error', 'Unknown')}")
+            
+            lines.append("")
+        
         # Verification Agent
         ver_result = self.results["agents"].get("verification", {})
         if ver_result:
@@ -689,13 +777,74 @@ class OrchestratorAgent:
         else:
             logger.info("[DRAWCORE] Skipped per user request")
         
+        # Step 2.5: Discrepancy Detection Agent (NEW - Phase 1)
+        if "discrepancy" not in self.instructions.get("skip_agents", []) and "discrepancy" not in skip_before:
+            if "preparation" in self.results["agents"] and "drawcore" in self.results["agents"]:
+                discrepancy_result = self._run_with_retry(
+                    self._run_discrepancy_agent,
+                    "discrepancy",
+                    prep_output=self.results["agents"]["preparation"]["output"]
+                )
+                self.results["agents"]["discrepancy"] = discrepancy_result
+                
+                # Call progress callback
+                if self.progress_callback:
+                    self.progress_callback("discrepancy", discrepancy_result, self)
+                
+                # Check for hard stops
+                if discrepancy_result.get("status") == "success":
+                    discrepancy_output = discrepancy_result.get("output", {})
+                    if discrepancy_output.get("status") == "blocked":
+                        # HARD STOPS FOUND
+                        hard_stops = discrepancy_output.get("hard_stops", [])
+                        logger.critical(f"[DISCREPANCY] 🛑 {len(hard_stops)} HARD STOP(s) found")
+                        for stop in hard_stops:
+                            logger.critical(f"[DISCREPANCY]   - {stop['field_name']}: {stop['message']}")
+                            logger.critical(f"[DISCREPANCY]     Action Required: {stop['action']}")
+                        
+                        # In DEMO MODE: Log hard stops but continue pipeline for testing
+                        if self.config.demo_mode:
+                            logger.warning(f"[DISCREPANCY] ⚠️  DEMO MODE: Hard stops detected but continuing pipeline for testing")
+                            logger.warning(f"[DISCREPANCY] ⚠️  In production, this would HALT the pipeline")
+                            # Store hard stops in results for frontend display
+                            self.results["hard_stops"] = hard_stops
+                        else:
+                            # PRODUCTION MODE: HALT PIPELINE
+                            logger.critical(f"[DISCREPANCY] 🛑 HALTING PIPELINE - Immediate escalation required")
+                            # Mark orchestrator as blocked
+                            self.results["status"] = "blocked"
+                            self.results["blocked_by"] = "discrepancy"
+                            self.results["hard_stops"] = hard_stops
+                            
+                            # Generate summary and return early
+                            self.results["summary"] = self._generate_summary()
+                            return self._aggregate_results()
+                    
+                    elif discrepancy_output.get("status") == "proceed_with_conditions":
+                        # Soft discrepancies - PTF conditions added, continue
+                        ptf_count = discrepancy_output.get("ptf_conditions_added", 0)
+                        logger.warning(f"[DISCREPANCY] ⚠️  {ptf_count} PTF condition(s) added - proceeding with pipeline")
+                
+                # Stop after discrepancy if requested (for HIL)
+                if self.stop_after_agent == "discrepancy":
+                    logger.info(f"[ORCHESTRATOR] Stopping after discrepancy agent (stop_after_agent={self.stop_after_agent})")
+                    self.results["summary"] = self._generate_summary()
+                    return self._aggregate_results()
+            else:
+                if "preparation" not in self.results["agents"]:
+                    logger.info("[DISCREPANCY] Skipped - preparation agent not run")
+                elif "drawcore" not in self.results["agents"]:
+                    logger.info("[DISCREPANCY] Skipped - drawcore agent not run")
+        else:
+            logger.info("[DISCREPANCY] Skipped per user request")
+        
         # Step 3: Verification Agent
         if "verification" not in self.instructions.get("skip_agents", []) and "verification" not in skip_before:
             if "preparation" in self.results["agents"]:
                 ver_result = self._run_with_retry(
                     self._run_verification_agent,
                     "verification",
-                    prep_output=self.results["agents"]["preparation"]
+                    prep_output=self.results["agents"]["preparation"]["output"]
                 )
                 self.results["agents"]["verification"] = ver_result
                 

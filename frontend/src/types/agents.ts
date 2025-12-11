@@ -5,7 +5,7 @@
  * for DrawDocs, Disclosure, and LOA agent pipelines.
  */
 
-import { FileSearch, Zap, CheckCircle, FileText, Shield, FilePen, Send, Mail } from "lucide-react";
+import { FileSearch, Zap, CheckCircle, FileText, Shield, FilePen, Send, Mail, AlertTriangle } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 // =============================================================================
@@ -64,6 +64,13 @@ export const DRAWDOCS_SUB_AGENTS: SubAgentConfig[] = [
     description: "Write fields to Encompass",
     icon: Zap,
     color: "orange",
+  },
+  {
+    id: "discrepancy",
+    name: "Discrepancy Detection",
+    description: "Detect hard stops & PTF conditions",
+    icon: AlertTriangle,
+    color: "amber",
   },
   {
     id: "verification",

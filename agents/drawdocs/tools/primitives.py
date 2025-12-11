@@ -20,22 +20,16 @@ from typing import Any, Dict, List, Optional, Union
 from datetime import datetime
 from dotenv import load_dotenv
 
-# Load environment variables from BOTH sources
-# Strategy: Load project root FIRST (matching Prep Agent's working approach)
+# Load environment variables from PROJECT ROOT ONLY
+# This ensures the user's .env changes take effect without being overridden
 
-# 1. Load project root .env FIRST (has working Encompass credentials)
+# Load project root .env (single source of truth)
 project_root_env = Path(__file__).parent.parent.parent.parent / ".env"
 if project_root_env.exists():
-    load_dotenv(project_root_env)
+    load_dotenv(project_root_env, override=True)
     print(f"[primitives] Loaded project root .env from: {project_root_env}")
-
-# 2. Then load MCP server .env WITHOUT override (for any additional settings)
-mcp_env_path = Path(__file__).parent.parent.parent.parent.parent / "encompass-mcp-server" / ".env"
-if mcp_env_path.exists():
-    load_dotenv(mcp_env_path, override=False)
-    
-# 3. Load local .env WITHOUT override
-load_dotenv(override=False)
+else:
+    print(f"[primitives] WARNING: Project root .env not found at: {project_root_env}")
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -107,48 +101,28 @@ def _get_encompass_client() -> EncompassConnect:
 def _get_http_client():
     """Get HTTP client for MCP server API requests.
     
-    Loads credentials directly from MCP server's .env file.
+    Uses MCP_ prefixed credentials from PROJECT ROOT .env file.
     This is the PRIMARY client - Tier 1.
     """
     if not MCP_HTTP_CLIENT_AVAILABLE:
         raise RuntimeError("MCP HTTP client not available. Cannot make raw API requests.")
     
-    # Load MCP server's .env directly to get its credentials
-    mcp_server_env_path = Path(__file__).parent.parent.parent.parent.parent / "encompass-mcp-server" / ".env"
-    mcp_credentials = {}
-    
-    if mcp_server_env_path.exists():
-        # Parse MCP server .env file directly
-        with open(mcp_server_env_path, 'r') as f:
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith('#') and '=' in line:
-                    key, value = line.split('=', 1)
-                    # Remove quotes if present
-                    value = value.strip('"').strip("'")
-                    mcp_credentials[key.strip()] = value
-        logger.info(f"[_get_http_client] Loaded MCP credentials from: {mcp_server_env_path}")
-    
-    # Get MCP server settings (try MCP_ prefix first, then MCP server's vars)
-    api_server = (
-        os.getenv("MCP_ENCOMPASS_API_SERVER") or 
-        mcp_credentials.get("ENCOMPASS_API_SERVER") or 
-        "https://api.elliemae.com"
-    )
+    # Get credentials from PROJECT ROOT .env (MCP_ prefixed variables)
+    api_server = os.getenv("MCP_ENCOMPASS_API_SERVER") or os.getenv("ENCOMPASS_API_BASE_URL") or "https://api.elliemae.com"
     timeout = int(os.getenv("MCP_ENCOMPASS_TIMEOUT", "60"))
     verify_ssl = os.getenv("MCP_ENCOMPASS_VERIFY_SSL", "true").lower() != "false"
     
+    logger.info(f"[_get_http_client] Using PROJECT ROOT .env credentials")
     logger.info(f"[_get_http_client] MCP API server: {api_server}")
     
-    # Set MCP server credentials as env vars that EncompassAuthManager expects
-    original_vars = {}
+    # Get MCP credentials from project root .env (MCP_ prefixed)
     mcp_var_mapping = {
-        "ENCOMPASS_CLIENT_ID": mcp_credentials.get("ENCOMPASS_CLIENT_ID", ""),
-        "ENCOMPASS_CLIENT_SECRET": mcp_credentials.get("ENCOMPASS_CLIENT_SECRET", ""),
-        "ENCOMPASS_INSTANCE_ID": mcp_credentials.get("ENCOMPASS_INSTANCE_ID", ""),
-        "ENCOMPASS_SMART_USER": mcp_credentials.get("ENCOMPASS_SMART_USER", ""),
-        "ENCOMPASS_SMART_PASS": mcp_credentials.get("ENCOMPASS_SMART_PASS", ""),
-        "ENCOMPASS_SCOPE": mcp_credentials.get("ENCOMPASS_SCOPE", "lp"),
+        "ENCOMPASS_CLIENT_ID": os.getenv("MCP_ENCOMPASS_CLIENT_ID", ""),
+        "ENCOMPASS_CLIENT_SECRET": os.getenv("MCP_ENCOMPASS_CLIENT_SECRET", ""),
+        "ENCOMPASS_INSTANCE_ID": os.getenv("MCP_ENCOMPASS_INSTANCE_ID", ""),
+        "ENCOMPASS_SMART_USER": os.getenv("MCP_ENCOMPASS_SMART_USER", ""),
+        "ENCOMPASS_SMART_PASS": os.getenv("MCP_ENCOMPASS_SMART_PASS", ""),
+        "ENCOMPASS_SCOPE": os.getenv("MCP_ENCOMPASS_SCOPE", "lp"),
     }
     
     # Debug: Show what credentials were loaded (mask secrets)
@@ -156,6 +130,9 @@ def _get_http_client():
     logger.info(f"[_get_http_client] INSTANCE_ID: {mcp_var_mapping['ENCOMPASS_INSTANCE_ID'] or 'EMPTY'}")
     logger.info(f"[_get_http_client] SMART_USER: {mcp_var_mapping['ENCOMPASS_SMART_USER'] or 'EMPTY'}")
     logger.info(f"[_get_http_client] SMART_PASS: {'SET' if mcp_var_mapping['ENCOMPASS_SMART_PASS'] else 'EMPTY'}")
+    
+    # Set credentials as env vars that EncompassAuthManager expects
+    original_vars = {}
     
     # Backup and set MCP credentials
     for var_name, mcp_value in mcp_var_mapping.items():
@@ -316,32 +293,436 @@ def get_loan_context(loan_id: str, include_milestones: bool = True) -> Dict[str,
         raise
 
 
-def _check_is_ctc(fields: Dict[str, Any]) -> bool:
-    """Check if loan is Clear to Close based on fields."""
-    # TODO: Implement actual CTC check logic based on your business rules
-    # This should check specific fields in your Encompass instance
-    # For now, return placeholder value
-    return False  # Placeholder - implement with actual field checks
+def _check_is_ctc(fields: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Check if loan is Clear to Close based on milestone status.
+    
+    Field IDs checked:
+    - Log.MS.Status.Clear to Close: Milestone status for CTC
+    - Log.MS.Date.Clear to Close: Date when CTC was completed
+    - Log.MS.CurrentMilestone: Current milestone name
+    """
+    ctc_status = fields.get("Log.MS.Status.Clear to Close", "")
+    ctc_date = fields.get("Log.MS.Date.Clear to Close", "")
+    current_milestone = fields.get("Log.MS.CurrentMilestone", "")
+    
+    is_ctc = ctc_status and str(ctc_status).lower() in ["finished", "completed", "done"]
+    
+    return {
+        "passed": is_ctc,
+        "field_id": "Log.MS.Status.Clear to Close",
+        "field_name": "Milestone Status - Clear to Close",
+        "value": ctc_status or None,
+        "expected_value": "Finished",
+        "rule": "☑️ CTC from UW? - Milestone 'Clear to Close' must have status 'Finished'",
+        "failure_reason": None if is_ctc else "CTC NOT RECEIVED - Clear to Close milestone not finished",
+        "additional_fields": {
+            "Log.MS.Date.Clear to Close": {
+                "name": "Milestone Date - Clear to Close",
+                "value": ctc_date or None
+            },
+            "Log.MS.CurrentMilestone": {
+                "name": "Current Milestone",
+                "value": current_milestone or None
+            }
+        }
+    }
 
 
-def _check_cd_approved(fields: Dict[str, Any]) -> bool:
-    """Check if CD is approved."""
-    # TODO: Implement actual CD approval check
-    # Check specific CD status fields in your Encompass instance
-    return False  # Placeholder
+def _check_cd_approved(fields: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Check if CD is approved by Loan Officer and Processor.
+    
+    Field IDs checked:
+    - CX.CD.REQ.APPROVAL.LO: LO approval flag
+    - CX.CD.REQ.APPROVAL.PROC: Processor confirmation flag
+    """
+    lo_approval = fields.get("CX.CD.REQ.APPROVAL.LO", "")
+    proc_approval = fields.get("CX.CD.REQ.APPROVAL.PROC", "")
+    
+    # Check if LO approved - could be "Y", "Yes", "true", True, "1", etc.
+    lo_approved = str(lo_approval).lower() in ["y", "yes", "true", "1", "x"] if lo_approval else False
+    proc_approved = str(proc_approval).lower() in ["y", "yes", "true", "1", "x"] if proc_approval else False
+    
+    is_approved = lo_approved  # LO approval is primary requirement
+    
+    return {
+        "passed": is_approved,
+        "field_id": "CX.CD.REQ.APPROVAL.LO",
+        "field_name": "CD Request Approved by Loan Officer",
+        "value": lo_approval if lo_approval else None,
+        "expected_value": "Y (or true)",
+        "rule": "☑️ CD Status = 'CD Approved'? - LO must approve CD request",
+        "failure_reason": None if is_approved else "CD NOT APPROVED BY LO",
+        "additional_fields": {
+            "CX.CD.REQ.APPROVAL.PROC": {
+                "name": "CD Request Approval Confirmed by Processor",
+                "value": proc_approval if proc_approval else None,
+                "passed": proc_approved
+            }
+        }
+    }
 
 
-def _check_cd_acknowledged(fields: Dict[str, Any]) -> bool:
-    """Check if CD is acknowledged."""
-    # TODO: Implement actual CD acknowledgment check
-    return False  # Placeholder
+def _check_cd_acknowledged(fields: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Check if CD is acknowledged by Borrower(s).
+    
+    Field IDs checked:
+    - 3978: Closing Disclosure Received Date
+    - CD1.X51: Alternative CD acknowledgement date
+    - 3977: Closing Disclosure Sent Date (for reference)
+    """
+    cd_received_date = fields.get("3978", "")
+    cd_received_alt = fields.get("CD1.X51", "")
+    cd_sent_date = fields.get("3977", "")
+    
+    # Acknowledged if either date field has a value
+    is_acknowledged = bool(cd_received_date or cd_received_alt)
+    
+    return {
+        "passed": is_acknowledged,
+        "field_id": "3978",
+        "field_name": "Closing Disclosure Received Date",
+        "value": cd_received_date or cd_received_alt or None,
+        "expected_value": "Date when borrower received/acknowledged CD",
+        "rule": "☑️ CD Acknowledged by Borrower(s)? - Date borrower received/acknowledged CD",
+        "failure_reason": None if is_acknowledged else "CD NOT ACKNOWLEDGED - No received date recorded",
+        "additional_fields": {
+            "CD1.X51": {
+                "name": "Closing Disclosure - Disclosure Received Date",
+                "value": cd_received_alt or None
+            },
+            "3977": {
+                "name": "Closing Disclosure Sent Date",
+                "value": cd_sent_date or None
+            }
+        }
+    }
 
 
-def _check_in_docs_ordered_queue(fields: Dict[str, Any]) -> bool:
-    """Check if loan is in Docs Ordered queue."""
-    # TODO: Implement actual queue check
-    # Check specific milestone/queue fields in your Encompass instance
-    return False  # Placeholder
+def _check_in_docs_ordered_queue(fields: Dict[str, Any]) -> Dict[str, Any]:
+    """Check if loan is in Docs Ordered queue based on milestone."""
+    current_milestone = fields.get("Log.MS.CurrentMilestone", "")
+    
+    # Check if milestone indicates docs are ordered
+    in_queue = str(current_milestone).lower() in ["docs ordered", "closing docs ordered", "docs requested"]
+    
+    return {
+        "passed": in_queue,
+        "field_id": "Log.MS.CurrentMilestone",
+        "field_name": "Current Milestone",
+        "value": current_milestone or None,
+        "expected_value": "Docs Ordered",
+        "rule": "Current milestone should indicate docs have been ordered",
+        "failure_reason": None if in_queue else f"Not in Docs Ordered queue - Current: {current_milestone or 'Unknown'}"
+    }
+
+
+def _check_lock_expiration(field_values: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    SOP Condition: Check if lock expires before rescission period ends.
+    
+    Lock must not expire before the 3-day rescission period ends.
+    If lock expires too soon, loan must be relocked before funding.
+    
+    Args:
+        field_values: Dict containing field IDs and their values
+        
+    Returns:
+        Dict with check results including pass/fail status
+    """
+    from datetime import datetime, timedelta
+    
+    lock_expiry = field_values.get("762", "")  # Lock Expiration Date
+    closing_date = field_values.get("748", "")  # Closing Date
+    
+    if not lock_expiry or not closing_date:
+        return {
+            "passed": False,
+            "field_id": "762",
+            "field_name": "Lock Expiration Date",
+            "value": lock_expiry or None,
+            "closing_date": closing_date or None,
+            "rescission_end": None,
+            "expected_value": "Lock expiry after rescission period",
+            "rule": "Lock Date Expiration - Lock must not expire before 3-day rescission period",
+            "failure_reason": "Missing lock expiration date or closing date",
+            "severity": "CRITICAL"
+        }
+    
+    try:
+        # Parse dates - handle various Encompass date formats
+        if 'T' in str(lock_expiry):
+            lock_date = datetime.fromisoformat(str(lock_expiry).split('T')[0])
+        else:
+            lock_date = datetime.strptime(str(lock_expiry)[:10], "%Y-%m-%d")
+            
+        if 'T' in str(closing_date):
+            close_date = datetime.fromisoformat(str(closing_date).split('T')[0])
+        else:
+            close_date = datetime.strptime(str(closing_date)[:10], "%Y-%m-%d")
+        
+        # Calculate rescission end date (3 business days after closing)
+        rescission_end = close_date + timedelta(days=3)
+        
+        # Check if lock expires before rescission ends
+        if lock_date < rescission_end:
+            return {
+                "passed": False,
+                "field_id": "762",
+                "field_name": "Lock Expiration Date",
+                "value": lock_expiry,
+                "closing_date": closing_date,
+                "rescission_end": rescission_end.strftime("%Y-%m-%d"),
+                "expected_value": f"After {rescission_end.strftime('%Y-%m-%d')}",
+                "rule": "Lock Date Expiration - Lock must not expire before rescission period",
+                "failure_reason": f"Lock expires {lock_date.strftime('%Y-%m-%d')} before rescission ends {rescission_end.strftime('%Y-%m-%d')}",
+                "severity": "CRITICAL"
+            }
+        
+        return {
+            "passed": True,
+            "field_id": "762",
+            "field_name": "Lock Expiration Date",
+            "value": lock_expiry,
+            "closing_date": closing_date,
+            "rescission_end": rescission_end.strftime("%Y-%m-%d"),
+            "expected_value": f"After {rescission_end.strftime('%Y-%m-%d')}",
+            "rule": "Lock Date Expiration - Lock must not expire before rescission period",
+            "failure_reason": None,
+            "severity": "CRITICAL"
+        }
+        
+    except Exception as e:
+        logger.error(f"[PREFLIGHT] Error parsing lock/closing dates: {e}")
+        return {
+            "passed": False,
+            "field_id": "762",
+            "field_name": "Lock Expiration Date",
+            "value": lock_expiry,
+            "closing_date": closing_date,
+            "rescission_end": None,
+            "expected_value": "Valid date format",
+            "rule": "Lock Date Expiration - Lock must not expire before rescission period",
+            "failure_reason": f"Date parsing error: {str(e)}",
+            "severity": "CRITICAL"
+        }
+
+
+# DEPRECATED: Field 411 removed from new verification file (Dec 9, 2025)
+# def _check_title_company(field_values: Dict[str, Any]) -> Dict[str, Any]:
+#     """
+#     SOP Condition: Verify title company is specified.
+#     
+#     REMOVED: Field 411 (Title Insurance Company Name) was deprecated in the
+#     new verification file update. This check is no longer available.
+#     
+#     Original requirement: Title insurance company name must be populated for closing.
+#     """
+#     pass
+
+
+def run_preflight_checks(loan_id: str) -> Dict[str, Any]:
+    """
+    Run all preflight checks for OrderDocs and return detailed results.
+    
+    This reads the actual field values from Encompass and validates
+    the loan is ready for closing document generation.
+    
+    Returns:
+        Dict with check results, field values, and overall status
+    """
+    # Define all fields we need to read for preflight checks
+    preflight_field_ids = [
+        # CTC check fields
+        "Log.MS.Status.Clear to Close",
+        "Log.MS.Date.Clear to Close", 
+        "Log.MS.CurrentMilestone",
+        # CD Approval check fields
+        "CX.CD.REQ.APPROVAL.LO",
+        "CX.CD.REQ.APPROVAL.PROC",
+        # CD Acknowledgment check fields
+        "3978",  # Closing Disclosure Received Date
+        "CD1.X51",  # Alternative CD received date
+        "3977",  # CD Sent Date
+        # Additional context fields
+        "1172",  # Loan Type
+        "14",    # Subject Property State
+        "1240",  # Borrower Email (G1 requirement)
+        "FE0117",  # Borrower Phone (G1 requirement)
+        "748",   # Closing Date
+        "745",   # Application Date
+        # SOP Condition checks
+        "762",   # Lock Expiration Date
+        # "411",   # Title Insurance Company Name - REMOVED: Field deprecated
+    ]
+    
+    logger.info(f"[PREFLIGHT] Reading {len(preflight_field_ids)} fields for loan {loan_id}")
+    
+    # Read fields from Encompass
+    field_values = read_fields(loan_id, preflight_field_ids)
+    
+    if not field_values:
+        logger.warning(f"[PREFLIGHT] Could not read fields for loan {loan_id}")
+        field_values = {}
+    
+    # Run individual checks
+    ctc_check = _check_is_ctc(field_values)
+    cd_approved_check = _check_cd_approved(field_values)
+    cd_acknowledged_check = _check_cd_acknowledged(field_values)
+    docs_queue_check = _check_in_docs_ordered_queue(field_values)
+    
+    # Run SOP condition checks
+    lock_expiry_check = _check_lock_expiration(field_values)
+    # title_company_check = _check_title_company(field_values)  # REMOVED: Field 411 deprecated
+    
+    # Check G1 required fields
+    borrower_email = field_values.get("1240", "")
+    borrower_phone = field_values.get("FE0117", "")
+    
+    g1_checks = {
+        "borrower_email": {
+            "passed": bool(borrower_email),
+            "field_id": "1240",
+            "field_name": "Borrower Email",
+            "value": borrower_email or None,
+            "rule": "HARD STOP if missing - required for eDisclosures (G1)",
+            "failure_reason": None if borrower_email else "EMAIL MISSING - HARD STOP"
+        },
+        "borrower_phone": {
+            "passed": bool(borrower_phone),
+            "field_id": "FE0117",
+            "field_name": "Borrower Business Phone",
+            "value": borrower_phone or None,
+            "rule": "HARD STOP if missing (G1)",
+            "failure_reason": None if borrower_phone else "PHONE MISSING - HARD STOP"
+        }
+    }
+    
+    # Check MVP eligibility
+    loan_type = field_values.get("1172", "")
+    property_state = field_values.get("14", "")
+    
+    mvp_checks = {
+        "loan_type": {
+            "passed": str(loan_type).lower() in ["conventional", "conv", ""],
+            "field_id": "1172",
+            "field_name": "Loan Type",
+            "value": loan_type or None,
+            "rule": "MVP supports Conventional loans only (FHA/VA/USDA excluded)",
+            "failure_reason": None if str(loan_type).lower() in ["conventional", "conv", ""] else f"{loan_type} is not supported in MVP"
+        },
+        "property_state": {
+            "passed": str(property_state).upper() in ["CA", "NV", ""],
+            "field_id": "14",
+            "field_name": "Subject Property State",
+            "value": property_state or None,
+            "rule": "MVP supports CA and NV only",
+            "failure_reason": None if str(property_state).upper() in ["CA", "NV", ""] else f"{property_state} is not supported in MVP"
+        }
+    }
+    
+    # Overall status
+    core_checks_passed = all([
+        ctc_check["passed"],
+        cd_approved_check["passed"],
+        cd_acknowledged_check["passed"]
+    ])
+    
+    # SOP conditions status (only lock expiration now - title company field deprecated)
+    sop_checks_passed = lock_expiry_check["passed"]
+    
+    g1_passed = all(check["passed"] for check in g1_checks.values())
+    mvp_passed = all(check["passed"] for check in mvp_checks.values())
+    
+    all_passed = core_checks_passed and sop_checks_passed and g1_passed and mvp_passed
+    
+    # Compile warnings/blockers
+    warnings = []
+    blockers = []
+    
+    for check_name, check_result in [
+        ("is_ctc", ctc_check),
+        ("cd_approved", cd_approved_check),
+        ("cd_acknowledged", cd_acknowledged_check)
+    ]:
+        if not check_result["passed"]:
+            blockers.append({
+                "check": check_name,
+                "field_id": check_result["field_id"],
+                "field_name": check_result["field_name"],
+                "value": check_result["value"],
+                "expected": check_result["expected_value"],
+                "message": check_result["failure_reason"]
+            })
+    
+    # Add SOP condition checks
+    for check_name, check_result in [
+        ("lock_expiration", lock_expiry_check),
+        # ("title_company", title_company_check)  # REMOVED: Field 411 deprecated
+    ]:
+        if not check_result["passed"]:
+            if check_result.get("severity") == "CRITICAL":
+                blockers.append({
+                    "check": check_name,
+                    "field_id": check_result["field_id"],
+                    "field_name": check_result["field_name"],
+                    "value": check_result["value"],
+                    "expected": check_result["expected_value"],
+                    "message": check_result["failure_reason"]
+                })
+            else:
+                warnings.append({
+                    "check": check_name,
+                    "field_id": check_result["field_id"],
+                    "field_name": check_result["field_name"],
+                    "value": check_result["value"],
+                    "expected": check_result["expected_value"],
+                    "message": check_result["failure_reason"]
+                })
+    
+    for check_name, check_result in g1_checks.items():
+        if not check_result["passed"]:
+            blockers.append({
+                "check": f"g1_{check_name}",
+                "field_id": check_result["field_id"],
+                "field_name": check_result["field_name"],
+                "value": check_result["value"],
+                "message": check_result["failure_reason"]
+            })
+    
+    for check_name, check_result in mvp_checks.items():
+        if not check_result["passed"]:
+            warnings.append({
+                "check": f"mvp_{check_name}",
+                "field_id": check_result["field_id"],
+                "field_name": check_result["field_name"],
+                "value": check_result["value"],
+                "message": check_result["failure_reason"]
+            })
+    
+    return {
+        "loan_id": loan_id,
+        "all_passed": all_passed,
+        "core_checks_passed": core_checks_passed,
+        "sop_checks_passed": sop_checks_passed,
+        "g1_passed": g1_passed,
+        "mvp_passed": mvp_passed,
+        "checks": {
+            "is_ctc": ctc_check,
+            "cd_approved": cd_approved_check,
+            "cd_acknowledged": cd_acknowledged_check,
+            "docs_queue": docs_queue_check,
+            "lock_expiration": lock_expiry_check,
+            # "title_company": title_company_check  # REMOVED: Field 411 deprecated
+        },
+        "g1_requirements": g1_checks,
+        "mvp_eligibility": mvp_checks,
+        "blockers": blockers,
+        "warnings": warnings,
+        "raw_field_values": field_values
+    }
 
 
 def update_milestone(loan_id: str, status: str, comment: str) -> bool:
@@ -1657,6 +2038,291 @@ def log_issue(
 
 
 # =============================================================================
+# 7. PTF CONDITION MANAGEMENT
+# =============================================================================
+
+def get_underwriting_conditions(loan_id: str) -> List[Dict[str, Any]]:
+    """
+    Retrieve all underwriting conditions for a loan (including PTF).
+    
+    Uses MCP server's get_underwriting_conditions endpoint.
+    
+    Args:
+        loan_id: The loan GUID
+        
+    Returns:
+        List of condition dictionaries with fields:
+        - ID, Title, Description, Category, PriorTo, ConditionType, 
+        - Status, AllowToClear, Cleared, DateAdded, AddedBy, etc.
+    """
+    logger.info(f"[get_underwriting_conditions] Fetching UW conditions for {loan_id}")
+    
+    try:
+        # Try MCP HTTP client first
+        http_client = _get_http_client()
+        
+        response = http_client.request(
+            method="GET",
+            path=f"/api/v1/encompass/loans/get_underwriting_conditions",
+            token_source="client_credentials",
+            params={"loan_guid": loan_id}
+        )
+        
+        # Parse response
+        if response.status_code == 200:
+            conditions = response.json()
+            logger.info(f"[get_underwriting_conditions] Retrieved {len(conditions)} conditions for {loan_id}")
+            return conditions
+        else:
+            logger.error(f"[get_underwriting_conditions] Failed to get conditions: {response.status_code} - {response.text}")
+            return []
+            
+    except Exception as e:
+        logger.error(f"[get_underwriting_conditions] Error fetching conditions for {loan_id}: {e}")
+        return []
+
+
+def list_ptf_conditions(loan_id: str) -> List[Dict[str, Any]]:
+    """
+    List all PTF (Prior to Funding) conditions for a loan.
+    
+    Filters underwriting conditions to only those starting with "PTF".
+    
+    Args:
+        loan_id: The loan GUID
+        
+    Returns:
+        List of PTF condition dictionaries
+    """
+    logger.info(f"[list_ptf_conditions] Listing PTF conditions for {loan_id}")
+    
+    all_conditions = get_underwriting_conditions(loan_id)
+    
+    # Filter to PTF only
+    ptf_conditions = [
+        cond for cond in all_conditions
+        if cond.get("Title", "").upper().startswith("PTF")
+    ]
+    
+    logger.info(f"[list_ptf_conditions] Found {len(ptf_conditions)} PTF conditions (out of {len(all_conditions)} total)")
+    
+    return ptf_conditions
+
+
+def add_ptf_condition(
+    loan_id: str,
+    category: str,
+    description: str,
+    severity: str = "PTF",
+    assigned_to: str = "Loan Processor",
+    allow_to_clear: bool = True,
+    source_document: Optional[str] = None,
+    field_id: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Add a PTF (Prior to Funding) condition to a loan.
+    
+    Args:
+        loan_id: The loan GUID
+        category: Condition category (e.g., "Missing Document", "Data Discrepancy")
+        description: Full description/text of the condition
+        severity: "PTF" (proceed to fund) or "HOLD" (stop)
+        assigned_to: Department responsible ("Loan Processor", "Underwriter")
+        allow_to_clear: Whether assigned dept can clear the condition
+        source_document: Optional source doc that triggered the condition
+        field_id: Optional Encompass field ID related to the condition
+        
+    Returns:
+        Dictionary containing:
+        - success: bool
+        - condition_id: str (if successful)
+        - error: str (if failed)
+        
+    Note:
+        The actual Encompass API endpoint for creating conditions is:
+        POST /encompass/v3/loans/{loanId}/underwritingConditions
+        
+        This function currently logs the condition and returns a placeholder.
+        TODO: Implement actual API call when endpoint is available.
+    """
+    logger.info(f"[add_ptf_condition] Adding PTF condition to {loan_id}")
+    logger.info(f"[add_ptf_condition] Category: {category}, Assigned to: {assigned_to}")
+    logger.info(f"[add_ptf_condition] Description: {description}")
+    
+    condition_data = {
+        "loan_id": loan_id,
+        "title": f"PTF - {category}",
+        "description": description,
+        "category": category,
+        "severity": severity,
+        "prior_to": "Funding",
+        "condition_type": "PTF",
+        "for_role": assigned_to,
+        "allow_to_clear": allow_to_clear,
+        "source_document": source_document,
+        "field_id": field_id,
+        "date_added": datetime.now().isoformat(),
+        "status": "Added",
+        "cleared": False
+    }
+    
+    # TODO: Implement actual API call to Encompass
+    # Expected endpoint: POST /encompass/v3/loans/{loanId}/underwritingConditions
+    # Body format (based on get_underwriting_conditions response schema):
+    # {
+    #   "Title": "PTF - Data Discrepancy",
+    #   "Description": "Borrower First Name mismatch...",
+    #   "Category": "Data Discrepancy",
+    #   "PriorTo": "Funding",
+    #   "ConditionType": "PTF",
+    #   "ForRole": "Loan Processor",
+    #   "AllowToClear": true,
+    #   "Source": "Docs Draw Agent"
+    # }
+    
+    try:
+        # Build Encompass condition payload
+        condition_payload = {
+            "title": f"PTF - {category}",
+            "description": description,
+            "category": category,
+            "priorTo": "Funding" if severity == "PTF" else "Docs",
+            "forRole": assigned_to,
+            "allowToClear": allow_to_clear,
+            "source": "Docs Draw Agent",
+            "entryType": "Automated"  # Indicates agent-generated
+        }
+        
+        # Add optional fields
+        if source_document:
+            condition_payload["comments"] = f"Source: {source_document}"
+        if field_id:
+            condition_payload["applicationId"] = field_id  # Track related field
+        
+        # Try MCP server first
+        client = _get_http_client()
+        if client:
+            try:
+                logger.info(f"[add_ptf_condition] Creating PTF via MCP server: {loan_id}")
+                response = client.post(
+                    f"/encompass/v3/loans/{loan_id}/conditions",
+                    json=condition_payload
+                )
+                response.raise_for_status()
+                
+                # Get condition ID from response
+                response_data = response.json() if response.text else {}
+                condition_id = response_data.get("id", f"PTF_{int(datetime.now().timestamp())}")
+                
+                logger.info(f"[add_ptf_condition] ✅ PTF condition created: {condition_id}")
+                
+                return {
+                    "success": True,
+                    "condition_id": condition_id,
+                    "error": None
+                }
+                
+            except Exception as mcp_error:
+                logger.warning(f"[add_ptf_condition] MCP server failed: {mcp_error}, trying fallback")
+        
+        # Fallback: Log to file (demo/testing mode)
+        logger.warning(f"[add_ptf_condition] ⚠️  PTF condition logged locally (API call failed or unavailable)")
+        
+        conditions_dir = Path("/tmp/ptf_conditions")
+        conditions_dir.mkdir(parents=True, exist_ok=True)
+        
+        condition_file = conditions_dir / f"{loan_id}_ptf_conditions.json"
+        
+        # Load existing
+        existing_conditions = []
+        if condition_file.exists():
+            with open(condition_file, "r") as f:
+                existing_conditions = json.load(f)
+        
+        # Generate ID
+        condition_id = f"PTF_{loan_id}_{len(existing_conditions) + 1}_{int(datetime.now().timestamp())}"
+        condition_data["condition_id"] = condition_id
+        
+        # Add new
+        existing_conditions.append(condition_data)
+        
+        # Save
+        with open(condition_file, "w") as f:
+            json.dump(existing_conditions, f, indent=2)
+        
+        logger.info(f"[add_ptf_condition] PTF condition logged to {condition_file}")
+        
+        return {
+            "success": True,
+            "condition_id": condition_id,
+            "error": None,
+            "logged_only": True  # Indicates this was logged, not written to Encompass
+        }
+        
+    except Exception as e:
+        logger.error(f"[add_ptf_condition] Error adding PTF condition: {e}")
+        return {
+            "success": False,
+            "condition_id": None,
+            "error": str(e)
+        }
+
+
+def clear_ptf_condition(loan_id: str, condition_id: str) -> Dict[str, bool]:
+    """
+    Mark a PTF condition as cleared/resolved.
+    
+    Args:
+        loan_id: The loan GUID
+        condition_id: The condition ID to clear
+        
+    Returns:
+        {"success": bool, "error": str}
+        
+    Note:
+        TODO: Implement actual API call when endpoint is available.
+        Expected endpoint: PATCH /encompass/v3/loans/{loanId}/underwritingConditions/{conditionId}
+    """
+    logger.info(f"[clear_ptf_condition] Clearing condition {condition_id} for {loan_id}")
+    
+    try:
+        # For now, update the local file
+        conditions_dir = Path("/tmp/ptf_conditions")
+        condition_file = conditions_dir / f"{loan_id}_ptf_conditions.json"
+        
+        if not condition_file.exists():
+            return {"success": False, "error": "No conditions file found"}
+        
+        with open(condition_file, "r") as f:
+            conditions = json.load(f)
+        
+        # Find and update the condition
+        found = False
+        for cond in conditions:
+            if cond.get("condition_id") == condition_id:
+                cond["cleared"] = True
+                cond["date_cleared"] = datetime.now().isoformat()
+                cond["status"] = "Cleared"
+                found = True
+                break
+        
+        if not found:
+            return {"success": False, "error": f"Condition {condition_id} not found"}
+        
+        # Save back
+        with open(condition_file, "w") as f:
+            json.dump(conditions, f, indent=2)
+        
+        logger.info(f"[clear_ptf_condition] ✅ Condition {condition_id} marked as cleared")
+        
+        return {"success": True, "error": None}
+        
+    except Exception as e:
+        logger.error(f"[clear_ptf_condition] Error clearing condition: {e}")
+        return {"success": False, "error": str(e)}
+
+
+# =============================================================================
 # CONVENIENCE FUNCTIONS
 # =============================================================================
 
@@ -1681,7 +2347,276 @@ def get_all_tools():
         "send_closing_package": send_closing_package,
         # Issue logging
         "log_issue": log_issue,
+        # Full SOP verification
+        "verify_all_sop_fields": verify_all_sop_fields,
     }
+
+
+# =============================================================================
+# SOP FIELD VERIFICATION - ALL 196 FIELDS
+# =============================================================================
+
+def load_sop_fields_from_csv() -> List[Dict[str, Any]]:
+    """
+    Load all SOP fields from the DrawingDoc Verifications CSV.
+    Returns a list of field definitions with ID, name, primary document, and secondary documents.
+    """
+    import csv
+    
+    # Find the CSV file
+    csv_paths = [
+        Path(__file__).parent.parent.parent.parent / "packages" / "data" / "DrawingDoc Verifications - Sheet1.csv",
+        Path(__file__).parent.parent / "packages" / "data" / "DrawingDoc Verifications - Sheet1.csv",
+    ]
+    
+    csv_path = None
+    for path in csv_paths:
+        if path.exists():
+            csv_path = path
+            break
+    
+    if not csv_path:
+        logger.warning("[SOP] Could not find DrawingDoc Verifications CSV")
+        return []
+    
+    fields = []
+    try:
+        with open(csv_path, 'r', encoding='utf-8-sig') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                field_id = row.get('ID', '').strip()
+                if field_id:  # Only include rows with a field ID
+                    fields.append({
+                        "field_id": field_id,
+                        "field_name": row.get('Name', '').strip(),
+                        "primary_document": row.get('Primary document', '').strip(),
+                        "secondary_documents": row.get('Secondary documents', '').strip(),
+                        "notes": row.get('Notes', '').strip(),
+                        "sop_pages": row.get('SOP Pages', '').strip(),
+                        "required_disclosure": row.get('required_disclosure', '').strip().lower() == 'yes',
+                    })
+        logger.info(f"[SOP] Loaded {len(fields)} fields from CSV")
+    except Exception as e:
+        logger.error(f"[SOP] Error loading CSV: {e}")
+    
+    return fields
+
+
+def categorize_field(field_name: str, field_id: str) -> str:
+    """Categorize a field based on its name and ID."""
+    name_lower = field_name.lower()
+    id_lower = field_id.lower()
+    
+    # Borrower Info
+    if any(x in name_lower for x in ['borrower', 'borr ', 'co-borrower', 'ssn', 'dob', 'email', 'phone', 'vesting']):
+        return "borrower_info"
+    
+    # Property & Loan
+    if any(x in name_lower for x in ['property', 'subject', 'loan amount', 'loan type', 'ltv', 'apprais', 'amort', 'rate', 'term']):
+        return "property_loan"
+    
+    # Closing Disclosure
+    if any(x in name_lower for x in ['closing disclosure', 'cd ', 'cd1', 'cd2', 'cd3', 'cd4', 'cd5']) or id_lower.startswith('cd'):
+        return "closing_disclosure"
+    
+    # Fees & Escrow
+    if any(x in name_lower for x in ['fee', 'escrow', 'tax', 'insurance', 'impound', 'hazard', 'flood', 'mortgage ins']):
+        return "fees_escrow"
+    
+    # Contacts & Vendors
+    if any(x in name_lower for x in ['title', 'lender', 'escrow co', 'settlement', 'broker', 'attorney', 'seller', 'investor', 'servicing']):
+        return "contacts_vendors"
+    
+    # Loan Estimate
+    if any(x in name_lower for x in ['loan estimate', 'le ']) or id_lower.startswith('le'):
+        return "loan_estimate"
+    
+    # Compliance & Dates
+    if any(x in name_lower for x in ['date', 'lock', 'application', 'closing date', 'first pymt']):
+        return "dates_compliance"
+    
+    # Default
+    return "other"
+
+
+def verify_all_sop_fields(loan_id: str, batch_size: int = 50) -> Dict[str, Any]:
+    """
+    Verify ALL SOP fields from the DrawingDoc Verifications CSV.
+    
+    Reads all field values from Encompass and categorizes them as:
+    - populated: Field has a value
+    - missing: Field is empty/missing
+    - error: Field could not be read
+    
+    For missing fields, returns the source documents needed.
+    
+    Args:
+        loan_id: The Encompass loan ID
+        batch_size: Number of fields to read per API call (default 50)
+    
+    Returns:
+        Dict with:
+        - all_fields: All fields with their values and status
+        - populated_fields: Fields with values
+        - missing_fields: Fields without values (with source documents)
+        - documents_needed: Documents required to populate missing fields
+        - summary: Counts and percentages
+    """
+    logger.info(f"[SOP VERIFY] Starting full SOP field verification for loan {loan_id}")
+    
+    # Load field definitions from CSV
+    sop_fields = load_sop_fields_from_csv()
+    
+    if not sop_fields:
+        return {
+            "error": "Could not load SOP field definitions",
+            "all_fields": [],
+            "populated_fields": [],
+            "missing_fields": [],
+            "documents_needed": [],
+            "summary": {"total": 0, "populated": 0, "missing": 0, "error": 0}
+        }
+    
+    # Extract all UNIQUE field IDs (CSV may have duplicates)
+    field_ids = list(dict.fromkeys([f["field_id"] for f in sop_fields]))
+    logger.info(f"[SOP VERIFY] Reading {len(field_ids)} unique fields from Encompass (from {len(sop_fields)} total entries)...")
+    
+    # Read fields in batches to avoid API limits
+    all_field_values = {}
+    for i in range(0, len(field_ids), batch_size):
+        batch = field_ids[i:i + batch_size]
+        logger.info(f"[SOP VERIFY] Reading batch {i//batch_size + 1}/{(len(field_ids) + batch_size - 1)//batch_size} ({len(batch)} fields)")
+        
+        try:
+            batch_values = read_fields(loan_id, batch)
+            if batch_values:
+                all_field_values.update(batch_values)
+        except Exception as e:
+            logger.warning(f"[SOP VERIFY] Error reading batch: {e}")
+    
+    logger.info(f"[SOP VERIFY] Read {len(all_field_values)} field values")
+    
+    # Process each field
+    all_fields = []
+    populated_fields = []
+    missing_fields = []
+    documents_needed_map = {}  # doc_name -> list of fields
+    
+    for field_def in sop_fields:
+        field_id = field_def["field_id"]
+        field_name = field_def["field_name"]
+        value = all_field_values.get(field_id, "")
+        
+        # Check if field has a meaningful value
+        is_populated = bool(value) and value not in ["", "//", "/", None, "null"]
+        
+        # Categorize the field
+        category = categorize_field(field_name, field_id)
+        
+        field_result = {
+            "field_id": field_id,
+            "field_name": field_name,
+            "value": value if value else None,
+            "status": "populated" if is_populated else "missing",
+            "category": category,
+            "primary_document": field_def["primary_document"],
+            "secondary_documents": field_def["secondary_documents"],
+            "notes": field_def["notes"],
+            "required_disclosure": field_def["required_disclosure"],
+        }
+        
+        all_fields.append(field_result)
+        
+        if is_populated:
+            populated_fields.append(field_result)
+        else:
+            missing_fields.append(field_result)
+            
+            # Track which documents are needed
+            primary_doc = field_def["primary_document"]
+            if primary_doc:
+                if primary_doc not in documents_needed_map:
+                    documents_needed_map[primary_doc] = []
+                documents_needed_map[primary_doc].append({
+                    "field_id": field_id,
+                    "field_name": field_name,
+                    "required_disclosure": field_def["required_disclosure"]
+                })
+    
+    # Build documents needed list
+    documents_needed = []
+    for doc_name, fields in sorted(documents_needed_map.items(), key=lambda x: -len(x[1])):
+        required_count = sum(1 for f in fields if f["required_disclosure"])
+        documents_needed.append({
+            "document_name": doc_name,
+            "missing_field_count": len(fields),
+            "required_disclosure_count": required_count,
+            "fields": fields,
+            "priority": "high" if required_count > 0 else ("medium" if len(fields) >= 3 else "low")
+        })
+    
+    # Group fields by category for display
+    fields_by_category = {}
+    for field in all_fields:
+        cat = field["category"]
+        if cat not in fields_by_category:
+            fields_by_category[cat] = {"populated": [], "missing": []}
+        if field["status"] == "populated":
+            fields_by_category[cat]["populated"].append(field)
+        else:
+            fields_by_category[cat]["missing"].append(field)
+    
+    # Build category summary
+    category_summary = {}
+    category_display_names = {
+        "borrower_info": "Borrower Information",
+        "property_loan": "Property & Loan Details",
+        "closing_disclosure": "Closing Disclosure Fields",
+        "fees_escrow": "Fees & Escrow",
+        "contacts_vendors": "Contacts & Vendors",
+        "loan_estimate": "Loan Estimate",
+        "dates_compliance": "Dates & Compliance",
+        "other": "Other Fields"
+    }
+    
+    for cat, data in fields_by_category.items():
+        total = len(data["populated"]) + len(data["missing"])
+        populated = len(data["populated"])
+        category_summary[cat] = {
+            "display_name": category_display_names.get(cat, cat),
+            "total": total,
+            "populated": populated,
+            "missing": len(data["missing"]),
+            "completion_pct": round((populated / total * 100) if total > 0 else 0, 1),
+            "fields": data
+        }
+    
+    # Summary statistics
+    total_fields = len(all_fields)
+    populated_count = len(populated_fields)
+    missing_count = len(missing_fields)
+    required_missing = sum(1 for f in missing_fields if f["required_disclosure"])
+    
+    result = {
+        "loan_id": loan_id,
+        "all_fields": all_fields,
+        "populated_fields": populated_fields,
+        "missing_fields": missing_fields,
+        "documents_needed": documents_needed,
+        "fields_by_category": category_summary,
+        "summary": {
+            "total": total_fields,
+            "populated": populated_count,
+            "missing": missing_count,
+            "required_missing": required_missing,
+            "completion_pct": round((populated_count / total_fields * 100) if total_fields > 0 else 0, 1),
+            "documents_needed_count": len(documents_needed)
+        }
+    }
+    
+    logger.info(f"[SOP VERIFY] Complete: {populated_count}/{total_fields} fields populated ({result['summary']['completion_pct']}%), {len(documents_needed)} documents needed")
+    
+    return result
 
 
 

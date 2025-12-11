@@ -7,7 +7,7 @@ This utility class handles:
 - Finalizing runs when complete
 
 Supports multiple agent types:
-- DrawDocs: preparation → drawcore → verification → orderdocs
+- DrawDocs: preparation → drawcore → discrepancy → verification → orderdocs
 - Disclosure: verification → preparation → send
 - LOA: verification → generation → delivery
 
@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 
 # Agent type configurations
 AGENT_TYPE_SUB_AGENTS = {
-    "drawdocs": ["preparation", "drawcore", "verification", "orderdocs"],
+    "drawdocs": ["preparation", "drawcore", "discrepancy", "verification", "orderdocs"],
     "disclosure": ["verification", "preparation", "send"],
     "loa": ["verification", "generation", "delivery"],
 }
@@ -62,7 +62,7 @@ class StatusWriter:
     """
     
     # Default agent names (DrawDocs) - kept for backwards compatibility
-    AGENTS = ["preparation", "drawcore", "verification", "orderdocs"]
+    AGENTS = ["preparation", "drawcore", "discrepancy", "verification", "orderdocs"]
     
     def __init__(self, output_dir: Optional[Union[str, Path]] = None):
         """

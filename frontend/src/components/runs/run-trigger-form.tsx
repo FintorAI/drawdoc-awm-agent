@@ -143,9 +143,8 @@ export function RunTriggerForm({ onSuccess, onError, agentType = "drawdocs", cla
   // Handle "All Documents" toggle
   const handleAllDocumentsChange = (checked: boolean) => {
     setAllDocuments(checked);
-    if (checked) {
-      setSelectedDocTypes([]);
-    }
+    // When "All Documents" is checked, we'll send empty array to backend
+    // No need to modify selectedDocTypes here
   };
   
   // Handle individual document type checkbox
@@ -214,7 +213,9 @@ export function RunTriggerForm({ onSuccess, onError, agentType = "drawdocs", cla
     }
     
     if (formConfig.requiresDocTypes) {
-      baseConfig.document_types = allDocuments ? null : selectedDocTypes.length > 0 ? selectedDocTypes : null;
+      // If "All Documents" is checked, send empty array = process all without filtering
+      // Otherwise send selected types, or null if none selected
+      baseConfig.document_types = allDocuments ? [] : (selectedDocTypes.length > 0 ? selectedDocTypes : null);
       baseConfig.require_review = requireReview; // DrawDocs only
     }
     
@@ -364,7 +365,7 @@ export function RunTriggerForm({ onSuccess, onError, agentType = "drawdocs", cla
                     disabled={isSubmitting}
                   />
                   <Label htmlFor="all-documents" className="text-sm font-normal cursor-pointer">
-                    All Documents
+                    All Documents Needed (from SOP)
                   </Label>
                 </div>
               </div>
@@ -397,10 +398,10 @@ export function RunTriggerForm({ onSuccess, onError, agentType = "drawdocs", cla
                   : "text-muted-foreground"
               )}>
                 {allDocuments
-                  ? "Processing all document types"
+                  ? "Processing all documents needed per SOP (87 document types)"
                   : selectedDocTypes.length > 0
                   ? `${selectedDocTypes.length} type(s) selected`
-                  : "⚠ Select document types or check 'All Documents'"}
+                  : "⚠ Select document types or check 'All Documents Needed'"}
               </p>
             </div>
           )}

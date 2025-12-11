@@ -19,7 +19,7 @@ Borrower Home Phone,66,ID,,Check phone numbers match attached documents,20,,,,,,
 Borrower Last Name,4002,ID,Final 1003,"Manual entry - verify as needed; Must be exact match - if no middle initial in Final 1003, then Encompass should not have middle initial",20,,,,,,,,,,,,no
 Borrower Marital Status,52,,,Verify marital status matches attached documents; Required for vesting except in Colorado State,"20,23",,,,,,,,,,,,no
 Borrower Middle Name,4001,,,"Must be exact match - if no middle initial in Final 1003, then Encompass should not have middle initial",20,,,,,,,,,,,,no
-Borrower Present Addr,FR0104,,,Must match Final 1003/Approval,81,,,,,,,,,,,,no
+Borrower Present Addr,FR0104,Final 1003,,Must match Final 1003/Approval,81,,,,,,,,,,,,no
 Borrower Sex Male/Female,471,,,Required for vesting completion,23,,,,,,,,,,,,no
 Borrower SSN,65,Documents tab - Application Section,Final 1003,"Check driver's license and SSN card documents; Verify SSN through SSN Verification document; Check for discrepancies across credit reports, pay stubs, W2s, and tax forms; Search borrower SSN on MERS website to verify uniqueness","16,20,21",,,,,,,,,,,,no
 Borrower Vesting Borr 1 Corp/Trust Name,1859,,Title Company ; Trust Document,"Only when file is approved for Trust Docs; Check trust name matches attached trust document, update Trust 2 if multiple trusts exist; If Settlor information not identified, PTF Condition will be added for Title Company to update; For NV/CA/AZ/WA/UT/OR: same as Title Company; For CO: County name & address from Business contacts No Category; For TX: Thomas E Black Jr. from Business contacts Attorney Category; For FL/MI: no trustee information","23,25,40",,,,,,,,,,,,no

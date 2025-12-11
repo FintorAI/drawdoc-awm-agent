@@ -281,16 +281,34 @@ def run_verification(
         print(f"\nChecking loan preconditions...")
         loan_context = get_loan_context(loan_id, include_milestones=False)
         
-        # Verification agent only runs if prep agent completed
+        # ALWAYS run SOP field verification first (independent of prep status)
+        print(f"\n[VERIFICATION] Running full SOP field verification for loan {loan_id}...")
+        sop_verification = None
+        try:
+            from agents.drawdocs.tools.primitives import verify_all_sop_fields
+            sop_verification = verify_all_sop_fields(loan_id)
+            
+            if sop_verification:
+                summary = sop_verification.get("summary", {})
+                print(f"[VERIFICATION] SOP Check: {summary.get('populated', 0)}/{summary.get('total', 0)} fields populated ({summary.get('completion_pct', 0)}%)")
+                print(f"[VERIFICATION] Missing fields: {summary.get('missing', 0)} ({summary.get('required_missing', 0)} required)")
+                print(f"[VERIFICATION] Documents needed: {summary.get('documents_needed_count', 0)}")
+        except Exception as sop_error:
+            print(f"[VERIFICATION] WARNING: Could not run SOP verification: {sop_error}")
+            sop_verification = {"error": str(sop_error)}
+        
+        # Check if prep agent completed (for field validation workflow)
         if prep_output.get("status") == "failed":
-            error_msg = "Prep agent failed - cannot verify"
-            print(f"⚠️  Precondition failed: {error_msg}")
+            error_msg = "Prep agent failed - cannot verify extracted fields"
+            print(f"⚠️  Prep status failed: {error_msg}")
+            print(f"ℹ️  SOP field verification still completed - see sop_verification in output")
             log_issue(loan_id, "ERROR", error_msg)
             return {
                 "status": "failed",
                 "loan_id": loan_id,
                 "error": error_msg,
-                "loan_context": loan_context
+                "loan_context": loan_context,
+                "sop_verification": sop_verification  # Include SOP results even if prep failed
             }
         
         print(f"✓ Loan context retrieved - Loan #{loan_context.get('loan_number')}, Type: {loan_context.get('loan_type')}, State: {loan_context.get('state')}")
@@ -405,9 +423,12 @@ Start verification now. Process each field systematically."""
         "sop_rules": sop_rules,
     })
     
-    # Enhance result with loan_context and standardized format
+    # Enhance result with loan_context and SOP verification
     if isinstance(result, dict):
         result["loan_context"] = loan_context
+        # Add SOP verification results (already ran at the start)
+        if sop_verification:
+            result["sop_verification"] = sop_verification
         # Determine status if not already set
         if "status" not in result:
             result["status"] = "success"  # Default to success if agent completed

@@ -3,13 +3,15 @@
 Docs Draw Core Agent - Main field update agent.
 
 This agent is the heart of the docs draw system. It takes the extracted data
-from the Prep Agent and updates Encompass fields across 5 phases:
+from the Prep Agent and updates Encompass fields across 7 phases:
 
 1. Phase 1: Borrower & LO - Borrower names, vesting, loan officer info
-2. Phase 2: Contacts & Vendors - Title company, escrow, lenders, etc.
+2. Phase 2: Contacts & Vendors - Title company, escrow, lenders, insurance (SOP Step 9)
 3. Phase 3: Property & Program - FHA/VA/USDA case numbers, property details
-4. Phase 4: Financial Setup - Terms, rates, fees, escrow, itemization
+4. Phase 4: Financial Setup - Terms, rates, fees, itemization
 5. Phase 5: Closing Disclosure - CD pages with final numbers
+6. Phase 6: (Reserved for future use)
+7. Phase 7: Escrow Calculations - Cushion months, starting balance (SOP Step 19)
 
 Each phase:
 - Reads current Encompass fields (via primitives)
@@ -22,6 +24,7 @@ Features:
 - Dry run mode (no actual writes)
 - Comprehensive logging and reporting
 - Handles missing/ambiguous data gracefully
+- P1 Enhancement: Form Filling (Steps 9, 19)
 """
 
 import sys
@@ -59,6 +62,9 @@ from agents.drawdocs.subagents.drawcore_agent.phases.phase4_financial import (
 from agents.drawdocs.subagents.drawcore_agent.phases.phase5_cd import (
     process_cd_phase
 )
+from agents.drawdocs.subagents.drawcore_agent.phases.phase7_escrow import (
+    process_escrow_phase
+)
 
 # Configure logging
 logging.basicConfig(
@@ -86,7 +92,7 @@ def run_drawcore_agent(
         loan_id: Encompass loan GUID
         doc_context: Output from Prep Agent containing extracted field values
         dry_run: If True, don't actually write to Encompass (default: True)
-        phases_to_run: Optional list of phase numbers to run (1-5). If None, runs all.
+        phases_to_run: Optional list of phase numbers to run (1-5, 7). If None, runs all.
         
     Returns:
         Dictionary with:
@@ -145,17 +151,19 @@ def run_drawcore_agent(
         
         # Determine which phases to run
         if phases_to_run is None:
-            phases_to_run = [1, 2, 3, 4, 5]
+            phases_to_run = [1, 2, 3, 4, 5, 7]  # Skip 6 (reserved), include 7 (escrow)
         
         logger.info(f"\nPhases to run: {phases_to_run}")
         
         # Phase definitions
         phase_processors = {
             1: ("Borrower & LO", process_borrower_lo_phase),
-            2: ("Contacts & Vendors", process_contacts_phase),
+            2: ("Contacts & Vendors (File Contacts)", process_contacts_phase),
             3: ("Property & Program", process_property_phase),
             4: ("Financial Setup", process_financial_phase),
-            5: ("Closing Disclosure", process_cd_phase)
+            5: ("Closing Disclosure", process_cd_phase),
+            # 6: Reserved for future use
+            7: ("Escrow Calculations", process_escrow_phase)
         }
         
         # Run each phase

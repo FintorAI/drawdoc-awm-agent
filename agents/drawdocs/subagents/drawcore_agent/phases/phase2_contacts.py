@@ -23,14 +23,51 @@ from agents.drawdocs.tools.primitives import read_fields, write_fields, log_issu
 logger = logging.getLogger(__name__)
 
 
-# Field mappings for Phase 2
+# Field mappings for Phase 2 - File Contacts (SOP Step 9)
 CONTACTS_VENDOR_FIELDS = {
-    # Title Company
-    "610": {"name": "Escrow Company Name", "source_docs": ["Title Report"]},
-    "411": {"name": "Title Insurance Company Name", "source_docs": ["Title Report"]},
+    # Lender Information (Fixed values from SOP)
+    "L1": {"name": "Lender Name", "source_docs": ["Fixed"]},
+    "L2": {"name": "Lender Address", "source_docs": ["Fixed"]},
+    "L3": {"name": "Lender City", "source_docs": ["Fixed"]},
+    "L4": {"name": "Lender State", "source_docs": ["Fixed"]},
+    "L5": {"name": "Lender Zip", "source_docs": ["Fixed"]},
+    "L6": {"name": "Lender NMLS", "source_docs": ["Fixed"]},
+    "L7": {"name": "Lender License ID", "source_docs": ["Fixed"]},
+    "L8": {"name": "Lender Phone", "source_docs": ["Fixed"]},
+    "L9": {"name": "Lender Fax", "source_docs": ["Fixed"]},
     
-    # Additional contact/vendor fields can be added here based on CSV
-    # These will be populated as more fields are identified
+    # Title Company (From Title Report)
+    "VEND.X100": {"name": "Title Company Name", "source_docs": ["Title Report"]},
+    "VEND.X101": {"name": "Title Company Address", "source_docs": ["Title Report"]},
+    "VEND.X102": {"name": "Title Company City", "source_docs": ["Title Report"]},
+    "VEND.X103": {"name": "Title Company State", "source_docs": ["Title Report"]},
+    "VEND.X104": {"name": "Title Company Zip", "source_docs": ["Title Report"]},
+    "VEND.X105": {"name": "Title Officer Name", "source_docs": ["Title Report"]},
+    "VEND.X106": {"name": "Title Officer Email", "source_docs": ["Title Report"]},
+    "VEND.X107": {"name": "Title Officer Phone", "source_docs": ["Title Report"]},
+    
+    # Escrow Company (From Title Report / Wire Instructions)
+    "186": {"name": "Escrow Case Number", "source_docs": ["Title Report"]},  # From CSV
+    "VEND.X110": {"name": "Escrow Company Address", "source_docs": ["Title Report"]},
+    "VEND.X111": {"name": "Escrow Company City", "source_docs": ["Title Report"]},
+    "VEND.X112": {"name": "Escrow Company State", "source_docs": ["Title Report"]},
+    "VEND.X113": {"name": "Escrow Company Zip", "source_docs": ["Title Report"]},
+    "VEND.X114": {"name": "Escrow Officer Name", "source_docs": ["Title Report"]},
+    "VEND.X115": {"name": "Escrow Officer Email", "source_docs": ["Title Report"]},
+    "VEND.X116": {"name": "Escrow Officer Phone", "source_docs": ["Title Report"]},
+    "VEND.X117": {"name": "Escrow Bank ABA", "source_docs": ["Wire Instructions"]},
+    "VEND.X118": {"name": "Escrow Bank Account", "source_docs": ["Wire Instructions"]},
+    
+    # Hazard Insurance Company (From Evidence of Insurance)
+    "L252": {"name": "Hazard Insurance Company Name", "source_docs": ["Evidence of Insurance"]},  # From CSV
+    "VEND.X120": {"name": "Hazard Insurance Company Address", "source_docs": ["Evidence of Insurance"]},
+    "VEND.X163": {"name": "Hazard Insurance Agent Name", "source_docs": ["Evidence of Insurance"]},  # From CSV
+    "VEND.X164": {"name": "Hazard Insurance Agent Email", "source_docs": ["Evidence of Insurance"]},  # From CSV
+    "VEND.X121": {"name": "Hazard Insurance Agent Phone", "source_docs": ["Evidence of Insurance"]},
+    "VEND.X122": {"name": "Hazard Insurance Policy Number", "source_docs": ["Evidence of Insurance"]},
+    
+    # Settlement Agent (From CSV)
+    "CD5.X55": {"name": "Settlement Agent Name", "source_docs": ["File Contacts"]},  # From CSV
 }
 
 

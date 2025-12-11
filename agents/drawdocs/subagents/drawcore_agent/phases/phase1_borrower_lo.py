@@ -44,7 +44,7 @@ BORROWER_LO_FIELDS = {
     "65": {"name": "Borrower SSN", "source_docs": ["Application", "1003"]},
     "52": {"name": "Borrower Marital Status", "source_docs": ["1003"]},
     "471": {"name": "Borrower Sex Male/Female", "source_docs": ["1003"]},
-    "FR0104": {"name": "Borrower Present Addr", "source_docs": ["1003"]},
+    # "FR0104": {"name": "Borrower Present Addr", "source_docs": ["1003"]},  # REMOVED: Field deprecated
 }
 
 

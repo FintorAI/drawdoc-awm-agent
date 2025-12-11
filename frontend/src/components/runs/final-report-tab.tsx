@@ -39,12 +39,11 @@ interface FinalReportTabProps {
   runDetail: RunDetail | undefined;
   isLoading: boolean;
   className?: string;
-  agentType?: "drawdocs" | "disclosure" | "loa";
 }
 
 interface FlaggedItem {
   id: string;
-  agent: "preparation" | "drawcore" | "verification" | "orderdocs" | "send" | "pre_check" | "system" | "orchestrator";
+  agent: "preparation" | "drawcore" | "verification" | "orderdocs";
   severity: "error" | "warning" | "info";
   field?: string;
   fieldId?: string;
@@ -69,104 +68,120 @@ function extractFlaggedItems(runDetail: RunDetail): FlaggedItem[] {
   const items: FlaggedItem[] = [];
   let idCounter = 0;
 
-  // Safely extract from logs
-  try {
-    if (runDetail?.logs && Array.isArray(runDetail.logs)) {
-      runDetail.logs.forEach(log => {
-        if (log?.level === "error" || log?.level === "warning") {
-          items.push({
-            id: `log-${idCounter++}`,
-            agent: (log.agent || "system") as FlaggedItem["agent"],
-            severity: log.level as "error" | "warning",
-            message: log.message || "Unknown error",
-            details: log.details ? JSON.stringify(log.details) : undefined,
-          });
-        }
-      });
-    }
-  } catch (error) {
-    console.error("Error extracting flagged items from logs:", error);
+  // Extract from logs
+  if (runDetail.logs) {
+    runDetail.logs.forEach(log => {
+      if (log.level === "error" || log.level === "warning") {
+        items.push({
+          id: `log-${idCounter++}`,
+          agent: log.agent as FlaggedItem["agent"],
+          severity: log.level as "error" | "warning",
+          message: log.message,
+          details: log.details ? JSON.stringify(log.details) : undefined,
+        });
+      }
+    });
   }
 
   // Extract from agent outputs - Drawcore issues
-  try {
-    const drawcoreOutput = runDetail?.agents?.drawcore?.output as {
-      phases?: Record<string, { issues?: Array<{ type: string; message: string }> }>;
-    };
-    if (drawcoreOutput?.phases) {
-      Object.entries(drawcoreOutput.phases).forEach(([phaseName, phase]) => {
-        phase?.issues?.forEach((issue, idx) => {
-          items.push({
-            id: `drawcore-${phaseName}-${idx}`,
-            agent: "drawcore",
-            severity: issue.type === "error" ? "error" : "warning",
-            message: issue.message || "Unknown issue",
-            details: `Phase: ${phaseName}`,
-          });
+  const drawcoreOutput = runDetail.agents.drawcore?.output as {
+    phases?: Record<string, { issues?: Array<{ type: string; message: string }> }>;
+  };
+  if (drawcoreOutput?.phases) {
+    Object.entries(drawcoreOutput.phases).forEach(([phaseName, phase]) => {
+      phase.issues?.forEach((issue, idx) => {
+        items.push({
+          id: `drawcore-${phaseName}-${idx}`,
+          agent: "drawcore",
+          severity: issue.type === "error" ? "error" : "warning",
+          message: issue.message,
+          details: `Phase: ${phaseName}`,
         });
       });
-    }
-  } catch (error) {
-    console.error("Error extracting drawcore issues:", error);
+    });
   }
 
   // Extract from verification corrections
-  try {
-    const verificationOutput = runDetail?.agents?.verification?.output as {
-      corrections?: Array<{ field_id: string; field_name: string; reason: string }>;
-    };
-    if (verificationOutput?.corrections && Array.isArray(verificationOutput.corrections)) {
-      verificationOutput.corrections.forEach((correction, idx) => {
-        items.push({
-          id: `verification-correction-${idx}`,
-          agent: "verification",
-          severity: "info",
-          field: correction.field_name,
-          fieldId: correction.field_id,
-          message: `Field correction identified: ${correction.field_name}`,
-          details: correction.reason,
-        });
+  const verificationOutput = runDetail.agents.verification?.output as {
+    corrections?: Array<{ field_id: string; field_name: string; reason: string }>;
+  };
+  if (verificationOutput?.corrections) {
+    verificationOutput.corrections.forEach((correction, idx) => {
+      items.push({
+        id: `verification-correction-${idx}`,
+        agent: "verification",
+        severity: "info",
+        field: correction.field_name,
+        fieldId: correction.field_id,
+        message: `Field correction identified: ${correction.field_name}`,
+        details: correction.reason,
       });
-    }
-  } catch (error) {
-    console.error("Error extracting verification corrections:", error);
+    });
   }
 
   // Extract from OrderDocs preflight warnings (loan readiness issues)
-  try {
-    const orderdocsOutput = runDetail?.agents?.orderdocs?.output as {
-      preflight_warnings?: Array<{ flag: string; name: string; message: string }>;
-    };
-    if (orderdocsOutput?.preflight_warnings && Array.isArray(orderdocsOutput.preflight_warnings)) {
-      orderdocsOutput.preflight_warnings.forEach((warning, idx) => {
-        items.push({
-          id: `orderdocs-preflight-${idx}`,
-          agent: "orderdocs",
-          severity: "warning",
-          message: `⚠️ ${warning.name}: Not Complete`,
-          details: warning.message,
-        });
+  const orderdocsOutput = runDetail.agents.orderdocs?.output as {
+    preflight_warnings?: Array<{ flag: string; name: string; message: string }>;
+  };
+  if (orderdocsOutput?.preflight_warnings) {
+    orderdocsOutput.preflight_warnings.forEach((warning, idx) => {
+      items.push({
+        id: `orderdocs-preflight-${idx}`,
+        agent: "orderdocs",
+        severity: "warning",
+        message: `⚠️ ${warning.name}: Not Complete`,
+        details: warning.message,
       });
-    }
-  } catch (error) {
-    console.error("Error extracting orderdocs warnings:", error);
+    });
   }
 
-  // Extract from disclosure blocking issues
-  try {
-    const blockingIssues = (runDetail as any)?.blocking_issues;
-    if (blockingIssues && Array.isArray(blockingIssues)) {
-      blockingIssues.forEach((issue, idx) => {
-        items.push({
-          id: `blocking-${idx}`,
-          agent: "verification",
-          severity: "error",
-          message: String(issue),
-        });
+  // Extract from Discrepancy Detection (Hard Stops & PTF Conditions)
+  const discrepancyOutput = runDetail.agents.discrepancy?.output as {
+    hard_stops?: Array<{
+      field_id: string;
+      field_name: string;
+      extracted: string;
+      encompass: string;
+      action: string;
+      message: string;
+    }>;
+    soft_discrepancies?: Array<{
+      field_id: string;
+      field_name: string;
+      extracted: string;
+      encompass: string;
+      ptf_text: string;
+    }>;
+  };
+  
+  // Hard Stops (CRITICAL - blocks pipeline)
+  if (discrepancyOutput?.hard_stops) {
+    discrepancyOutput.hard_stops.forEach((stop, idx) => {
+      items.push({
+        id: `discrepancy-hardstop-${idx}`,
+        agent: "drawcore", // Show as drawcore issue in main flagged items
+        severity: "error",
+        field: stop.field_name,
+        fieldId: stop.field_id,
+        message: `🛑 HARD STOP: ${stop.field_name} mismatch`,
+        details: `Extracted: ${stop.extracted} | Encompass: ${stop.encompass} | Action: ${stop.action}`,
       });
-    }
-  } catch (error) {
-    console.error("Error extracting blocking issues:", error);
+    });
+  }
+  
+  // PTF Conditions (Warnings)
+  if (discrepancyOutput?.soft_discrepancies) {
+    discrepancyOutput.soft_discrepancies.forEach((discrep, idx) => {
+      items.push({
+        id: `discrepancy-ptf-${idx}`,
+        agent: "drawcore",
+        severity: "warning",
+        field: discrep.field_name,
+        fieldId: discrep.field_id,
+        message: `PTF Condition: ${discrep.field_name}`,
+        details: discrep.ptf_text,
+      });
+    });
   }
 
   return items;
@@ -176,72 +191,45 @@ function extractFieldChanges(runDetail: RunDetail): FieldChange[] {
   const changes: FieldChange[] = [];
 
   // Extract from preparation output
-  try {
-    const prepOutput = runDetail?.agents?.preparation?.output as {
-      results?: {
-        field_mappings?: Record<string, { value: string; attachment_id?: string }>;
-      };
+  const prepOutput = runDetail.agents.preparation?.output as {
+    results?: {
+      field_mappings?: Record<string, { value: string; attachment_id?: string }>;
     };
-    if (prepOutput?.results?.field_mappings) {
-      Object.entries(prepOutput.results.field_mappings).forEach(([fieldId, mapping]) => {
-        if (mapping?.value && mapping.value !== "" && mapping.value !== "0") {
-          changes.push({
-            fieldId,
-            fieldName: fieldId, // Could map to friendly names
-            oldValue: null,
-            newValue: String(mapping.value),
-            source: mapping.attachment_id || "Document",
-            agent: "preparation",
-          });
-        }
-      });
-    }
-  } catch (error) {
-    console.error("Error extracting field changes from preparation:", error);
+  };
+  if (prepOutput?.results?.field_mappings) {
+    Object.entries(prepOutput.results.field_mappings).forEach(([fieldId, mapping]) => {
+      if (mapping.value && mapping.value !== "" && mapping.value !== "0") {
+        changes.push({
+          fieldId,
+          fieldName: fieldId, // Could map to friendly names
+          oldValue: null,
+          newValue: String(mapping.value),
+          source: mapping.attachment_id || "Document",
+          agent: "preparation",
+        });
+      }
+    });
   }
 
   // Extract from corrected_fields_summary
-  try {
-    if (runDetail?.corrected_fields_summary && Array.isArray(runDetail.corrected_fields_summary)) {
-      runDetail.corrected_fields_summary.forEach(field => {
-        // Check if already in changes
-        const existingIdx = changes.findIndex(c => c.fieldId === field.field_id);
-        if (existingIdx >= 0) {
-          changes[existingIdx].newValue = field.corrected_value;
-          changes[existingIdx].agent = "verification";
-        } else {
-          changes.push({
-            fieldId: field.field_id,
-            fieldName: field.field_name,
-            oldValue: null,
-            newValue: field.corrected_value,
-            source: field.document_filename || "Verification",
-            agent: "verification",
-          });
-        }
-      });
-    }
-  } catch (error) {
-    console.error("Error extracting corrected fields summary:", error);
-  }
-
-  // Extract from disclosure RegZ-LE updates
-  try {
-    const regzLeResult = (runDetail?.agents?.preparation?.output as any)?.regz_le_result;
-    if (regzLeResult?.updates_made) {
-      Object.entries(regzLeResult.updates_made).forEach(([fieldId, value]) => {
+  if (runDetail.corrected_fields_summary) {
+    runDetail.corrected_fields_summary.forEach(field => {
+      // Check if already in changes
+      const existingIdx = changes.findIndex(c => c.fieldId === field.field_id);
+      if (existingIdx >= 0) {
+        changes[existingIdx].newValue = field.corrected_value;
+        changes[existingIdx].agent = "verification";
+      } else {
         changes.push({
-          fieldId,
-          fieldName: fieldId,
+          fieldId: field.field_id,
+          fieldName: field.field_name,
           oldValue: null,
-          newValue: String(value),
-          source: "RegZ-LE",
-          agent: "preparation",
+          newValue: field.corrected_value,
+          source: field.document_filename || "Verification",
+          agent: "verification",
         });
-      });
-    }
-  } catch (error) {
-    console.error("Error extracting RegZ-LE updates:", error);
+      }
+    });
   }
 
   return changes;
@@ -273,75 +261,38 @@ function SummaryCard({ runDetail, flaggedItems, fieldChanges }: SummaryCardProps
   const warningCount = flaggedItems.filter(i => i.severity === "warning").length;
   const infoCount = flaggedItems.filter(i => i.severity === "info").length;
   
-  const agentType = runDetail.agent_type || "drawdocs";
   const prepOutput = runDetail.agents.preparation?.output as {
     documents_processed?: number;
     total_documents_found?: number;
   };
-  const verificationOutput = runDetail.agents.verification?.output as any;
-  const sendOutput = runDetail.agents.send?.output as any;
 
-  // Disclosure-specific stats
-  const tridCompliant = verificationOutput?.trid_compliance?.compliant === true;
-  const formsChecked = verificationOutput?.form_validation?.forms_checked || 0;
-  const formsPassed = verificationOutput?.form_validation?.forms_passed || 0;
-  const maventPassed = sendOutput?.mavent_result?.passed === true;
-
-  const stats = agentType === "disclosure"
-    ? [
-        {
-          label: "TRID Compliant",
-          value: tridCompliant ? 1 : 0,
-          icon: CheckCircle2,
-          color: tridCompliant ? "text-emerald-600" : "text-red-600",
-        },
-        {
-          label: "Forms Passed",
-          value: formsPassed,
-          total: formsChecked,
-          icon: FileText,
-          color: "text-blue-600",
-        },
-        {
-          label: "Mavent Status",
-          value: maventPassed ? 1 : 0,
-          icon: CheckCircle2,
-          color: maventPassed ? "text-emerald-600" : "text-amber-600",
-        },
-        {
-          label: "Warnings",
-          value: warningCount,
-          icon: AlertTriangle,
-          color: warningCount > 0 ? "text-amber-600" : "text-slate-400",
-        },
-      ]
-    : [
-        {
-          label: "Documents Processed",
-          value: prepOutput?.documents_processed || 0,
-          total: prepOutput?.total_documents_found,
-          icon: FileText,
-          color: "text-blue-600",
-        },
-        {
-          label: "Fields Updated",
-          value: fieldChanges.length,
-          icon: Pencil,
-          color: "text-emerald-600",
-        },
-        {
-          label: "Errors",
-          value: errorCount,
-          icon: XCircle,
-          color: errorCount > 0 ? "text-red-600" : "text-slate-400",
-        },
-        {
-          label: "Warnings",
-          value: warningCount,
-          icon: AlertTriangle,
-          color: warningCount > 0 ? "text-amber-600" : "text-slate-400",
-        },
-      ];
+  const stats = [
+    {
+      label: "Documents Processed",
+      value: prepOutput?.documents_processed || 0,
+      total: prepOutput?.total_documents_found,
+      icon: FileText,
+      color: "text-blue-600",
+    },
+    {
+      label: "Fields Updated",
+      value: fieldChanges.length,
+      icon: Pencil,
+      color: "text-emerald-600",
+    },
+    {
+      label: "Errors",
+      value: errorCount,
+      icon: XCircle,
+      color: errorCount > 0 ? "text-red-600" : "text-slate-400",
+    },
+    {
+      label: "Warnings",
+      value: warningCount,
+      icon: AlertTriangle,
+      color: warningCount > 0 ? "text-amber-600" : "text-slate-400",
+    },
+  ];
 
   return (
     <Card>
@@ -739,11 +690,12 @@ function DrawcorePhasesCard({ runDetail }: DrawcorePhasesCardProps) {
   const summary = drawcoreOutput.summary;
 
   const phaseNames: Record<string, string> = {
-    phase_1: "System-Calculated Fields",
-    phase_2: "Document-Sourced Fields",
-    phase_3: "Title & Third Party",
-    phase_4: "Government & Compliance",
-    phase_5: "Final Review",
+    phase_1: "Borrower & LO Info",
+    phase_2: "File Contacts (Title, Escrow, Insurance)",
+    phase_3: "Property & Program",
+    phase_4: "Financial Setup",
+    phase_5: "Closing Disclosure",
+    phase_7: "Escrow Calculations (SOP Step 19)",
   };
 
   return (
@@ -842,257 +794,326 @@ function DrawcorePhasesCard({ runDetail }: DrawcorePhasesCardProps) {
 }
 
 // =============================================================================
-// DISCLOSURE DETAILS CARDS
+// DISCREPANCY DETECTION CARD (Phase 1: PTF Conditions)
 // =============================================================================
 
-interface DisclosureDetailsCardsProps {
+interface DiscrepancyDetectionCardProps {
   runDetail: RunDetail;
 }
 
-function DisclosureDetailsCards({ runDetail }: DisclosureDetailsCardsProps) {
-  const verificationOutput = runDetail?.agents?.verification?.output as any;
-  const preparationOutput = runDetail?.agents?.preparation?.output as any;
-  const sendOutput = runDetail?.agents?.send?.output as any;
-
-  const tridCompliance = verificationOutput?.trid_compliance || {};
-  const formValidation = verificationOutput?.form_validation || {};
-  const miResult = preparationOutput?.mi_result || {};
-  const ctcResult = preparationOutput?.ctc_result || {};
-  const regzLeResult = preparationOutput?.regz_le_result || {};
-  const maventResult = sendOutput?.mavent_result || {};
-  const atrQmResult = sendOutput?.atr_qm_result || {};
-  const orderResult = sendOutput?.order_result || {};
+function DiscrepancyDetectionCard({ runDetail }: DiscrepancyDetectionCardProps) {
+  const [expandedHardStops, setExpandedHardStops] = React.useState(true);
+  const [expandedPTF, setExpandedPTF] = React.useState(true);
   
-  // Handle missing data gracefully
-  if (!verificationOutput && !preparationOutput && !sendOutput) {
-    return (
-      <Card>
-        <CardContent className="py-8 text-center text-muted-foreground">
-          <p>No disclosure data available yet.</p>
-        </CardContent>
-      </Card>
+  const discrepancyOutput = runDetail.agents.discrepancy?.output as {
+    status?: string;
+    hard_stops?: Array<{
+      field_id: string;
+      field_name: string;
+      extracted: string;
+      encompass: string;
+      action: string;
+      message: string;
+      source_doc?: string;
+    }>;
+    soft_discrepancies?: Array<{
+      field_id: string;
+      field_name: string;
+      extracted: string;
+      encompass: string;
+      ptf_text: string;
+      assigned_to?: string;
+      severity?: string;
+      ptf_added?: boolean;
+      condition_id?: string;
+    }>;
+    ptf_conditions_added?: number;
+    fields_checked?: number;
+    discrepancies_found?: number;
+    acceptable_variances?: number;
+    summary?: string;
+  };
+
+  if (!discrepancyOutput) {
+    return null;
+  }
+
+  const hardStops = discrepancyOutput.hard_stops || [];
+  const softDiscrepancies = discrepancyOutput.soft_discrepancies || [];
+  const status = discrepancyOutput.status || "unknown";
+  const fieldsChecked = discrepancyOutput.fields_checked || 0;
+  const discrepanciesFound = discrepancyOutput.discrepancies_found || 0;
+  const ptfCount = discrepancyOutput.ptf_conditions_added || 0;
+  const acceptableVariances = discrepancyOutput.acceptable_variances || 0;
+
+  // Status badge
+  let statusBadge;
+  if (status === "blocked") {
+    statusBadge = (
+      <Badge variant="outline" className="border-red-600 text-red-600 text-xs font-semibold">
+        BLOCKED
+      </Badge>
+    );
+  } else if (status === "proceed_with_conditions") {
+    statusBadge = (
+      <Badge variant="outline" className="border-amber-500 text-amber-600 text-xs font-medium">
+        Dry Run
+      </Badge>
+    );
+  } else if (status === "success") {
+    statusBadge = (
+      <Badge variant="outline" className="border-emerald-500 text-emerald-600 text-xs font-medium">
+        ✓ Clean
+      </Badge>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      {/* TRID Compliance Card */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <ShieldCheck className="h-4 w-4 text-blue-500" />
-            TRID Compliance
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div className={cn(
-              "p-3 rounded-lg border",
-              tridCompliance.compliant ? "bg-emerald-50 border-emerald-200" : "bg-red-50 border-red-200"
-            )}>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Status</span>
-                <span className={cn(
-                  "text-sm font-semibold",
-                  tridCompliance.compliant ? "text-emerald-600" : "text-red-600"
-                )}>
-                  {tridCompliance.compliant ? "✓ Compliant" : "✗ Non-Compliant"}
-                </span>
-              </div>
-            </div>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Application Date:</span>
-                <span className="font-mono">{tridCompliance.application_date || "—"}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">LE Due Date:</span>
-                <span className="font-mono">{tridCompliance.le_due_date || "—"}</span>
-              </div>
-              {tridCompliance.days_remaining !== undefined && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Days Remaining:</span>
-                  <span className={cn(
-                    "font-semibold",
-                    tridCompliance.days_remaining > 0 ? "text-emerald-600" : "text-red-600"
-                  )}>
-                    {tridCompliance.days_remaining}
-                  </span>
-                </div>
-              )}
-              {tridCompliance.action && (
-                <p className="text-xs text-muted-foreground pt-2 border-t">
-                  {tridCompliance.action}
-                </p>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Form Validation Card */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <FileText className="h-4 w-4 text-blue-500" />
-            Form Validation
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div className="grid grid-cols-3 gap-2">
-              <div className="text-center p-2 bg-muted/50 rounded">
-                <p className="text-lg font-bold">{formValidation.forms_checked || 0}</p>
-                <p className="text-xs text-muted-foreground">Checked</p>
-              </div>
-              <div className="text-center p-2 bg-emerald-50 rounded">
-                <p className="text-lg font-bold text-emerald-600">{formValidation.forms_passed || 0}</p>
-                <p className="text-xs text-muted-foreground">Passed</p>
-              </div>
-              <div className="text-center p-2 bg-amber-50 rounded">
-                <p className="text-lg font-bold text-amber-600">
-                  {(formValidation.forms_checked || 0) - (formValidation.forms_passed || 0)}
-                </p>
-                <p className="text-xs text-muted-foreground">Issues</p>
-              </div>
-            </div>
-            {formValidation.missing_fields && formValidation.missing_fields.length > 0 && (
-              <div className="pt-2 border-t">
-                <p className="text-xs font-medium text-muted-foreground mb-1">
-                  Missing Fields ({formValidation.missing_fields.length}):
-                </p>
-                <div className="space-y-1">
-                  {formValidation.missing_fields.slice(0, 3).map((field: string, i: number) => (
-                    <p key={i} className="text-xs font-mono text-amber-700 bg-amber-50 px-2 py-1 rounded">
-                      {field}
-                    </p>
-                  ))}
-                  {formValidation.missing_fields.length > 3 && (
-                    <p className="text-xs text-muted-foreground">
-                      +{formValidation.missing_fields.length - 3} more
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* MI Calculation Card */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <Package className="h-4 w-4 text-amber-500" />
-            MI Calculation
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div className={cn(
-              "p-3 rounded-lg border text-center",
-              miResult.requires_mi ? "bg-amber-50 border-amber-200" : "bg-slate-50 border-slate-200"
-            )}>
-              <p className="text-sm text-muted-foreground">MI Required</p>
-              <p className={cn(
-                "text-2xl font-bold",
-                miResult.requires_mi ? "text-amber-600" : "text-slate-500"
-              )}>
-                {miResult.requires_mi ? "Yes" : "No"}
-              </p>
-            </div>
-            {miResult.requires_mi && (
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">LTV Ratio:</span>
-                  <span className="font-mono">{miResult.ltv_ratio?.toFixed(2)}%</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Monthly MI:</span>
-                  <span className="font-mono">${miResult.monthly_amount?.toFixed(2) || "0.00"}</span>
-                </div>
-                {miResult.upfront_amount > 0 && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Upfront MI:</span>
-                    <span className="font-mono">${miResult.upfront_amount?.toFixed(2)}</span>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Mavent Compliance Card */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <ShieldCheck className="h-4 w-4 text-emerald-500" />
-            Mavent Compliance
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div className={cn(
-              "p-3 rounded-lg border",
-              maventResult.passed ? "bg-emerald-50 border-emerald-200" : "bg-amber-50 border-amber-200"
-            )}>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Status</span>
-                <span className={cn(
-                  "text-sm font-semibold",
-                  maventResult.passed ? "text-emerald-600" : "text-amber-600"
-                )}>
-                  {maventResult.passed ? "✓ Passed" : "⚠ Issues Found"}
-                </span>
-              </div>
-            </div>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Total Issues:</span>
-                <span className="font-semibold">{maventResult.total_issues || 0}</span>
-              </div>
-              {maventResult.audit_id && (
-                <div className="pt-2 border-t">
-                  <p className="text-xs text-muted-foreground">Audit ID:</p>
-                  <p className="text-xs font-mono text-muted-foreground break-all">
-                    {maventResult.audit_id}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* RegZ-LE Updates Card */}
-      {regzLeResult.updates_made && Object.keys(regzLeResult.updates_made).length > 0 && (
-        <Card className="lg:col-span-2">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Pencil className="h-4 w-4 text-emerald-500" />
-              RegZ-LE Updates
-              <span className="ml-auto text-xs font-normal text-muted-foreground">
-                {Object.keys(regzLeResult.updates_made).length} fields
-              </span>
+    <Card className={cn(
+      status === "blocked" && "border-red-300 bg-red-50/30"
+    )}>
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1">
+            <CardTitle className="text-base font-semibold flex items-center gap-2">
+              <AlertTriangle className={cn(
+                "h-5 w-5 flex-shrink-0",
+                status === "blocked" ? "text-red-600" : "text-amber-500"
+              )} />
+              Discrepancy Detection
             </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[200px]">
-              <div className="space-y-1 pr-3">
-                {Object.entries(regzLeResult.updates_made).map(([fieldId, value]: [string, any], idx: number) => (
-                  <div key={idx} className="flex items-center justify-between gap-2 text-xs p-2 rounded bg-muted/50">
-                    <span className="font-mono text-muted-foreground">{fieldId}</span>
-                    <ArrowRight className="h-3 w-3 flex-shrink-0" />
-                    <span className="font-medium text-emerald-700 truncate">{String(value)}</span>
+            <div className="flex items-center gap-3 mt-1">
+              <span className="text-xs text-slate-500">{fieldsChecked} fields checked</span>
+              <span className="text-xs text-slate-300">•</span>
+              <span className="text-xs text-amber-600 font-medium">{discrepanciesFound} discrepancies</span>
+            </div>
+          </div>
+          {statusBadge}
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Demo Mode Warning - Hard Stops Detected */}
+        {hardStops.length > 0 && runDetail.demo_mode && (
+          <div className="flex items-start gap-2 p-3 rounded-md bg-amber-50 border border-amber-200">
+            <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <div className="text-xs font-medium text-amber-900">
+                Demo Mode Active
+              </div>
+              <div className="text-xs text-amber-700 mt-1 leading-relaxed">
+                Pipeline continued for testing. In production, hard stops would HALT the process.
+              </div>
+            </div>
+          </div>
+        )}
+        {/* Quick Stats */}
+        <div className="flex items-center gap-4 text-xs pb-2 border-b">
+          {acceptableVariances > 0 && (
+            <div className="flex items-center gap-1.5">
+              <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
+              <span className="text-slate-600">{acceptableVariances} acceptable</span>
+            </div>
+          )}
+          {ptfCount > 0 && (
+            <div className="flex items-center gap-1.5">
+              <div className="h-2 w-2 rounded-full bg-amber-500"></div>
+              <span className="text-slate-600">{ptfCount} PTF added</span>
+            </div>
+          )}
+        </div>
+
+        {/* Hard Stops Section */}
+        {hardStops.length > 0 && (
+          <div className="border border-red-300 rounded-lg bg-red-50/50">
+            <button
+              onClick={() => setExpandedHardStops(!expandedHardStops)}
+              className="w-full p-3 flex items-center justify-between hover:bg-red-100/50 transition-colors rounded-t-lg"
+            >
+              <div className="flex items-center gap-2">
+                <XCircle className="h-4 w-4 text-red-600" />
+                <span className="text-sm font-medium text-red-900">
+                  Hard Stops ({hardStops.length})
+                </span>
+              </div>
+              {expandedHardStops ? (
+                <ChevronDown className="h-4 w-4 text-red-600" />
+              ) : (
+                <ChevronRight className="h-4 w-4 text-red-600" />
+              )}
+            </button>
+            
+            {expandedHardStops && (
+              <div className="p-4 space-y-4 border-t border-red-200 bg-white">
+                {hardStops.map((stop, idx) => (
+                  <div key={idx} className="space-y-3">
+                    {/* Header */}
+                    <div className="flex items-start gap-2">
+                      <XCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-sm text-slate-900">
+                          {stop.field_name}
+                        </div>
+                        <code className="text-xs text-slate-500 font-mono mt-0.5 inline-block">
+                          {stop.field_id}
+                        </code>
+                      </div>
+                    </div>
+                    
+                    {/* Values Comparison - Side by Side */}
+                    <div className="grid grid-cols-2 gap-3 pl-7">
+                      <div>
+                        <div className="text-[11px] font-medium text-slate-500 uppercase tracking-wide mb-1">
+                          Extracted
+                        </div>
+                        <div className="font-mono text-sm text-red-600 font-semibold break-words">
+                          {stop.extracted}
+                        </div>
+                        {stop.source_doc && (
+                          <div className="text-[11px] text-slate-500 mt-1">
+                            from {stop.source_doc}
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <div className="text-[11px] font-medium text-slate-500 uppercase tracking-wide mb-1">
+                          Encompass
+                        </div>
+                        <div className="font-mono text-sm text-slate-700 break-words">
+                          {stop.encompass}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Action Required */}
+                    <div className="pl-7 pt-2 border-t border-slate-100">
+                      <div className="text-xs font-medium text-red-900 mb-1">
+                        ⚠️ Action Required
+                      </div>
+                      <div className="text-xs text-slate-600 leading-relaxed">
+                        {stop.action}
+                      </div>
+                    </div>
+                    
+                    {idx < hardStops.length - 1 && (
+                      <div className="border-b border-slate-200 mt-4"></div>
+                    )}
                   </div>
                 ))}
               </div>
-            </ScrollArea>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+            )}
+          </div>
+        )}
+
+        {/* PTF Conditions Section */}
+        {softDiscrepancies.length > 0 && (
+          <div className="border border-amber-300 rounded-lg bg-amber-50/50">
+            <button
+              onClick={() => setExpandedPTF(!expandedPTF)}
+              className="w-full p-3 flex items-center justify-between hover:bg-amber-100/50 transition-colors rounded-t-lg"
+            >
+              <div className="flex items-center gap-2">
+                <Flag className="h-4 w-4 text-amber-600" />
+                <span className="text-sm font-medium text-amber-900">
+                  PTF Conditions ({softDiscrepancies.length})
+                </span>
+              </div>
+              {expandedPTF ? (
+                <ChevronDown className="h-4 w-4 text-amber-600" />
+              ) : (
+                <ChevronRight className="h-4 w-4 text-amber-600" />
+              )}
+            </button>
+            
+            {expandedPTF && (
+              <div className="p-4 space-y-4 border-t border-amber-200 bg-white">
+                {softDiscrepancies.map((discrep, idx) => (
+                  <div key={idx} className="space-y-3">
+                    {/* Header */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-2 flex-1 min-w-0">
+                        <Flag className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold text-sm text-slate-900">
+                            {discrep.field_name}
+                          </div>
+                          <code className="text-xs text-slate-500 font-mono mt-0.5 inline-block">
+                            {discrep.field_id}
+                          </code>
+                        </div>
+                      </div>
+                      {discrep.ptf_added && (
+                        <Badge variant="outline" className="text-[10px] bg-emerald-50 text-emerald-600 border-emerald-400 flex-shrink-0">
+                          ✓ PTF
+                        </Badge>
+                      )}
+                    </div>
+                    
+                    {/* Values Comparison */}
+                    <div className="grid grid-cols-2 gap-3 pl-7">
+                      <div>
+                        <div className="text-[11px] font-medium text-slate-500 uppercase tracking-wide mb-1">
+                          Extracted
+                        </div>
+                        <div className="font-mono text-sm text-amber-700 font-medium break-words">
+                          {discrep.extracted}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-[11px] font-medium text-slate-500 uppercase tracking-wide mb-1">
+                          Encompass
+                        </div>
+                        <div className="font-mono text-sm text-slate-700 break-words">
+                          {discrep.encompass}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* PTF Text */}
+                    <div className="pl-7 pt-2 border-t border-slate-100">
+                      <div className="text-xs font-medium text-amber-900 mb-1">
+                        📋 PTF Condition
+                      </div>
+                      <div className="text-xs text-slate-600 leading-relaxed">
+                        {discrep.ptf_text}
+                      </div>
+                      {discrep.assigned_to && (
+                        <div className="text-[11px] text-slate-500 mt-2">
+                          Assigned to: <span className="font-medium text-slate-700">{discrep.assigned_to}</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {idx < softDiscrepancies.length - 1 && (
+                      <div className="border-b border-slate-200 mt-4"></div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* No Issues */}
+        {hardStops.length === 0 && softDiscrepancies.length === 0 && status === "success" && (
+          <div className="p-4 rounded-lg bg-emerald-50 border border-emerald-200 text-center">
+            <CheckCircle2 className="h-8 w-8 text-emerald-600 mx-auto mb-2" />
+            <div className="text-sm font-medium text-emerald-900">
+              No Discrepancies Found
+            </div>
+            <div className="text-xs text-emerald-700 mt-1">
+              All {fieldsChecked} extracted fields match Encompass values
+            </div>
+          </div>
+        )}
+
+        {/* Summary */}
+        {discrepancyOutput.summary && (
+          <div className="text-xs text-slate-600 italic border-t pt-2">
+            {discrepancyOutput.summary}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
@@ -1131,9 +1152,48 @@ function OrderDocsStepsCard({ runDetail }: OrderDocsStepsCardProps) {
     preflight_warnings?: Array<{
       flag: string;
       name: string;
+      field_id?: string;
+      value?: string | null;
+      expected?: string;
       status: boolean;
       message: string;
     }>;
+    preflight_checks?: {
+      loan_id: string;
+      all_passed: boolean;
+      core_checks_passed: boolean;
+      g1_passed: boolean;
+      mvp_passed: boolean;
+      checks: Record<string, {
+        passed: boolean;
+        field_id: string;
+        field_name: string;
+        value: string | null;
+        expected_value: string;
+        rule: string;
+        failure_reason: string | null;
+        additional_fields?: Record<string, { name: string; value: string | null; passed?: boolean }>;
+      }>;
+      g1_requirements?: Record<string, {
+        passed: boolean;
+        field_id: string;
+        field_name: string;
+        value: string | null;
+        rule: string;
+        failure_reason: string | null;
+      }>;
+      mvp_eligibility?: Record<string, {
+        passed: boolean;
+        field_id: string;
+        field_name: string;
+        value: string | null;
+        rule: string;
+        failure_reason: string | null;
+      }>;
+      blockers: Array<{ check: string; field_id: string; field_name: string; value: string | null; message: string }>;
+      warnings: Array<{ check: string; field_id: string; field_name: string; value: string | null; message: string }>;
+      raw_field_values: Record<string, string>;
+    };
     summary?: {
       audit_id?: string;
       doc_set_id?: string;
@@ -1152,6 +1212,7 @@ function OrderDocsStepsCard({ runDetail }: OrderDocsStepsCardProps) {
   const steps = orderdocsOutput.steps;
   const summary = orderdocsOutput.summary;
   const preflightWarnings = orderdocsOutput.preflight_warnings || [];
+  const preflightChecks = orderdocsOutput.preflight_checks;
 
   return (
     <Card>
@@ -1162,7 +1223,12 @@ function OrderDocsStepsCard({ runDetail }: OrderDocsStepsCardProps) {
           {orderdocsOutput.dry_run && (
             <Badge variant="outline" className="ml-2 text-xs">Dry Run</Badge>
           )}
-          {preflightWarnings.length > 0 && (
+          {preflightChecks?.all_passed && (
+            <Badge variant="outline" className="ml-2 text-xs bg-emerald-100 border-emerald-300 text-emerald-700">
+              ✓ All Checks Passed
+            </Badge>
+          )}
+          {!preflightChecks?.all_passed && preflightWarnings.length > 0 && (
             <Badge variant="outline" className="ml-2 text-xs bg-amber-100 border-amber-300 text-amber-700">
               {preflightWarnings.length} Warning{preflightWarnings.length > 1 ? 's' : ''}
             </Badge>
@@ -1171,8 +1237,158 @@ function OrderDocsStepsCard({ runDetail }: OrderDocsStepsCardProps) {
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {/* Pre-flight Warnings */}
-          {preflightWarnings.length > 0 && (
+          {/* Pre-flight Checks - Detailed View */}
+          {preflightChecks && (
+            <div className={cn(
+              "p-3 rounded-lg border mb-4",
+              preflightChecks.all_passed ? "bg-emerald-50/50 border-emerald-200" : "bg-amber-50/50 border-amber-200"
+            )}>
+              <div className="flex items-center gap-2 mb-3">
+                {preflightChecks.all_passed ? (
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                ) : (
+                  <AlertTriangle className="h-4 w-4 text-amber-600" />
+                )}
+                <span className={cn(
+                  "font-medium text-sm",
+                  preflightChecks.all_passed ? "text-emerald-800" : "text-amber-800"
+                )}>
+                  Loan Readiness Pre-flight Checks
+                </span>
+              </div>
+
+              {/* Core Checks: CTC, CD Approved, CD Acknowledged */}
+              <div className="space-y-2 mb-3">
+                <p className="text-xs font-semibold text-slate-700 uppercase tracking-wide">Core Prerequisites</p>
+                {Object.entries(preflightChecks.checks || {}).map(([checkName, checkData]) => (
+                  <div key={checkName} className={cn(
+                    "p-2 rounded border text-xs",
+                    checkData.passed ? "bg-white border-emerald-200" : "bg-red-50 border-red-200"
+                  )}>
+                    <div className="flex items-start gap-2">
+                      {checkData.passed ? (
+                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 mt-0.5 flex-shrink-0" />
+                      ) : (
+                        <XCircle className="h-3.5 w-3.5 text-red-500 mt-0.5 flex-shrink-0" />
+                      )}
+                      <div className="flex-1 min-w-0 overflow-hidden">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-medium break-words">{checkData.field_name}</span>
+                          <code className="text-[10px] bg-slate-100 px-1 py-0.5 rounded text-slate-600 flex-shrink-0">
+                            {checkData.field_id}
+                          </code>
+                        </div>
+                        <div className="mt-1 flex flex-col gap-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-slate-500 flex-shrink-0">Value:</span>
+                            <span className={cn(
+                              "font-mono text-[11px] break-all",
+                              checkData.value ? "text-slate-800" : "text-red-600 italic"
+                            )}>
+                              {checkData.value ?? "(empty)"}
+                            </span>
+                          </div>
+                          {!checkData.passed && checkData.expected_value && (
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-slate-500 flex-shrink-0">Expected:</span>
+                              <span className="text-emerald-700 font-mono text-[11px] break-all">{checkData.expected_value}</span>
+                            </div>
+                          )}
+                        </div>
+                        {checkData.rule && (
+                          <p className="mt-1 text-slate-500 text-[11px] break-words">{checkData.rule}</p>
+                        )}
+                        {!checkData.passed && checkData.failure_reason && (
+                          <p className="mt-1 text-red-600 font-medium text-[11px] break-words">⚠ {checkData.failure_reason}</p>
+                        )}
+                        {/* Additional Fields */}
+                        {checkData.additional_fields && Object.keys(checkData.additional_fields).length > 0 && (
+                          <div className="mt-2 pl-3 border-l-2 border-slate-200 space-y-1">
+                            {Object.entries(checkData.additional_fields).map(([fieldId, fieldData]) => (
+                              <div key={fieldId} className="flex items-center gap-2 text-[11px]">
+                                <code className="bg-slate-100 px-1 rounded">{fieldId}</code>
+                                <span className="text-slate-500">{fieldData.name}:</span>
+                                <span className="font-mono">{fieldData.value ?? "(empty)"}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* G1 Requirements */}
+              {preflightChecks.g1_requirements && Object.keys(preflightChecks.g1_requirements).length > 0 && (
+                <div className="space-y-2 mb-3">
+                  <p className="text-xs font-semibold text-slate-700 uppercase tracking-wide">G1 Required Fields</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {Object.entries(preflightChecks.g1_requirements).map(([checkName, checkData]) => (
+                      <div key={checkName} className={cn(
+                        "p-2 rounded border text-xs",
+                        checkData.passed ? "bg-white border-emerald-200" : "bg-red-50 border-red-200"
+                      )}>
+                        <div className="flex items-center gap-2">
+                          {checkData.passed ? (
+                            <CheckCircle2 className="h-3 w-3 text-emerald-500 flex-shrink-0" />
+                          ) : (
+                            <XCircle className="h-3 w-3 text-red-500 flex-shrink-0" />
+                          )}
+                          <span className="font-medium truncate">{checkData.field_name}</span>
+                        </div>
+                        <div className="mt-1 flex items-center gap-1">
+                          <code className="text-[10px] bg-slate-100 px-1 rounded">{checkData.field_id}</code>
+                          <span className={cn(
+                            "font-mono text-[11px]",
+                            checkData.value ? "text-slate-800" : "text-red-600"
+                          )}>
+                            {checkData.value ? `✓ ${String(checkData.value).substring(0, 20)}${String(checkData.value).length > 20 ? '...' : ''}` : "MISSING"}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* MVP Eligibility */}
+              {preflightChecks.mvp_eligibility && Object.keys(preflightChecks.mvp_eligibility).length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-slate-700 uppercase tracking-wide">MVP Eligibility</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {Object.entries(preflightChecks.mvp_eligibility).map(([checkName, checkData]) => (
+                      <div key={checkName} className={cn(
+                        "p-2 rounded border text-xs",
+                        checkData.passed ? "bg-white border-emerald-200" : "bg-yellow-50 border-yellow-200"
+                      )}>
+                        <div className="flex items-center gap-2">
+                          {checkData.passed ? (
+                            <CheckCircle2 className="h-3 w-3 text-emerald-500 flex-shrink-0" />
+                          ) : (
+                            <AlertTriangle className="h-3 w-3 text-yellow-500 flex-shrink-0" />
+                          )}
+                          <span className="font-medium truncate">{checkData.field_name}</span>
+                        </div>
+                        <div className="mt-1 flex items-center gap-1">
+                          <code className="text-[10px] bg-slate-100 px-1 rounded">{checkData.field_id}</code>
+                          <span className="font-mono text-[11px] text-slate-800">
+                            {checkData.value ?? "(empty)"}
+                          </span>
+                        </div>
+                        {!checkData.passed && checkData.failure_reason && (
+                          <p className="mt-1 text-yellow-700 text-[11px]">{checkData.failure_reason}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Legacy Pre-flight Warnings (fallback if no detailed checks) */}
+          {!preflightChecks && preflightWarnings.length > 0 && (
             <div className="p-3 rounded-lg border bg-amber-50/50 border-amber-200 mb-4">
               <div className="flex items-center gap-2 mb-2">
                 <AlertTriangle className="h-4 w-4 text-amber-600" />
@@ -1183,10 +1399,18 @@ function OrderDocsStepsCard({ runDetail }: OrderDocsStepsCardProps) {
               </p>
               <div className="space-y-1.5">
                 {preflightWarnings.map((warning, idx) => (
-                  <div key={idx} className="flex items-center gap-2 text-xs">
-                    <XCircle className="h-3.5 w-3.5 text-red-500 flex-shrink-0" />
-                    <span className="text-amber-900 font-medium">{warning.name}:</span>
-                    <span className="text-amber-700">Not Complete</span>
+                  <div key={idx} className="flex items-start gap-2 text-xs">
+                    <XCircle className="h-3.5 w-3.5 text-red-500 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <span className="text-amber-900 font-medium">{warning.name}</span>
+                      {warning.field_id && (
+                        <code className="ml-1 text-[10px] bg-amber-100 px-1 rounded">{warning.field_id}</code>
+                      )}
+                      <span className="text-amber-700">: {warning.value ?? "Not Set"}</span>
+                      {warning.expected && (
+                        <span className="text-slate-500 ml-1">(expected: {warning.expected})</span>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -1466,17 +1690,348 @@ function ReportSkeleton() {
 }
 
 // =============================================================================
+// SOP FIELDS VERIFICATION CARD
+// =============================================================================
+
+interface SOPFieldData {
+  field_id: string;
+  field_name: string;
+  value: string | null;
+  status: "populated" | "missing";
+  category: string;
+  primary_document: string;
+  secondary_documents: string;
+  required_disclosure: boolean;
+}
+
+interface CategorySummary {
+  display_name: string;
+  total: number;
+  populated: number;
+  missing: number;
+  completion_pct: number;
+  fields: {
+    populated: SOPFieldData[];
+    missing: SOPFieldData[];
+  };
+}
+
+interface DocumentNeeded {
+  document_name: string;
+  missing_field_count: number;
+  required_disclosure_count: number;
+  fields: Array<{ field_id: string; field_name: string; required_disclosure: boolean }>;
+  priority: "high" | "medium" | "low";
+}
+
+function SOPFieldsCard({ runDetail }: { runDetail: RunDetail }) {
+  const [expandedCategories, setExpandedCategories] = React.useState<Set<string>>(new Set());
+  const [showMissingOnly, setShowMissingOnly] = React.useState(false);
+
+  // Extract SOP verification data from verification agent output
+  const verificationOutput = runDetail.agents.verification?.output as {
+    sop_verification?: {
+      fields_by_category?: Record<string, CategorySummary>;
+      summary?: {
+        total: number;
+        populated: number;
+        missing: number;
+        required_missing: number;
+        completion_pct: number;
+      };
+    };
+  };
+
+  const sopData = verificationOutput?.sop_verification;
+  
+  if (!sopData?.fields_by_category) {
+    return null; // No SOP data available
+  }
+
+  const categories = sopData.fields_by_category;
+  const summary = sopData.summary;
+
+  const toggleCategory = (cat: string) => {
+    const newSet = new Set(expandedCategories);
+    if (newSet.has(cat)) {
+      newSet.delete(cat);
+    } else {
+      newSet.add(cat);
+    }
+    setExpandedCategories(newSet);
+  };
+
+  const categoryOrder = [
+    "borrower_info",
+    "property_loan", 
+    "closing_disclosure",
+    "fees_escrow",
+    "contacts_vendors",
+    "loan_estimate",
+    "dates_compliance",
+    "other"
+  ];
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4 text-blue-500" />
+            SOP Field Verification
+            {summary && (
+              <Badge variant="outline" className={cn(
+                "ml-2 text-xs",
+                summary.completion_pct >= 80 ? "bg-emerald-100 border-emerald-300 text-emerald-700" :
+                summary.completion_pct >= 50 ? "bg-amber-100 border-amber-300 text-amber-700" :
+                "bg-red-100 border-red-300 text-red-700"
+              )}>
+                {summary.completion_pct}% Complete
+              </Badge>
+            )}
+          </CardTitle>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowMissingOnly(!showMissingOnly)}
+            className="text-xs"
+          >
+            {showMissingOnly ? "Show All" : "Missing Only"}
+          </Button>
+        </div>
+        {summary && (
+          <p className="text-xs text-muted-foreground mt-1">
+            {summary.populated} of {summary.total} fields populated
+            {summary.required_missing > 0 && (
+              <span className="text-red-600 ml-2">
+                ({summary.required_missing} required fields missing)
+              </span>
+            )}
+          </p>
+        )}
+      </CardHeader>
+      <CardContent>
+        <ScrollArea className="h-[400px]">
+          <div className="space-y-2">
+            {categoryOrder.map(catKey => {
+              const catData = categories[catKey];
+              if (!catData) return null;
+              
+              const isExpanded = expandedCategories.has(catKey);
+              const fieldsToShow = showMissingOnly ? catData.fields.missing : [...catData.fields.populated, ...catData.fields.missing];
+              
+              if (showMissingOnly && catData.fields.missing.length === 0) return null;
+              
+              return (
+                <div key={catKey} className="border rounded-lg overflow-hidden">
+                  <button
+                    onClick={() => toggleCategory(catKey)}
+                    className="w-full p-3 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition-colors"
+                  >
+                    <div className="flex items-center gap-2">
+                      {isExpanded ? (
+                        <ChevronDown className="h-4 w-4 text-slate-500" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4 text-slate-500" />
+                      )}
+                      <span className="font-medium text-sm">{catData.display_name}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={cn(
+                        "text-xs font-medium",
+                        catData.completion_pct >= 80 ? "text-emerald-600" :
+                        catData.completion_pct >= 50 ? "text-amber-600" :
+                        "text-red-600"
+                      )}>
+                        {catData.completion_pct}%
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        ({catData.populated}/{catData.total})
+                      </span>
+                      {catData.missing > 0 && (
+                        <Badge variant="outline" className="text-xs bg-red-50 border-red-200 text-red-700">
+                          {catData.missing} missing
+                        </Badge>
+                      )}
+                    </div>
+                  </button>
+                  
+                  {isExpanded && (
+                    <div className="p-2 space-y-1 max-h-[300px] overflow-y-auto">
+                      {fieldsToShow.map((field, idx) => (
+                        <div
+                          key={`${field.field_id}-${idx}`}
+                          className={cn(
+                            "p-2 rounded text-xs flex items-start gap-2",
+                            field.status === "populated" ? "bg-white border border-slate-200" : "bg-red-50 border border-red-200"
+                          )}
+                        >
+                          {field.status === "populated" ? (
+                            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 mt-0.5 flex-shrink-0" />
+                          ) : (
+                            <XCircle className="h-3.5 w-3.5 text-red-500 mt-0.5 flex-shrink-0" />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-medium truncate">{field.field_name}</span>
+                              <code className="text-[10px] bg-slate-100 px-1 rounded">{field.field_id}</code>
+                              {field.required_disclosure && (
+                                <Badge variant="outline" className="text-[9px] bg-purple-50 border-purple-200 text-purple-700">
+                                  Required
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="mt-1">
+                              {field.status === "populated" ? (
+                                <span className="text-slate-700 font-mono">
+                                  {String(field.value).length > 50 
+                                    ? String(field.value).substring(0, 50) + "..." 
+                                    : field.value}
+                                </span>
+                              ) : (
+                                <span className="text-red-600 italic">
+                                  Missing - Source: {field.primary_document || "Not specified"}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </ScrollArea>
+      </CardContent>
+    </Card>
+  );
+}
+
+// =============================================================================
+// DOCUMENTS NEEDED CARD
+// =============================================================================
+
+function DocumentsNeededCard({ runDetail }: { runDetail: RunDetail }) {
+  // Extract documents needed from verification agent output
+  const verificationOutput = runDetail.agents.verification?.output as {
+    sop_verification?: {
+      documents_needed?: DocumentNeeded[];
+      summary?: {
+        documents_needed_count: number;
+      };
+    };
+  };
+
+  const documentsNeeded = verificationOutput?.sop_verification?.documents_needed;
+  
+  if (!documentsNeeded || documentsNeeded.length === 0) {
+    return null;
+  }
+
+  // Sort by priority
+  const priorityOrder = { high: 0, medium: 1, low: 2 };
+  const sortedDocs = [...documentsNeeded].sort((a, b) => 
+    priorityOrder[a.priority] - priorityOrder[b.priority]
+  );
+
+  return (
+    <Card className="border-red-200 bg-red-50/30">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm font-medium flex items-center gap-2">
+          <Download className="h-4 w-4 text-red-500" />
+          Documents Needed
+          <Badge variant="outline" className="ml-2 text-xs bg-red-100 border-red-300 text-red-700">
+            {documentsNeeded.length} documents
+          </Badge>
+        </CardTitle>
+        <p className="text-xs text-muted-foreground">
+          The following documents are needed to populate missing fields
+        </p>
+      </CardHeader>
+      <CardContent>
+        <ScrollArea className="h-[350px]">
+          <div className="space-y-2">
+            {sortedDocs.map((doc, idx) => (
+              <div
+                key={idx}
+                className={cn(
+                  "p-3 rounded-lg border",
+                  doc.priority === "high" ? "bg-red-50 border-red-200" :
+                  doc.priority === "medium" ? "bg-amber-50 border-amber-200" :
+                  "bg-slate-50 border-slate-200"
+                )}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <FileText className={cn(
+                      "h-4 w-4",
+                      doc.priority === "high" ? "text-red-500" :
+                      doc.priority === "medium" ? "text-amber-500" :
+                      "text-slate-500"
+                    )} />
+                    <span className="font-medium text-sm">{doc.document_name}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className={cn(
+                      "text-xs",
+                      doc.priority === "high" ? "bg-red-100 border-red-300 text-red-700" :
+                      doc.priority === "medium" ? "bg-amber-100 border-amber-300 text-amber-700" :
+                      "bg-slate-100 border-slate-300 text-slate-700"
+                    )}>
+                      {doc.priority.toUpperCase()}
+                    </Badge>
+                  </div>
+                </div>
+                
+                <div className="text-xs text-muted-foreground mb-2">
+                  {doc.missing_field_count} missing field{doc.missing_field_count > 1 ? 's' : ''}
+                  {doc.required_disclosure_count > 0 && (
+                    <span className="text-red-600 ml-1">
+                      ({doc.required_disclosure_count} required for disclosure)
+                    </span>
+                  )}
+                </div>
+                
+                <div className="space-y-1">
+                  {doc.fields.slice(0, 5).map((field, fieldIdx) => (
+                    <div key={fieldIdx} className="flex items-center gap-2 text-xs">
+                      <XCircle className="h-3 w-3 text-red-400 flex-shrink-0" />
+                      <span className="truncate">{field.field_name}</span>
+                      <code className="text-[10px] bg-white/50 px-1 rounded">{field.field_id}</code>
+                      {field.required_disclosure && (
+                        <span className="text-purple-600 text-[10px]">*</span>
+                      )}
+                    </div>
+                  ))}
+                  {doc.fields.length > 5 && (
+                    <p className="text-xs text-muted-foreground italic">
+                      + {doc.fields.length - 5} more fields
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </ScrollArea>
+      </CardContent>
+    </Card>
+  );
+}
+
+// =============================================================================
 // MAIN COMPONENT
 // =============================================================================
 
-export function FinalReportTab({ runDetail, isLoading, className, agentType: agentTypeProp }: FinalReportTabProps) {
+export function FinalReportTab({ runDetail, isLoading, className }: FinalReportTabProps) {
   if (isLoading || !runDetail) {
     return <ReportSkeleton />;
   }
 
   const flaggedItems = extractFlaggedItems(runDetail);
   const fieldChanges = extractFieldChanges(runDetail);
-  const agentType = agentTypeProp || runDetail.agent_type || "drawdocs";
+  const agentType = runDetail.agent_type || "drawdocs";
 
   return (
     <div className={cn("space-y-4", className)}>
@@ -1502,24 +2057,26 @@ export function FinalReportTab({ runDetail, isLoading, className, agentType: age
       <AgentStatusSummary runDetail={runDetail} agentType={agentType} />
 
       {/* Agent-Specific Details - 3 column grid */}
-      {agentType === "drawdocs" && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <DrawcorePhasesCard runDetail={runDetail} />
-          <VerificationSummaryCard runDetail={runDetail} />
-          <OrderDocsStepsCard runDetail={runDetail} />
-        </div>
-      )}
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+        <DrawcorePhasesCard runDetail={runDetail} />
+        <DiscrepancyDetectionCard runDetail={runDetail} />
+        <OrderDocsStepsCard runDetail={runDetail} />
+      </div>
       
-      {/* Disclosure-Specific Details */}
-      {agentType === "disclosure" && (
-        <DisclosureDetailsCards runDetail={runDetail} />
-      )}
+      {/* Verification Summary - Full Width */}
+      <VerificationSummaryCard runDetail={runDetail} />
 
       {/* Two Column Layout for Flagged Items and Field Changes */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <FlaggedItemsCard items={flaggedItems} agentType={agentType} />
         <FieldChangesCard changes={fieldChanges} agentType={agentType} />
       </div>
+
+      {/* SOP Field Verification - Full Width */}
+      <SOPFieldsCard runDetail={runDetail} />
+
+      {/* Documents Needed - Full Width */}
+      <DocumentsNeededCard runDetail={runDetail} />
 
       {/* Summary Text */}
       {runDetail.summary_text && (

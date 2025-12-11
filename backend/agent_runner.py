@@ -102,6 +102,46 @@ def _add_agent_summary_logs(writer: StatusWriter, run_id: str, agent_name: str, 
                 fields_updated=fields_updated,
                 fields_failed=fields_failed,
             )
+        
+        elif agent_name == "discrepancy":
+            # Log discrepancy detection summary
+            fields_checked = output.get("fields_checked", 0)
+            discrepancies_found = output.get("discrepancies_found", 0)
+            hard_stops = len(output.get("hard_stops", []))
+            ptf_added = output.get("ptf_conditions_added", 0)
+            
+            writer.add_log(
+                run_id=run_id,
+                message=f"Checked {fields_checked} fields, found {discrepancies_found} discrepancies",
+                level="warning" if hard_stops > 0 else "info",
+                agent="discrepancy",
+                event_type="discrepancy_summary",
+                details={
+                    "fields_checked": fields_checked,
+                    "discrepancies_found": discrepancies_found,
+                    "hard_stops": hard_stops,
+                    "ptf_conditions_added": ptf_added
+                },
+            )
+            
+            if hard_stops > 0:
+                writer.add_log(
+                    run_id=run_id,
+                    message=f"🛑 {hard_stops} HARD STOP(s) detected",
+                    level="error",
+                    agent="discrepancy",
+                    event_type="hard_stops",
+                    details={"hard_stops": output.get("hard_stops", [])},
+                )
+            
+            if ptf_added > 0:
+                writer.add_log(
+                    run_id=run_id,
+                    message=f"⚠️  {ptf_added} PTF condition(s) added",
+                    level="warning",
+                    agent="discrepancy",
+                    event_type="ptf_conditions",
+                )
                 
         elif agent_name == "verification":
             # Log corrections summary
@@ -287,7 +327,7 @@ def run_agent(
     
     # Agent type to sub-agents mapping for error handling
     agent_type_sub_agents = {
-        "drawdocs": ["preparation", "drawcore", "verification", "orderdocs"],
+        "drawdocs": ["preparation", "drawcore", "discrepancy", "verification", "orderdocs"],
         "disclosure": ["verification", "preparation", "send"],
         "loa": ["verification", "generation", "delivery"],
     }

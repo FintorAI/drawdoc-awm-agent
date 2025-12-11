@@ -438,24 +438,33 @@ def spawn_agent_process(
 # =============================================================================
 
 # Field ID to human-readable name mapping (from DrawingDoc Verifications CSV)
-FIELD_ID_TO_NAME = {
-    "4000": "Borrower First Name",
-    "4001": "Borrower Middle Name",
-    "4002": "Borrower Last Name",
-    "36": "Borrower First/Middle Name",
-    "65": "Borrower SSN",
-    "66": "Borrower Home Phone",
-    "52": "Borrower Marital Status",
-    "356": "Appraised Value",
-    "745": "Application Date",
-    "748": "Closing Date",
-    "799": "APR",
-    "608": "Amortization Type",
-    "1040": "Agency Case #",
-    "1240": "Borrower Email",
-    "1402": "Borrower DOB",
-    # Add more as needed from CSV
-}
+# Dynamic field ID to name mapping loaded from CSV
+def _load_field_names_from_csv() -> dict:
+    """Load field ID to name mapping from CSV."""
+    csv_path = project_root / "agents/drawdocs/subagents/preparation_agent/DrawingDoc Verifications.csv"
+    field_map = {}
+    
+    if not csv_path.exists():
+        print(f"Warning: CSV not found at {csv_path}")
+        return {}
+    
+    try:
+        import csv
+        with open(csv_path, 'r', encoding='utf-8-sig') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                field_id = row.get('ID', '').strip()
+                field_name = row.get('Name', '').strip()
+                if field_id and field_name:
+                    field_map[field_id] = field_name
+        print(f"Loaded {len(field_map)} field names from CSV")
+    except Exception as e:
+        print(f"Warning: Could not load field names from CSV: {e}")
+    
+    return field_map
+
+# Load field names once at module level
+FIELD_ID_TO_NAME = _load_field_names_from_csv()
 
 
 def get_pending_fields(run_id: str) -> Optional[dict]:
