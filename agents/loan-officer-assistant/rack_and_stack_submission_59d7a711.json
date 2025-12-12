@@ -1,0 +1,34 @@
+{
+  "loan_id": "59d7a711-70f4-4b12-a3b5-bbefb3ff7dbc",
+  "job_id": "0fb43008-c266-4dca-93de-e8c3c5619da9",
+  "pipeline": [
+    "ai:pagegen",
+    "hil:splicer",
+    "hil:splitter",
+    "ai:ocr_partial",
+    "ai:classify",
+    "hil:classify",
+    "ai:indexing",
+    "hil:indexing"
+  ],
+  "documents_submitted": 2,
+  "upload_results": [
+    {
+      "attachment_id": "002dc7bc-cf92-48b9-9cc6-95aef947c00b",
+      "title": "1708608524.FINDINGS",
+      "upload_id": "5b5f303a-55e4-46ce-b13f-449b1fa951e1",
+      "page_count": 0,
+      "status": "uploaded"
+    },
+    {
+      "attachment_id": "011fd17e-825a-4e75-8242-8eb8bbbd3d23",
+      "title": "COD.pdf",
+      "upload_id": "e89c9e73-27fd-46a3-be12-72312c1c33dd",
+      "page_count": 1,
+      "status": "uploaded"
+    }
+  ],
+  "submitted_at": "2025-12-12T02:26:36.874097",
+  "status": "submitted",
+  "error": null
+}

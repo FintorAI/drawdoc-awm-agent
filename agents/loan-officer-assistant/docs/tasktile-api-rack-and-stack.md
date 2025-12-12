@@ -326,7 +326,7 @@ Content-Type: application/json
 
 ```json
 {
-  "pipeline_name": "rack-and-stack",
+  "pipeline_name": "rack_and_stack_v1",
   "upload_ids": ["f72678f7-b4db-4f3e-8144-77feb51ef8fa"],
   "categories_url": "https://sbiqai.staging.cybersoftbpo.ai/api/workspaces/1/categories",
   "entity": {
@@ -335,7 +335,7 @@ Content-Type: application/json
 }
 ```
 
-- `pipeline_name` – Currently `"rack-and-stack"` for this flow.
+- `pipeline_name` – Currently `"rack_and_stack_v1"` for this flow.
 - `upload_ids` – Non-empty array of upload IDs from `/uploads/complete`.
 - `categories_url` – URL where TaskTile can retrieve **category schema** definitions.
 - `entity` – Free-form JSON describing the entity/loan/context.
@@ -704,7 +704,7 @@ Content-Type: application/json
 ### Jobs
 
 - `POST /jobs`  
-  Create and start a job for the `rack-and-stack` pipeline using `upload_ids`.
+  Create and start a job for the `rack_and_stack_v1` pipeline using `upload_ids`.
 
 ### Webhooks
 
