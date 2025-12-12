@@ -182,6 +182,128 @@ class EFolderDoc:
         return self.__dict__.copy()
 
 
+# =============================================================================
+# DOCUMENT COVERAGE MODELS (Slice 2)
+# =============================================================================
+
+@dataclass
+class DocCoverageItem:
+    """
+    Single document from R&S manifest.
+    
+    Maps from manifest.documents[] structure.
+    """
+    doc_id: str                          # R&S document ID
+    blob_id: str                         # R&S blob ID (source PDF)
+    doc_type: str                        # Normalized type (W2, PAYSTUB, etc.)
+    
+    # From manifest.documents[].category
+    category_id: Optional[int] = None    # R&S category ID (e.g., 2174)
+    category_name: Optional[str] = None  # R&S category name (e.g., "SmartFees")
+    category_source: Optional[str] = None  # "ai" or "hil"
+    
+    # From manifest.documents[].metadata
+    page_count: Optional[int] = None     # total_pages
+    confidence: Optional[float] = None   # classification confidence (0-1)
+    
+    # Borrower association from metadata.borrowers[]
+    borrower_first_name: Optional[str] = None
+    borrower_last_name: Optional[str] = None
+    
+    # Source location for download
+    source_bucket: Optional[str] = None
+    source_key: Optional[str] = None
+    
+    # Exceptions from metadata
+    has_exceptions: bool = False
+    exceptions: Dict[str, bool] = field(default_factory=dict)
+    
+    def to_dict(self) -> dict:
+        return {k: v for k, v in self.__dict__.items() if v is not None and v != {}}
+
+
+@dataclass  
+class DocCoverage:
+    """
+    Document coverage from Rack & Stack manifest.
+    
+    Aggregates all classified documents for a loan.
+    """
+    loan_id: str
+    
+    # Job metadata
+    job_id: Optional[str] = None
+    job_status: Optional[str] = None  # "success" | "failed" | "pending"
+    job_created_at: Optional[str] = None
+    job_completed_at: Optional[str] = None
+    
+    # Manifest info
+    manifest_version: Optional[str] = None
+    
+    # All documents
+    documents: List[DocCoverageItem] = field(default_factory=list)
+    
+    # Aggregated by normalized doc type
+    coverage_by_type: Dict[str, List[str]] = field(default_factory=dict)  # doc_type -> [doc_ids]
+    
+    # Quick coverage flags (computed)
+    has_w2: bool = False
+    has_paystubs: bool = False
+    has_tax_returns: bool = False
+    has_bank_statements: bool = False
+    has_purchase_contract: bool = False
+    has_government_id: bool = False
+    
+    # Counts
+    total_documents: int = 0
+    total_blobs: int = 0
+    
+    # Issues
+    documents_with_exceptions: int = 0
+    low_confidence_count: int = 0
+    
+    def compute_coverage_flags(self):
+        """Compute quick lookup flags from coverage_by_type."""
+        self.has_w2 = "W2" in self.coverage_by_type and len(self.coverage_by_type["W2"]) > 0
+        self.has_paystubs = "PAYSTUB" in self.coverage_by_type and len(self.coverage_by_type["PAYSTUB"]) > 0
+        self.has_tax_returns = "TAX_RETURN" in self.coverage_by_type and len(self.coverage_by_type["TAX_RETURN"]) > 0
+        self.has_bank_statements = "BANK_STATEMENT" in self.coverage_by_type and len(self.coverage_by_type["BANK_STATEMENT"]) > 0
+        self.has_purchase_contract = "PURCHASE_CONTRACT" in self.coverage_by_type and len(self.coverage_by_type["PURCHASE_CONTRACT"]) > 0
+        self.has_government_id = "GOVERNMENT_ID" in self.coverage_by_type and len(self.coverage_by_type["GOVERNMENT_ID"]) > 0
+        self.total_documents = len(self.documents)
+    
+    def has_doc_type(self, doc_type: str) -> bool:
+        """Check if a doc type is present in coverage."""
+        return doc_type in self.coverage_by_type and len(self.coverage_by_type[doc_type]) > 0
+    
+    def get_docs_by_type(self, doc_type: str) -> List[DocCoverageItem]:
+        """Get all documents of a specific type."""
+        doc_ids = self.coverage_by_type.get(doc_type, [])
+        return [d for d in self.documents if d.doc_id in doc_ids]
+    
+    def to_dict(self) -> dict:
+        return {
+            "loan_id": self.loan_id,
+            "job_id": self.job_id,
+            "job_status": self.job_status,
+            "job_created_at": self.job_created_at,
+            "job_completed_at": self.job_completed_at,
+            "manifest_version": self.manifest_version,
+            "total_documents": self.total_documents,
+            "total_blobs": self.total_blobs,
+            "coverage_by_type": {k: len(v) for k, v in self.coverage_by_type.items()},
+            "has_w2": self.has_w2,
+            "has_paystubs": self.has_paystubs,
+            "has_tax_returns": self.has_tax_returns,
+            "has_bank_statements": self.has_bank_statements,
+            "has_purchase_contract": self.has_purchase_contract,
+            "has_government_id": self.has_government_id,
+            "documents_with_exceptions": self.documents_with_exceptions,
+            "low_confidence_count": self.low_confidence_count,
+            "documents": [d.to_dict() for d in self.documents],
+        }
+
+
 @dataclass
 class LoanFacts:
     """

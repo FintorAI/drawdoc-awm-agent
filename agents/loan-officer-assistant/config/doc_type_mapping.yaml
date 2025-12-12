@@ -1,0 +1,320 @@
+# Doc Type Mapping Configuration
+# Maps R&S category_name → normalized doc type for gap analysis
+#
+# Based on TaskTile Rack & Stack category schema
+
+version: "1.0"
+
+# =============================================================================
+# CATEGORY → DOC TYPE MAPPINGS
+# =============================================================================
+
+mappings:
+  # -------------------------------------------------------------------------
+  # INCOME DOCUMENTS
+  # -------------------------------------------------------------------------
+  - category_patterns: ["W-2", "W2", "w-2", "w2"]
+    doc_type: "W2"
+    applies_to: "borrower"
+    critical: true
+    description: "IRS Form W-2 Wage and Tax Statement"
+    
+  - category_patterns: ["Pay Stub", "Paystub", "Pay stub", "paystub", "Payslip"]
+    doc_type: "PAYSTUB"
+    applies_to: "borrower"
+    critical: true
+    description: "Recent pay stub showing YTD earnings"
+    
+  - category_patterns: ["1040", "Tax Return", "tax return", "Federal Tax Return"]
+    doc_type: "TAX_RETURN"
+    applies_to: "borrower"
+    critical: true
+    description: "IRS Form 1040 Federal Tax Return"
+    
+  - category_patterns: ["1099", "1099-MISC", "1099-NEC", "1099-INT", "1099-DIV"]
+    doc_type: "1099"
+    applies_to: "borrower"
+    critical: false
+    description: "IRS Form 1099 various income types"
+    
+  - category_patterns: ["VOE", "Verification of Employment", "Employment Verification"]
+    doc_type: "VOE"
+    applies_to: "borrower"
+    critical: false
+    description: "Verification of Employment from employer"
+    
+  - category_patterns: ["P&L", "Profit and Loss", "Profit & Loss", "PnL"]
+    doc_type: "PROFIT_LOSS"
+    applies_to: "borrower"
+    critical: true
+    conditional: "is_self_employed == true"
+    description: "Profit and Loss statement for self-employed"
+    
+  # -------------------------------------------------------------------------
+  # ASSET DOCUMENTS
+  # -------------------------------------------------------------------------
+  - category_patterns: ["Bank Statement", "bank statement", "Checking Statement", "Savings Statement"]
+    doc_type: "BANK_STATEMENT"
+    applies_to: "borrower"
+    critical: true
+    description: "Bank account statement showing balance and transactions"
+    
+  - category_patterns: ["Investment Statement", "Brokerage Statement", "Stock Statement"]
+    doc_type: "INVESTMENT_STATEMENT"
+    applies_to: "borrower"
+    critical: false
+    description: "Investment or brokerage account statement"
+    
+  - category_patterns: ["401k Statement", "401(k)", "Retirement Statement", "IRA Statement"]
+    doc_type: "RETIREMENT_STATEMENT"
+    applies_to: "borrower"
+    critical: false
+    description: "Retirement account statement"
+    
+  - category_patterns: ["Gift Letter", "gift letter", "Gift Funds"]
+    doc_type: "GIFT_LETTER"
+    applies_to: "loan"
+    critical: true
+    conditional: "has_gift_funds == true"
+    description: "Gift letter from donor"
+    
+  - category_patterns: ["VOD", "Verification of Deposit"]
+    doc_type: "VOD"
+    applies_to: "borrower"
+    critical: false
+    description: "Verification of Deposit from financial institution"
+    
+  # -------------------------------------------------------------------------
+  # IDENTITY DOCUMENTS
+  # -------------------------------------------------------------------------
+  - category_patterns: ["Driver License", "Driver's License", "Drivers License", "DL"]
+    doc_type: "GOVERNMENT_ID"
+    applies_to: "borrower"
+    critical: true
+    description: "Government-issued photo ID"
+    
+  - category_patterns: ["Passport", "passport"]
+    doc_type: "GOVERNMENT_ID"
+    applies_to: "borrower"
+    critical: true
+    description: "Passport as government-issued ID"
+    
+  - category_patterns: ["State ID", "Government ID", "Photo ID"]
+    doc_type: "GOVERNMENT_ID"
+    applies_to: "borrower"
+    critical: true
+    description: "State-issued photo ID"
+    
+  - category_patterns: ["SSN Card", "Social Security Card", "SS Card"]
+    doc_type: "SSN_CARD"
+    applies_to: "borrower"
+    critical: false
+    description: "Social Security card"
+    
+  # -------------------------------------------------------------------------
+  # PROPERTY DOCUMENTS
+  # -------------------------------------------------------------------------
+  - category_patterns: ["Purchase Agreement", "Purchase Contract", "Sales Contract", "Sales Agreement"]
+    doc_type: "PURCHASE_CONTRACT"
+    applies_to: "loan"
+    critical: true
+    conditional: "loan_purpose == 'Purchase'"
+    description: "Signed purchase agreement"
+    
+  - category_patterns: ["Appraisal", "appraisal", "Property Appraisal"]
+    doc_type: "APPRAISAL"
+    applies_to: "loan"
+    critical: true
+    description: "Property appraisal report"
+    
+  - category_patterns: ["Title", "Title Report", "Preliminary Title", "Title Commitment"]
+    doc_type: "TITLE"
+    applies_to: "loan"
+    critical: false
+    description: "Title report or commitment"
+    
+  - category_patterns: ["HOA", "HOA Statement", "HOA Documents", "Homeowners Association"]
+    doc_type: "HOA_DOCS"
+    applies_to: "loan"
+    critical: false
+    conditional: "has_hoa == true"
+    description: "HOA documents and statements"
+    
+  - category_patterns: ["Homeowners Insurance", "Insurance Declaration", "Insurance Dec", "Hazard Insurance"]
+    doc_type: "INSURANCE"
+    applies_to: "loan"
+    critical: false
+    description: "Homeowners insurance declaration page"
+    
+  - category_patterns: ["Property Tax", "Tax Bill", "Property Tax Bill"]
+    doc_type: "PROPERTY_TAX"
+    applies_to: "loan"
+    critical: false
+    description: "Property tax bill"
+    
+  # -------------------------------------------------------------------------
+  # CONDITIONAL / SITUATIONAL DOCUMENTS
+  # -------------------------------------------------------------------------
+  - category_patterns: ["Divorce Decree", "divorce decree", "Final Decree"]
+    doc_type: "DIVORCE_DECREE"
+    applies_to: "borrower"
+    critical: true
+    conditional: "marital_status == 'Divorced'"
+    description: "Final divorce decree"
+    
+  - category_patterns: ["Separation Agreement", "separation agreement", "Legal Separation"]
+    doc_type: "SEPARATION_AGREEMENT"
+    applies_to: "borrower"
+    critical: true
+    conditional: "marital_status == 'Separated'"
+    description: "Legal separation agreement"
+    
+  - category_patterns: ["Child Support", "Child Support Agreement", "Alimony"]
+    doc_type: "CHILD_SUPPORT"
+    applies_to: "borrower"
+    critical: false
+    conditional: "has_child_support == true"
+    description: "Child support or alimony agreement"
+    
+  - category_patterns: ["Bankruptcy", "BK Paperwork", "Bankruptcy Discharge"]
+    doc_type: "BANKRUPTCY_DOCS"
+    applies_to: "borrower"
+    critical: true
+    conditional: "has_bankruptcy == true"
+    description: "Bankruptcy documents"
+    
+  # -------------------------------------------------------------------------
+  # MILITARY / VETERAN DOCUMENTS
+  # -------------------------------------------------------------------------
+  - category_patterns: ["DD-214", "DD214", "DD 214"]
+    doc_type: "DD214"
+    applies_to: "borrower"
+    critical: true
+    conditional: "is_veteran == true"
+    description: "DD-214 Certificate of Release or Discharge"
+    
+  - category_patterns: ["VA Disability", "VA Disability Award", "Disability Award Letter"]
+    doc_type: "VA_DISABILITY"
+    applies_to: "borrower"
+    critical: false
+    conditional: "is_veteran == true"
+    description: "VA disability award letter"
+    
+  - category_patterns: ["COE", "Certificate of Eligibility", "VA COE"]
+    doc_type: "VA_COE"
+    applies_to: "borrower"
+    critical: true
+    conditional: "loan_type == 'VA'"
+    description: "VA Certificate of Eligibility"
+    
+  # -------------------------------------------------------------------------
+  # RENTAL / HOUSING DOCUMENTS
+  # -------------------------------------------------------------------------
+  - category_patterns: ["Rental Agreement", "Lease Agreement", "Lease"]
+    doc_type: "RENTAL_AGREEMENT"
+    applies_to: "borrower"
+    critical: false
+    description: "Rental or lease agreement"
+    
+  - category_patterns: ["Mortgage Statement", "Loan Statement"]
+    doc_type: "MORTGAGE_STATEMENT"
+    applies_to: "borrower"
+    critical: false
+    description: "Current mortgage statement"
+    
+  # -------------------------------------------------------------------------
+  # LETTER OF EXPLANATION
+  # -------------------------------------------------------------------------
+  - category_patterns: ["LOE", "Letter of Explanation", "LOX", "Explanation Letter"]
+    doc_type: "LOE"
+    applies_to: "borrower"
+    critical: false
+    description: "Letter of explanation for credit or gap"
+    
+  # -------------------------------------------------------------------------
+  # OTHER / SYSTEM DOCUMENTS
+  # -------------------------------------------------------------------------
+  - category_patterns: ["SmartFees", "Fees Worksheet", "Fee Worksheet"]
+    doc_type: "FEES_WORKSHEET"
+    applies_to: "loan"
+    critical: false
+    description: "Loan fees worksheet"
+    
+  - category_patterns: ["Loan Estimate", "LE"]
+    doc_type: "LOAN_ESTIMATE"
+    applies_to: "loan"
+    critical: false
+    description: "Loan Estimate disclosure"
+    
+  - category_patterns: ["Closing Disclosure", "CD"]
+    doc_type: "CLOSING_DISCLOSURE"
+    applies_to: "loan"
+    critical: false
+    description: "Closing Disclosure"
+    
+  - category_patterns: ["Credit Report", "credit report"]
+    doc_type: "CREDIT_REPORT"
+    applies_to: "borrower"
+    critical: false
+    description: "Tri-merge credit report"
+
+# =============================================================================
+# DEFAULT FOR UNKNOWN CATEGORIES
+# =============================================================================
+
+default:
+  doc_type: "OTHER"
+  applies_to: "loan"
+  critical: false
+  description: "Unclassified document"
+
+# =============================================================================
+# CRITICAL DOCUMENT TYPES
+# =============================================================================
+# These doc types are considered critical for loan processing
+
+critical_doc_types:
+  - "W2"
+  - "PAYSTUB"
+  - "TAX_RETURN"
+  - "BANK_STATEMENT"
+  - "GOVERNMENT_ID"
+  - "PURCHASE_CONTRACT"
+  - "APPRAISAL"
+  - "DIVORCE_DECREE"
+  - "SEPARATION_AGREEMENT"
+  - "GIFT_LETTER"
+  - "DD214"
+  - "VA_COE"
+  - "PROFIT_LOSS"
+  - "BANKRUPTCY_DOCS"
+
+# =============================================================================
+# QUESTIONNAIRE DOCUMENT NAMES → DOC TYPE
+# =============================================================================
+# Maps document names from questionnaire_mapping.json to normalized doc types
+
+questionnaire_doc_map:
+  "Signed Purchase Agreement": "PURCHASE_CONTRACT"
+  "Separation Agreement": "SEPARATION_AGREEMENT"
+  "Divorce Decree": "DIVORCE_DECREE"
+  "Child Support Agreement": "CHILD_SUPPORT"
+  "Mortgage Statement": "MORTGAGE_STATEMENT"
+  "Homeowners Insurance Declaration Page": "INSURANCE"
+  "Property Tax Bill": "PROPERTY_TAX"
+  "HOA Statement": "HOA_DOCS"
+  "Rental Agreement": "RENTAL_AGREEMENT"
+  "DD-214": "DD214"
+  "VA Active Duty Orders": "VA_ORDERS"
+  "VA Disability Award Letter": "VA_DISABILITY"
+  "BK Paperwork": "BANKRUPTCY_DOCS"
+  "Loan Modification Paperwork": "LOAN_MOD_DOCS"
+  "1040s": "TAX_RETURN"
+  "1099s": "1099"
+  "Gift Letter": "GIFT_LETTER"
+  "Bank Statement": "BANK_STATEMENT"
+  "401K/Retirement Account Statement": "RETIREMENT_STATEMENT"
+  "Paystubs": "PAYSTUB"
+  "W-2s": "W2"
+  "Government ID": "GOVERNMENT_ID"
+

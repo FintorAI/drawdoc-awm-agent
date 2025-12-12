@@ -23,6 +23,7 @@ sys.path.insert(0, str(LOA_DIR))
 
 from state import (
     BorrowerFacts,
+    DocCoverage,
     GapCategory,
     GapItem,
     GapSeverity,
@@ -484,6 +485,364 @@ def _humanize_field(field_id: str) -> str:
     label = label.replace("Hr ", "HR ")
     
     return label
+
+
+# =============================================================================
+# PHASE 2: DOCUMENT COVERAGE ANALYSIS
+# =============================================================================
+
+# Critical document types (from doc_type_mapping.yaml)
+CRITICAL_DOC_TYPES = {
+    "W2", "PAYSTUB", "TAX_RETURN", "BANK_STATEMENT",
+    "GOVERNMENT_ID", "PURCHASE_CONTRACT", "APPRAISAL",
+    "DIVORCE_DECREE", "SEPARATION_AGREEMENT", "GIFT_LETTER",
+    "DD214", "VA_COE", "PROFIT_LOSS", "BANKRUPTCY_DOCS",
+}
+
+
+def _has_document(doc_coverage: DocCoverage, doc_type: str) -> bool:
+    """Check if document type is present in coverage."""
+    if doc_coverage is None:
+        return False
+    return doc_coverage.has_doc_type(doc_type)
+
+
+def _humanize_doc_type(doc_type: str) -> str:
+    """Convert doc_type to human-readable label."""
+    labels = {
+        "W2": "W-2",
+        "PAYSTUB": "Pay Stub",
+        "TAX_RETURN": "Tax Return",
+        "BANK_STATEMENT": "Bank Statement",
+        "GOVERNMENT_ID": "Government ID",
+        "PURCHASE_CONTRACT": "Purchase Agreement",
+        "APPRAISAL": "Appraisal",
+        "DIVORCE_DECREE": "Divorce Decree",
+        "SEPARATION_AGREEMENT": "Separation Agreement",
+        "GIFT_LETTER": "Gift Letter",
+        "DD214": "DD-214",
+        "VA_COE": "VA Certificate of Eligibility",
+        "VA_DISABILITY": "VA Disability Award Letter",
+        "PROFIT_LOSS": "Profit & Loss Statement",
+        "RETIREMENT_STATEMENT": "Retirement Account Statement",
+        "INVESTMENT_STATEMENT": "Investment Statement",
+        "INSURANCE": "Homeowners Insurance",
+        "TITLE": "Title Report",
+        "HOA_DOCS": "HOA Documents",
+        "RENTAL_AGREEMENT": "Rental Agreement",
+        "MORTGAGE_STATEMENT": "Mortgage Statement",
+        "1099": "1099 Form",
+        "VOE": "Verification of Employment",
+        "VOD": "Verification of Deposit",
+        "CHILD_SUPPORT": "Child Support Agreement",
+        "BANKRUPTCY_DOCS": "Bankruptcy Documents",
+        "LOE": "Letter of Explanation",
+        "SSN_CARD": "Social Security Card",
+    }
+    return labels.get(doc_type, doc_type.replace("_", " ").title())
+
+
+# Maps questionnaire document names to normalized doc types
+QUESTIONNAIRE_DOC_MAP = {
+    "Signed Purchase Agreement": "PURCHASE_CONTRACT",
+    "Separation Agreement": "SEPARATION_AGREEMENT",
+    "Divorce Decree": "DIVORCE_DECREE",
+    "Child Support Agreement": "CHILD_SUPPORT",
+    "Mortgage Statement": "MORTGAGE_STATEMENT",
+    "Homeowners Insurance Declaration Page": "INSURANCE",
+    "Property Tax Bill": "PROPERTY_TAX",
+    "HOA Statement": "HOA_DOCS",
+    "Rental Agreement": "RENTAL_AGREEMENT",
+    "DD-214": "DD214",
+    "VA Active Duty Orders": "VA_ORDERS",
+    "VA Disability Award Letter": "VA_DISABILITY",
+    "BK Paperwork": "BANKRUPTCY_DOCS",
+    "Loan Modification Paperwork": "LOAN_MOD_DOCS",
+    "1040s": "TAX_RETURN",
+    "1099s": "1099",
+    "Gift Letter": "GIFT_LETTER",
+    "Bank Statement": "BANK_STATEMENT",
+    "401K/Retirement Account Statement": "RETIREMENT_STATEMENT",
+    "Paystubs": "PAYSTUB",
+    "W-2s": "W2",
+    "Government ID": "GOVERNMENT_ID",
+}
+
+
+def _map_questionnaire_doc_to_type(doc_name: str) -> str:
+    """Map questionnaire document name to normalized doc type."""
+    return QUESTIONNAIRE_DOC_MAP.get(doc_name, "OTHER")
+
+
+def analyze_doc_gaps(
+    loan_facts: LoanFacts,
+    doc_coverage: Optional[DocCoverage],
+    questionnaire: Optional[Dict] = None
+) -> NeedsListResult:
+    """
+    Analyze document coverage for gaps (Phase 2).
+    
+    Checks:
+    - required_documents from each questionnaire question
+    - conditional document requirements based on loan_facts
+    - Core document requirements (income, assets, ID)
+    
+    Args:
+        loan_facts: Normalized loan data from Encompass
+        doc_coverage: Document coverage from R&S manifest
+        questionnaire: Questionnaire mapping config (loads default if None)
+        
+    Returns:
+        NeedsListResult with all identified document gaps
+    """
+    if questionnaire is None:
+        questionnaire = load_questionnaire()
+    
+    logger.info(f"[GAP] Starting doc gap analysis for loan {loan_facts.loan_id[:8]}...")
+    
+    if doc_coverage is None:
+        logger.warning("[GAP] No doc coverage available - skipping doc gap analysis")
+        return NeedsListResult(phases_completed=["DOCS"], items=[])
+    
+    gaps: List[GapItem] = []
+    checked_docs: set = set()  # Track docs we've already checked
+    
+    sections = questionnaire.get("sections", [])
+    
+    for section in sections:
+        section_id = section.get("section_id", "unknown")
+        questions = section.get("questions", [])
+        
+        for question in questions:
+            question_id = question.get("question_id", "unknown")
+            
+            # Check if question applies to this loan
+            if not _question_applies(question, loan_facts):
+                continue
+            
+            # Check required_documents
+            required_docs = question.get("required_documents", [])
+            
+            for doc_name in required_docs:
+                # Skip if already checked
+                if doc_name in checked_docs:
+                    continue
+                checked_docs.add(doc_name)
+                
+                # Map to normalized doc type
+                doc_type = _map_questionnaire_doc_to_type(doc_name)
+                if doc_type == "OTHER":
+                    logger.debug(f"[GAP] Unknown doc type for '{doc_name}' - skipping")
+                    continue
+                
+                # Check if document exists in coverage
+                if _has_document(doc_coverage, doc_type):
+                    logger.debug(f"[GAP] ✓ Document present: {doc_type}")
+                    continue
+                
+                # Document missing - create gap
+                severity = GapSeverity.CRITICAL.value if doc_type in CRITICAL_DOC_TYPES else GapSeverity.WARN.value
+                
+                gap = GapItem(
+                    id=f"DOC_{section_id}_{question_id}_{doc_type}",
+                    category=GapCategory.DOCS.value,
+                    type=GapType.DOC.value,
+                    status=GapStatus.MISSING.value,
+                    severity=severity,
+                    label=f"Missing document: {_humanize_doc_type(doc_type)}",
+                    reason=question.get("prompt", ""),
+                    action=f"Request {_humanize_doc_type(doc_type)} from borrower",
+                    doc_type=doc_type,
+                    section_id=section_id,
+                    question_id=question_id,
+                )
+                gaps.append(gap)
+                logger.info(f"[GAP] ✗ Missing document: {doc_type} ({severity})")
+            
+            # Check conditional requirements that trigger documents
+            conditionals = question.get("conditional_requirements", [])
+            for cond_str in conditionals:
+                # Look for document collection conditionals
+                if "collect" not in cond_str.lower() or "document" not in cond_str.lower():
+                    continue
+                
+                parsed = _parse_conditional(cond_str)
+                if not parsed:
+                    continue
+                
+                field, operator, expected, action = parsed
+                
+                # Check if condition is met
+                if not _evaluate_condition(loan_facts, field, operator, expected):
+                    continue
+                
+                # Extract document name from action
+                # e.g., "collect Separation Agreement document"
+                doc_match = re.search(r"collect\s+([A-Za-z\s\-]+)\s+document", action, re.IGNORECASE)
+                if not doc_match:
+                    continue
+                
+                doc_name = doc_match.group(1).strip()
+                if doc_name in checked_docs:
+                    continue
+                checked_docs.add(doc_name)
+                
+                doc_type = _map_questionnaire_doc_to_type(doc_name)
+                if doc_type == "OTHER":
+                    # Try partial match
+                    for key, value in QUESTIONNAIRE_DOC_MAP.items():
+                        if doc_name.lower() in key.lower() or key.lower() in doc_name.lower():
+                            doc_type = value
+                            break
+                
+                if doc_type == "OTHER":
+                    continue
+                
+                # Check if document exists
+                if _has_document(doc_coverage, doc_type):
+                    continue
+                
+                # Document missing - create conditional gap
+                severity = GapSeverity.CRITICAL.value if doc_type in CRITICAL_DOC_TYPES else GapSeverity.WARN.value
+                
+                gap = GapItem(
+                    id=f"DOC_COND_{question_id}_{doc_type}",
+                    category=GapCategory.DOCS.value,
+                    type=GapType.DOC.value,
+                    status=GapStatus.MISSING.value,
+                    severity=severity,
+                    label=f"Missing document: {_humanize_doc_type(doc_type)}",
+                    reason=cond_str,
+                    action=f"Request {_humanize_doc_type(doc_type)} from borrower",
+                    doc_type=doc_type,
+                    section_id=section_id,
+                    question_id=question_id,
+                )
+                gaps.append(gap)
+                logger.info(f"[GAP] ✗ Missing conditional document: {doc_type} ({severity})")
+    
+    # Add core document checks if not already covered
+    _check_core_documents(loan_facts, doc_coverage, gaps, checked_docs)
+    
+    # Build result
+    result = NeedsListResult(
+        phases_completed=["DOCS"],
+        items=gaps,
+    )
+    
+    # Compute summary
+    result.compute_summary()
+    
+    logger.info(f"[GAP] Doc analysis complete:")
+    logger.info(f"[GAP]   - Total doc gaps: {result.summary.total}")
+    logger.info(f"[GAP]   - Critical: {result.summary.critical_count}")
+    
+    return result
+
+
+def _check_core_documents(
+    loan_facts: LoanFacts,
+    doc_coverage: DocCoverage,
+    gaps: List[GapItem],
+    checked_docs: set
+) -> None:
+    """
+    Check for core documents that should always be present.
+    
+    This supplements the questionnaire-based checks.
+    """
+    # Core income documents for employed borrowers
+    for borrower in loan_facts.borrowers:
+        if borrower.is_self_employed:
+            # Self-employed needs tax returns and P&L
+            if not _has_document(doc_coverage, "TAX_RETURN") and "TAX_RETURN" not in checked_docs:
+                gaps.append(GapItem(
+                    id="DOC_CORE_TAX_RETURN",
+                    category=GapCategory.DOCS.value,
+                    type=GapType.DOC.value,
+                    status=GapStatus.MISSING.value,
+                    severity=GapSeverity.CRITICAL.value,
+                    label="Missing document: Tax Return",
+                    reason="Self-employed borrowers require tax returns",
+                    action="Request 2 years of tax returns from borrower",
+                    doc_type="TAX_RETURN",
+                ))
+        else:
+            # W2 employee needs paystubs and W2
+            if not _has_document(doc_coverage, "PAYSTUB") and "PAYSTUB" not in checked_docs:
+                gaps.append(GapItem(
+                    id="DOC_CORE_PAYSTUB",
+                    category=GapCategory.DOCS.value,
+                    type=GapType.DOC.value,
+                    status=GapStatus.MISSING.value,
+                    severity=GapSeverity.CRITICAL.value,
+                    label="Missing document: Pay Stub",
+                    reason="Recent pay stubs required for income verification",
+                    action="Request most recent 30 days of pay stubs",
+                    doc_type="PAYSTUB",
+                ))
+    
+    # Bank statements always required
+    if not _has_document(doc_coverage, "BANK_STATEMENT") and "BANK_STATEMENT" not in checked_docs:
+        gaps.append(GapItem(
+            id="DOC_CORE_BANK_STATEMENT",
+            category=GapCategory.DOCS.value,
+            type=GapType.DOC.value,
+            status=GapStatus.MISSING.value,
+            severity=GapSeverity.CRITICAL.value,
+            label="Missing document: Bank Statement",
+            reason="Bank statements required for asset verification",
+            action="Request 2 months of bank statements (all pages)",
+            doc_type="BANK_STATEMENT",
+        ))
+    
+    # Government ID always required
+    if not _has_document(doc_coverage, "GOVERNMENT_ID") and "GOVERNMENT_ID" not in checked_docs:
+        gaps.append(GapItem(
+            id="DOC_CORE_GOVERNMENT_ID",
+            category=GapCategory.DOCS.value,
+            type=GapType.DOC.value,
+            status=GapStatus.MISSING.value,
+            severity=GapSeverity.CRITICAL.value,
+            label="Missing document: Government ID",
+            reason="Government-issued photo ID required for identity verification",
+            action="Request valid driver's license or passport",
+            doc_type="GOVERNMENT_ID",
+        ))
+    
+    # Purchase contract for purchase loans
+    if loan_facts.loan_purpose and "purchase" in loan_facts.loan_purpose.lower():
+        if not _has_document(doc_coverage, "PURCHASE_CONTRACT") and "PURCHASE_CONTRACT" not in checked_docs:
+            gaps.append(GapItem(
+                id="DOC_CORE_PURCHASE_CONTRACT",
+                category=GapCategory.DOCS.value,
+                type=GapType.DOC.value,
+                status=GapStatus.MISSING.value,
+                severity=GapSeverity.CRITICAL.value,
+                label="Missing document: Purchase Agreement",
+                reason="Signed purchase agreement required for purchase transactions",
+                action="Request fully executed purchase agreement",
+                doc_type="PURCHASE_CONTRACT",
+            ))
+
+
+def merge_gap_results(data_gaps: NeedsListResult, doc_gaps: NeedsListResult) -> NeedsListResult:
+    """
+    Merge data and doc gap results into single result.
+    
+    Args:
+        data_gaps: Phase 1 data gap analysis result
+        doc_gaps: Phase 2 doc gap analysis result
+        
+    Returns:
+        Combined NeedsListResult with all gaps
+    """
+    merged = NeedsListResult(
+        phases_completed=data_gaps.phases_completed + doc_gaps.phases_completed,
+        items=data_gaps.items + doc_gaps.items,
+    )
+    merged.compute_summary()
+    return merged
 
 
 # =============================================================================

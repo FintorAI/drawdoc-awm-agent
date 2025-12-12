@@ -28,7 +28,13 @@ from state import (
     NeedsListResult,
 )
 from tools.fetch_loan_context import fetch_loan_context
-from tools.gap_analyzer import analyze_data_gaps, format_gaps_summary
+from tools.fetch_doc_coverage import fetch_doc_coverage
+from tools.gap_analyzer import (
+    analyze_data_gaps,
+    analyze_doc_gaps,
+    merge_gap_results,
+    format_gaps_summary,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -109,12 +115,41 @@ async def run_loan_officer_agent(
         logger.info(f"[LOA]   - Can proceed: {needs_list.summary.can_proceed}")
         
         # =================================================================
-        # PHASE 3: DOCUMENT COVERAGE (Slice 2 - not implemented yet)
+        # PHASE 3: DOCUMENT COVERAGE (Slice 2)
         # =================================================================
         if mode != AgentMode.FAST.value:
             logger.info("[LOA] Phase 3: Document coverage analysis...")
-            # TODO (Slice 2): Implement fetch_doc_coverage and analyze_doc_gaps
-            logger.warning("[LOA] Document coverage not yet implemented (Slice 2)")
+            
+            # Fetch document coverage from R&S manifest
+            doc_coverage = await fetch_doc_coverage(
+                loan_id=loan_id,
+                efolder_docs=loan_facts.efolder_docs,
+                refresh=(mode == AgentMode.REFRESH_DOCS.value),
+            )
+            
+            if doc_coverage and doc_coverage.job_status == "success":
+                logger.info(f"[LOA] Doc coverage retrieved: {doc_coverage.total_documents} documents")
+                result.doc_coverage = doc_coverage.to_dict()
+                
+                # Analyze document gaps
+                doc_gaps = analyze_doc_gaps(loan_facts, doc_coverage)
+                
+                # Merge with data gaps
+                needs_list = merge_gap_results(needs_list, doc_gaps)
+                result.needs_list = needs_list
+                
+                logger.info(f"[LOA] Combined gap analysis:")
+                logger.info(f"[LOA]   - Total gaps: {needs_list.summary.total}")
+                logger.info(f"[LOA]   - Data gaps: {needs_list.summary.by_type.get('DATA', 0)}")
+                logger.info(f"[LOA]   - Doc gaps: {needs_list.summary.by_type.get('DOC', 0)}")
+                logger.info(f"[LOA]   - Critical: {needs_list.summary.critical_count}")
+            
+            elif doc_coverage and doc_coverage.job_status == "pending":
+                logger.warning("[LOA] R&S job pending - doc coverage will be available after webhook")
+                result.doc_coverage = doc_coverage.to_dict()
+            
+            else:
+                logger.warning("[LOA] No R&S manifest available, using data gaps only")
         
         # =================================================================
         # PHASE 4: LLM PRESENTATION (Slice 3 - not implemented yet)
