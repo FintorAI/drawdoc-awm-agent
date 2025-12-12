@@ -5,7 +5,8 @@ import { cn } from "@/lib/utils";
 import { AGENT_TYPE_SUB_AGENTS } from "@/types/agents";
 import type { AgentType as PipelineType } from "@/types/agents";
 
-type SubAgentId = 
+// Known sub-agent IDs for type-safe maps
+type KnownSubAgentId = 
   // DrawDocs agents
   | "preparation" 
   | "drawcore" 
@@ -22,7 +23,7 @@ type SubAgentId =
   | "orchestrator";
 
 // Default fallback icons (DrawDocs-style)
-const defaultAgentIconMap: Record<SubAgentId, LucideIcon> = {
+const defaultAgentIconMap: Record<KnownSubAgentId, LucideIcon> = {
   // DrawDocs
   preparation: FileSearch,
   drawcore: Zap,
@@ -39,7 +40,7 @@ const defaultAgentIconMap: Record<SubAgentId, LucideIcon> = {
   orchestrator: Settings,
 };
 
-const defaultAgentColorMap: Record<SubAgentId, string> = {
+const defaultAgentColorMap: Record<KnownSubAgentId, string> = {
   // DrawDocs
   preparation: "text-blue-600",
   drawcore: "text-orange-600",
@@ -56,7 +57,7 @@ const defaultAgentColorMap: Record<SubAgentId, string> = {
   orchestrator: "text-slate-600",
 };
 
-const defaultAgentBgMap: Record<SubAgentId, string> = {
+const defaultAgentBgMap: Record<KnownSubAgentId, string> = {
   // DrawDocs
   preparation: "bg-blue-100",
   drawcore: "bg-orange-100",
@@ -74,7 +75,8 @@ const defaultAgentBgMap: Record<SubAgentId, string> = {
 };
 
 export interface AgentIconProps extends React.HTMLAttributes<HTMLDivElement> {
-  type: SubAgentId;
+  /** Agent type ID - accepts any string, falls back gracefully for unknown types */
+  type: string;
   size?: "sm" | "md" | "lg";
   showBackground?: boolean;
   pipelineType?: PipelineType; // Optional: helps get the right icon from config
@@ -88,15 +90,17 @@ function AgentIcon({
   className, 
   ...props 
 }: AgentIconProps) {
-  // Try to get icon from pipeline-specific config if pipelineType is provided
-  let Icon = defaultAgentIconMap[type];
-  let colorClass = defaultAgentColorMap[type];
-  let bgClass = defaultAgentBgMap[type];
+  // Default fallback values - cast to known type for map lookup, fallback handles unknown
+  const knownType = type as KnownSubAgentId;
+  let Icon: LucideIcon = defaultAgentIconMap[knownType] ?? FileSearch;
+  let colorClass = defaultAgentColorMap[knownType] ?? "text-slate-600";
+  let bgClass = defaultAgentBgMap[knownType] ?? "bg-slate-100";
   
+  // Try to get icon from pipeline-specific config if pipelineType is provided
   if (pipelineType) {
     const subAgents = AGENT_TYPE_SUB_AGENTS[pipelineType];
-    const agentConfig = subAgents?.find((a: any) => a.id === type);
-    if (agentConfig) {
+    const agentConfig = subAgents?.find((a) => a.id === type);
+    if (agentConfig?.icon) {
       Icon = agentConfig.icon;
       // Use the color from config
       const color = agentConfig.color;

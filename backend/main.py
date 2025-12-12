@@ -30,8 +30,8 @@ from services import (
     get_pending_fields, submit_field_review
 )
 
-# Import log routes
-from routes import logs
+# Import routes
+from routes import logs, webhooks
 
 
 # =============================================================================
@@ -57,8 +57,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include log routes
+# Include routes
 app.include_router(logs.router)
+app.include_router(webhooks.router)
 
 
 # =============================================================================
