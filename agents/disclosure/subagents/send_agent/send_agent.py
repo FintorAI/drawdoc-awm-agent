@@ -303,6 +303,13 @@ def run_disclosure_send(
             "agent_messages": result["messages"]
         }
         
+        # Log agent messages for human readability
+        from packages.shared import log_agent_messages, log_agent_summary
+        log_agent_messages(result["messages"], "SEND", logger)
+        log_agent_summary(final_result, "SEND", logger)
+        
+        return final_result
+        
     except Exception as e:
         logger.error(f"Send failed: {e}")
         return {

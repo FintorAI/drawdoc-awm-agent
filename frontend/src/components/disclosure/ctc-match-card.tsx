@@ -20,11 +20,15 @@ interface CTCMatchCardProps {
 }
 
 export function CTCMatchCard({ ctcData, className }: CTCMatchCardProps) {
-  const isMatched = ctcData.matched ?? false;
   const hasValues = ctcData.calculated_ctc !== null && ctcData.displayed_ctc !== null;
   const calculatedCTC = ctcData.calculated_ctc ?? 0;
   const displayedCTC = ctcData.displayed_ctc ?? 0;
   const difference = ctcData.difference ?? 0;
+  
+  // If both are 0 or null, consider it matched (no CTC needed)
+  // If backend says matched, trust it. Otherwise check if difference is negligible
+  const bothZeroOrNull = (!calculatedCTC && !displayedCTC) || (calculatedCTC === 0 && displayedCTC === 0);
+  const isMatched = bothZeroOrNull || ctcData.matched === true || (hasValues && Math.abs(difference) < 1);
   
   return (
     <Card className={cn(className)}>

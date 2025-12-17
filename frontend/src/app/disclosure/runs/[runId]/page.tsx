@@ -12,9 +12,10 @@ import { AgentStatusCards } from "@/components/runs/agent-status-card";
 import { OverviewTab } from "@/components/runs/overview-tab";
 import { TimelineTab } from "@/components/runs/timeline-tab";
 import { FinalReportTab } from "@/components/runs/final-report-tab";
+import { AgentActivityTab } from "@/components/runs/agent-activity-tab";
 import { useRunDetail } from "@/hooks/use-runs";
 import { AlertTriangle, RefreshCw, ChevronLeft } from "lucide-react";
-import { TRIDComplianceCard, MICalculationCard, ComplianceChecksCard, CTCMatchCard } from "@/components/disclosure";
+import { TRIDComplianceCard, MICalculationCard, ComplianceChecksCard, CTCMatchCard, FormsValidationCard } from "@/components/disclosure";
 
 // =============================================================================
 // LOADING STATE
@@ -154,6 +155,8 @@ function ComplianceTab({ runDetail, isLoading }: ComplianceTabProps) {
   const maventResult = sendOutput?.mavent_result || {};
   const atrQmResult = sendOutput?.atr_qm_result || {};
   const blockingIssues = runDetail?.blocking_issues || [];
+  const formResults = verificationOutput?.form_validation?.form_results;
+  const fieldDetails = verificationOutput?.field_details;
 
   return (
     <div className="space-y-4">
@@ -173,6 +176,15 @@ function ComplianceTab({ runDetail, isLoading }: ComplianceTabProps) {
 
         {/* CTC Match Card */}
         <CTCMatchCard ctcData={ctcResult} className="lg:col-span-2" />
+        
+        {/* Forms Validation Detail - NEW */}
+        {formResults && (
+          <FormsValidationCard 
+            formResults={formResults}
+            fieldDetails={fieldDetails}
+            className="lg:col-span-2"
+          />
+        )}
       </div>
 
       {/* Blocking Issues - Kept separate as a warning banner */}
@@ -242,6 +254,7 @@ export default function DisclosureRunDetailPage() {
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="timeline">Timeline</TabsTrigger>
             <TabsTrigger value="compliance">Compliance</TabsTrigger>
+            <TabsTrigger value="activity">Agent Activity</TabsTrigger>
             <TabsTrigger value="report">Report</TabsTrigger>
           </TabsList>
 
@@ -265,6 +278,14 @@ export default function DisclosureRunDetailPage() {
             <ComplianceTab
               runDetail={runDetail}
               isLoading={isLoading && !runDetail}
+            />
+          </TabsContent>
+          
+          <TabsContent value="activity">
+            <AgentActivityTab
+              runDetail={runDetail}
+              isLoading={isLoading && !runDetail}
+              agentType="disclosure"
             />
           </TabsContent>
 

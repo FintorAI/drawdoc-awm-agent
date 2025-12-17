@@ -5,6 +5,7 @@ as well as utility functions for getting loan metadata.
 """
 
 import os
+import json
 import logging
 import requests
 from pathlib import Path
@@ -92,27 +93,35 @@ def read_fields(loan_id: str, field_ids: List[str], context: str = None) -> Dict
         result = response.json()
         
         # Normalize: convert empty strings to None
+        # Import field name helper
+        from .field_names import get_field_name
+        
         normalized = {}
         fields_with_values = []
         fields_without_values = []
         
         for field_id in field_ids:
             value = result.get(field_id)
+            field_name = get_field_name(field_id)
+            
             if value is not None and str(value).strip() != "":
                 normalized[field_id] = value
                 fields_with_values.append(field_id)
                 # Log each field with its value for full transparency
-                logger.info(f"{ctx}[READ] ✓ Field {field_id} = {value}")
+                # Truncate long values for cleaner logs
+                value_str = str(value)
+                if len(value_str) > 100:
+                    value_str = value_str[:100] + "..."
+                logger.info(f"{ctx}[READ] ✓ {field_name} ({field_id}) = {value_str}")
             else:
                 normalized[field_id] = None
                 fields_without_values.append(field_id)
-                logger.debug(f"{ctx}[READ] ✗ Field {field_id} = (empty)")
+                logger.debug(f"{ctx}[READ] ✗ {field_name} ({field_id}) = (empty)")
         
         # Summary
         logger.info(f"{ctx}[READ] Retrieved {len(fields_with_values)}/{len(field_ids)} fields with values")
         if fields_without_values:
             # Show field names for empty fields
-            from .constants import get_field_name
             empty_with_names = [f"{fid} ({get_field_name(fid)})" for fid in fields_without_values]
             logger.warning(f"{ctx}[READ] {len(fields_without_values)} fields are empty: {empty_with_names}")
         
@@ -141,13 +150,46 @@ def read_field(loan_id: str, field_id: str) -> Optional[Any]:
     return result.get(field_id)
 
 
-def write_fields(loan_id: str, updates: Dict[str, Any], dry_run: bool = True) -> bool:
+def _normalize_value_for_encompass(value: Any) -> Any:
+    """Normalize Python values to Encompass-compatible formats.
+    
+    Args:
+        value: Python value (int, float, bool, str, None, etc.)
+        
+    Returns:
+        Encompass-compatible value (string for most types)
+        
+    Notes:
+        - Integers/floats → strings (e.g., 360 → "360", 5.5 → "5.5")
+        - Booleans → "Y" or "" (Encompass checkbox convention)
+        - None/empty → ""
+        - Strings → kept as-is
+    """
+    if value is None:
+        return ""
+    elif isinstance(value, bool):
+        # Checkboxes: True → "Y", False → ""
+        return "Y" if value else ""
+    elif isinstance(value, (int, float)):
+        # Numeric fields expect strings
+        return str(value)
+    elif isinstance(value, str):
+        # Keep strings as-is
+        return value
+    else:
+        # Fallback: convert to string
+        return str(value)
+
+
+def write_fields(loan_id: str, updates: Dict[str, Any], dry_run: bool = True, form_name: str = None, context: str = None) -> bool:
     """Write multiple field values to Encompass.
     
     Args:
         loan_id: Encompass loan GUID
         updates: Dictionary mapping field_id to new value
         dry_run: If True, only simulate the write (default: True for safety)
+        form_name: Optional form name for logging context (e.g., "RegZ-LE", "1003_URLA")
+        context: Optional context string (e.g., "[PREPARATION]", "[SEND]")
         
     Returns:
         True if all writes succeeded, False otherwise
@@ -156,44 +198,129 @@ def write_fields(loan_id: str, updates: Dict[str, Any], dry_run: bool = True) ->
         success = write_fields(loan_id, {
             "4000": "John",
             "4002": "Doe"
-        }, dry_run=False)
+        }, dry_run=False, form_name="1003_URLA")
     """
     if not updates:
         return True
     
+    # Import field name helper
+    from .field_names import get_field_name
+    
+    # Build context prefix
+    form_ctx = f"[{form_name}] " if form_name else ""
+    ctx = f"{context} " if context else ""
+    prefix = f"{ctx}{form_ctx}"
+    
     if dry_run:
-        logger.info(f"[WRITE] [DRY RUN] Would write {len(updates)} fields to loan {loan_id[:8]}")
+        logger.info(f"{prefix}[WRITE] [DRY RUN] Would write {len(updates)} fields to loan {loan_id[:8]}")
         for field_id, value in updates.items():
-            logger.debug(f"[WRITE] [DRY RUN] {field_id} = {value}")
+            field_name = get_field_name(field_id)
+            value_str = str(value)
+            if len(value_str) > 100:
+                value_str = value_str[:100] + "..."
+            logger.info(f"{prefix}[WRITE] [DRY RUN] {field_name} ({field_id}) = {value_str}")
         return True
     
-    logger.info(f"[WRITE] Writing {len(updates)} fields to loan {loan_id[:8]}...")
+    logger.info(f"{prefix}[WRITE] Writing {len(updates)} fields to loan {loan_id[:8]}...")
     
-    encompass = get_encompass_client()
+    # Get OAuth2 token
+    access_token = get_access_token()
+    
+    # Build API request - Use fieldWriter endpoint (POST)
+    api_base_url = os.getenv("ENCOMPASS_API_BASE_URL", "https://api.elliemae.com")
+    url = f"{api_base_url}/encompass/v3/loans/{loan_id}/fieldWriter"
+    
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+    
+    # Import field_names helper
+    from .field_names import get_field_name
     
     try:
-        # Write each field
+        # Field Writer API expects an array of objects with id, value, and lock attributes
+        # Format: [{"id": "field_id", "value": value, "lock": false}, ...]
+        # Note: Most Encompass fields expect string values, even for numbers
+        payload = []
+        for field_id, value in updates.items():
+            # Normalize value to Encompass-compatible format
+            # (integers → strings, booleans → "Y"/"", etc.)
+            normalized_value = _normalize_value_for_encompass(value)
+            
+            field_update = {
+                "id": field_id,
+                "value": normalized_value,
+                "lock": False
+            }
+            payload.append(field_update)
+        
+        logger.debug(f"{prefix}[WRITE] Payload: {len(payload)} field updates")
+        logger.debug(f"{prefix}[WRITE] Full payload: {json.dumps(payload, default=str)}")
+        
+        # POST to /fieldWriter endpoint with array of field updates
+        response = requests.post(
+            url,
+            json=payload,
+            headers=headers,
+            timeout=60
+        )
+        
+        response.raise_for_status()
+        
+        # Log each successful write
+        for field_id, value in updates.items():
+            field_name = get_field_name(field_id)
+            value_str = str(value)
+            if len(value_str) > 100:
+                value_str = value_str[:100] + "..."
+            logger.info(f"{prefix}[WRITE] ✓ {field_name} ({field_id}) = {value_str}")
+        
+        return True
+        
+    except requests.exceptions.HTTPError as e:
+        # Try to get error details from response
+        try:
+            error_detail = e.response.json()
+            logger.error(f"{prefix}[WRITE] Field write failed (status {e.response.status_code}): {error_detail}")
+        except:
+            logger.error(f"{prefix}[WRITE] Field write failed: {e}")
+        
+        # Try to write fields one by one if batch write fails
+        logger.warning(f"{prefix}[WRITE] Attempting to write fields individually...")
         all_success = True
         for field_id, value in updates.items():
+            field_name = get_field_name(field_id)
             try:
-                success = encompass.write_field(loan_id, field_id, value)
-                if success:
-                    logger.debug(f"[WRITE] Successfully wrote {field_id} = {value}")
-                else:
-                    logger.error(f"[WRITE] Failed to write {field_id}")
-                    all_success = False
-            except Exception as e:
-                logger.error(f"[WRITE] Error writing {field_id}: {e}")
+                # Individual field write - still use array format with single item
+                single_payload = [{"id": field_id, "value": value, "lock": False}]
+                single_response = requests.post(
+                    url,
+                    json=single_payload,
+                    headers=headers,
+                    timeout=60
+                )
+                single_response.raise_for_status()
+                value_str = str(value)
+                if len(value_str) > 100:
+                    value_str = value_str[:100] + "..."
+                logger.info(f"{prefix}[WRITE] ✓ {field_name} ({field_id}) = {value_str}")
+            except Exception as field_error:
+                try:
+                    error_detail = field_error.response.json() if hasattr(field_error, 'response') else str(field_error)
+                    logger.error(f"{prefix}[WRITE] Error writing field {field_id}: {error_detail}")
+                except:
+                    logger.error(f"{prefix}[WRITE] Error writing field {field_id}: {field_error}")
                 all_success = False
         
         return all_success
         
     except Exception as e:
-        logger.error(f"[WRITE] Error writing fields: {e}")
+        logger.error(f"{prefix}[WRITE] Error writing fields: {e}")
         return False
 
 
-def write_field(loan_id: str, field_id: str, value: Any, dry_run: bool = True) -> bool:
+def write_field(loan_id: str, field_id: str, value: Any, dry_run: bool = True, form_name: str = None, context: str = None) -> bool:
     """Write a single field value to Encompass.
     
     Args:
@@ -201,11 +328,13 @@ def write_field(loan_id: str, field_id: str, value: Any, dry_run: bool = True) -
         field_id: Encompass field ID to write
         value: New value for the field
         dry_run: If True, only simulate the write (default: True for safety)
+        form_name: Optional form name for logging context
+        context: Optional context string
         
     Returns:
         True if write succeeded, False otherwise
     """
-    return write_fields(loan_id, {field_id: value}, dry_run=dry_run)
+    return write_fields(loan_id, {field_id: value}, dry_run=dry_run, form_name=form_name, context=context)
 
 
 # =============================================================================

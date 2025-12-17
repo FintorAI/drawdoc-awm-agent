@@ -125,6 +125,154 @@ def add_agent_context(logger: logging.Logger, agent_name: str):
     logger.addFilter(AgentContextFilter(agent_name))
 
 
+def log_agent_messages(messages: list, agent_name: str, logger: logging.Logger = None):
+    """Log LLM agent messages to make logs more human-readable.
+    
+    Args:
+        messages: List of agent messages from LangChain/LangGraph
+        agent_name: Name of the agent (VERIFICATION, PREPARATION, SEND)
+        logger: Logger instance (uses root logger if None)
+    """
+    if logger is None:
+        logger = logging.getLogger()
+    
+    for i, message in enumerate(messages):
+        try:
+            # Handle different message types
+            message_type = type(message).__name__
+            
+            # HumanMessage - The task given to the agent
+            if message_type == "HumanMessage":
+                content = getattr(message, 'content', '')
+                if content and len(content) > 100:
+                    # Log the task being given to the agent
+                    logger.info(f"🎯 TASK: {content[:200]}...")
+            
+            # AIMessage - The agent's response
+            elif message_type == "AIMessage":
+                content = getattr(message, 'content', '')
+                
+                # Check if this is a tool call message
+                tool_calls = getattr(message, 'tool_calls', [])
+                if tool_calls:
+                    # Log tool calls
+                    for tool_call in tool_calls:
+                        tool_name = tool_call.get('name', 'unknown')
+                        logger.info(f"🔧 CALLING TOOL: {tool_name}")
+                
+                # If there's text content (reasoning or final response)
+                elif content:
+                    # Check if it's markdown (starts with # or ---)
+                    if content.startswith('#') or content.startswith('---'):
+                        # This is likely a final report - log key sections
+                        lines = content.split('\n')
+                        in_important_section = False
+                        for line in lines[:50]:  # First 50 lines
+                            # Log headers and important sections
+                            if line.startswith('#'):
+                                logger.info(f"📋 {line.strip()}")
+                                in_important_section = True
+                            elif line.strip().startswith('- **') or line.strip().startswith('**'):
+                                if in_important_section:
+                                    logger.info(f"   {line.strip()}")
+                            elif line.strip() and line.strip() not in ['---', '']:
+                                # Don't log too much detail
+                                pass
+                    else:
+                        # Regular reasoning text
+                        logger.info(f"💭 {content[:300]}...")
+            
+            # ToolMessage - Results from tool calls
+            elif message_type == "ToolMessage":
+                tool_name = getattr(message, 'name', 'unknown')
+                content = getattr(message, 'content', '')
+                
+                # Try to parse JSON content
+                try:
+                    import json
+                    data = json.loads(content) if content else {}
+                    
+                    # Log key information based on tool
+                    if tool_name == "check_trid_dates":
+                        is_compliant = data.get('compliant', False)
+                        action = data.get('action', 'Unknown')
+                        logger.info(f"✓ TRID Check: {'✅ Compliant' if is_compliant else '❌ ' + action}")
+                    
+                    elif tool_name == "check_hard_stops":
+                        has_stops = data.get('has_hard_stops', False)
+                        logger.info(f"✓ Hard Stops: {'❌ Missing fields' if has_stops else '✅ All present'}")
+                    
+                    elif tool_name == "update_regz_le_fields":
+                        updates = data.get('updates_made', {})
+                        logger.info(f"✓ RegZ-LE Updated: {len(updates)} fields")
+                    
+                    elif tool_name == "match_ctc":
+                        matched = data.get('matched', False)
+                        diff = data.get('difference', 0)
+                        logger.info(f"✓ CTC: {'✅ Matched' if matched else f'⚠️ Mismatch: ${diff:,.2f}'}")
+                    
+                    elif tool_name == "check_mavent":
+                        passed = data.get('passed', False)
+                        total = data.get('total_issues', 0)
+                        logger.info(f"✓ Mavent: {'✅ Passed' if passed else f'❌ {total} issues'}")
+                    
+                    elif tool_name == "order_disclosure_package":
+                        success = data.get('success', False)
+                        tracking_id = data.get('tracking_id', 'N/A')
+                        logger.info(f"✓ Order: {'✅ Success' if success else '❌ Failed'} (ID: {tracking_id})")
+                    
+                    else:
+                        # For other tools, just log success/failure
+                        if 'success' in data:
+                            status = '✅' if data['success'] else '❌'
+                            logger.info(f"✓ {tool_name}: {status}")
+                
+                except (json.JSONDecodeError, Exception):
+                    # Not JSON or error parsing - skip
+                    pass
+        
+        except Exception as e:
+            # Don't let logging errors break the agent
+            logger.debug(f"Error logging agent message {i}: {e}")
+
+
+def log_agent_summary(result: dict, agent_name: str, logger: logging.Logger = None):
+    """Log a summary of agent execution.
+    
+    Args:
+        result: Agent result dictionary
+        agent_name: Name of the agent
+        logger: Logger instance (uses root logger if None)
+    """
+    if logger is None:
+        logger = logging.getLogger()
+    
+    logger.info("=" * 80)
+    logger.info(f"📊 {agent_name} EXECUTION SUMMARY")
+    logger.info("=" * 80)
+    
+    # Status
+    status = result.get('status', 'unknown')
+    status_emoji = '✅' if status == 'success' else '❌' if status == 'failed' else '⚠️'
+    logger.info(f"Status: {status_emoji} {status.upper()}")
+    
+    # Summary if available
+    summary = result.get('summary', '')
+    if summary:
+        for line in summary.split('\n')[:10]:  # First 10 lines
+            if line.strip():
+                logger.info(line)
+    
+    # Blocking issues
+    blocking_issues = result.get('blocking_issues', [])
+    if blocking_issues:
+        logger.warning("⚠️ BLOCKING ISSUES:")
+        for issue in blocking_issues:
+            logger.warning(f"  - {issue}")
+    
+    logger.info("=" * 80)
+
+
 def get_recent_logs(loan_id: str = None, limit: int = 100) -> list:
     """Get recent log entries for frontend display.
     

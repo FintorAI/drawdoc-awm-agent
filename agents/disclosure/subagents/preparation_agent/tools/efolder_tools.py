@@ -12,7 +12,7 @@ from langchain_core.tools import tool
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent.parent.parent))
 
-from packages.shared.encompass_client import get_encompass_client
+from packages.shared import read_field
 
 logger = logging.getLogger(__name__)
 
@@ -38,11 +38,8 @@ def configure_efolder_products(loan_id: str, dry_run: bool = False) -> dict:
     logger.warning("[G20] PMI Disclosure checkbox field ID UNKNOWN - requires manual verification")
     
     try:
-        client = get_encompass_client()
-        
         # Get LTV value (field 353)
-        loan_data = client.get_loan_fields(loan_id, ["353"])
-        ltv = loan_data.get("353")
+        ltv = read_field(loan_id, "353")
         
         if ltv is None:
             logger.warning("[G20] LTV value not found (field 353)")

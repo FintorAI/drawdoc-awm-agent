@@ -489,17 +489,32 @@ function MetricsCard({ runDetail, agentType = "drawdocs" }: MetricsCardProps) {
   const preparationOutput = runDetail.agents.preparation?.output as any;
   const sendOutput = runDetail.agents.send?.output as any;
   
-  const tridCompliant = verificationOutput?.trid_compliance?.compliant === true ? 1 : 0;
+  // TRID status - use text instead of 0/1
+  const tridCompliance = verificationOutput?.trid_compliance;
+  const isPastDue = tridCompliance?.is_past_due === true;
+  const tridCompliant = tridCompliance?.compliant === true;
+  const tridStatusText = isPastDue ? "Past Due" : tridCompliant ? "Compliant" : "Non-Compliant";
+  
   const formsChecked = verificationOutput?.form_validation?.forms_checked || 0;
   const formsPassed = verificationOutput?.form_validation?.forms_passed || 0;
-  const miCalculated = preparationOutput?.mi_result?.requires_mi ? 1 : 0;
-  const maventPassed = sendOutput?.mavent_result?.passed === true ? 1 : 0;
+  
+  const miRequired = preparationOutput?.mi_result?.requires_mi;
+  const miStatusText = miRequired === true ? "Required" : miRequired === false ? "Not Required" : "Unknown";
+  
+  const maventResult = sendOutput?.mavent_result;
+  const maventPassed = maventResult?.passed === true;
+  const maventIssueCount = maventResult?.total_issues || 0;
+  const maventStatusText = maventResult?.error 
+    ? "Error" 
+    : maventPassed 
+      ? "Passed" 
+      : `${maventIssueCount} Issues`;
 
   const metrics: Array<{
     key: MetricKey;
     icon: typeof FileText;
     label: string;
-    value: number;
+    value: number | string;
     color: string;
     bgColor: string;
     ringColor: string;
@@ -511,15 +526,21 @@ function MetricsCard({ runDetail, agentType = "drawdocs" }: MetricsCardProps) {
         {
           key: "documents_found",
           icon: CheckCircle2,
-          label: "TRID Compliance",
-          value: tridCompliant,
-          color: tridCompliant ? "text-emerald-600" : "text-red-600",
-          bgColor: tridCompliant ? "bg-emerald-100" : "bg-red-100",
-          ringColor: tridCompliant ? "ring-emerald-400" : "ring-red-400",
+          label: "TRID Status",
+          value: tridStatusText,
+          color: tridCompliant ? "text-emerald-600" : isPastDue ? "text-red-600" : "text-amber-600",
+          bgColor: tridCompliant ? "bg-emerald-100" : isPastDue ? "bg-red-100" : "bg-amber-100",
+          ringColor: tridCompliant ? "ring-emerald-400" : isPastDue ? "ring-red-400" : "ring-amber-400",
           panelBg: tridCompliant 
             ? "bg-emerald-50/50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-800"
-            : "bg-red-50/50 border-red-200 dark:bg-red-950/20 dark:border-red-800",
-          subtext: tridCompliant ? "Compliant" : "Issues detected",
+            : isPastDue
+              ? "bg-red-50/50 border-red-200 dark:bg-red-950/20 dark:border-red-800"
+              : "bg-amber-50/50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800",
+          subtext: isPastDue 
+            ? `${Math.abs(tridCompliance?.days_remaining || 0)} days overdue`
+            : tridCompliance?.days_remaining 
+              ? `${tridCompliance.days_remaining} days remaining` 
+              : undefined,
           isLive: false,
         },
         {
@@ -537,29 +558,33 @@ function MetricsCard({ runDetail, agentType = "drawdocs" }: MetricsCardProps) {
         {
           key: "fields_extracted",
           icon: Database,
-          label: "MI Required",
-          value: miCalculated,
-          color: miCalculated ? "text-amber-600" : "text-slate-500",
-          bgColor: miCalculated ? "bg-amber-100" : "bg-slate-100",
-          ringColor: miCalculated ? "ring-amber-400" : "ring-slate-400",
-          panelBg: miCalculated
+          label: "MI Status",
+          value: miStatusText,
+          color: miRequired === true ? "text-amber-600" : "text-slate-500",
+          bgColor: miRequired === true ? "bg-amber-100" : "bg-slate-100",
+          ringColor: miRequired === true ? "ring-amber-400" : "ring-slate-400",
+          panelBg: miRequired === true
             ? "bg-amber-50/50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800"
             : "bg-slate-50/50 border-slate-200 dark:bg-slate-950/20 dark:border-slate-800",
-          subtext: miCalculated ? "Calculated" : "Not required",
+          subtext: miRequired === true 
+            ? `LTV: ${verificationOutput?.field_details?.["353"]?.value || "N/A"}%`
+            : undefined,
           isLive: false,
         },
         {
           key: "fields_encompass",
           icon: CheckCircle,
-          label: "Mavent Check",
-          value: maventPassed,
-          color: maventPassed ? "text-emerald-600" : "text-amber-600",
-          bgColor: maventPassed ? "bg-emerald-100" : "bg-amber-100",
-          ringColor: maventPassed ? "ring-emerald-400" : "ring-amber-400",
+          label: "Mavent Status",
+          value: maventStatusText,
+          color: maventPassed ? "text-emerald-600" : maventResult?.error ? "text-red-600" : "text-amber-600",
+          bgColor: maventPassed ? "bg-emerald-100" : maventResult?.error ? "bg-red-100" : "bg-amber-100",
+          ringColor: maventPassed ? "ring-emerald-400" : maventResult?.error ? "ring-red-400" : "ring-amber-400",
           panelBg: maventPassed
             ? "bg-emerald-50/50 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-800"
-            : "bg-amber-50/50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800",
-          subtext: maventPassed ? "Passed" : "Issues found",
+            : maventResult?.error
+              ? "bg-red-50/50 border-red-200 dark:bg-red-950/20 dark:border-red-800"
+              : "bg-amber-50/50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800",
+          subtext: maventResult?.error ? "Check failed" : undefined,
           isLive: false,
         },
       ]

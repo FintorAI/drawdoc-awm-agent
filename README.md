@@ -27,16 +27,37 @@ DrawDoc Agent processes loan documents through an intelligent pipeline:
 - **📄 Document OCR** — Powered by LandingAI for accurate field extraction
 - **✅ Smart Verification** — Compares extracted values against Encompass and auto-corrects
 - **📋 Comprehensive Reporting** — JSON output + human-readable summaries
+- **🔍 Agent Activity Dashboard** — Detailed visibility into AI agent execution with intelligent summaries
+- **⚡ Next.js 16 Compatible** — Latest framework features with optimized performance
+
+## Recent Improvements (December 2024)
+
+### ✅ Agent Activity Dashboard Enhancement
+- **Fixed missing activities** — Preparation and Send agents now display all execution details
+- **Enhanced message parsing** — Handles Python string representations and JSON formats
+- **Intelligent summaries** — Tool results show human-readable summaries with color coding
+- **Better UX** — Expandable sections, structured details, and hide-able raw data
+
+### ✅ Next.js 16 Migration
+- **Upgraded framework** — Latest Next.js with Turbopack for faster builds
+- **React 19 support** — Modern React features and optimizations
+- **Dev experience fixes** — Suppressed cosmetic console warnings about async params
+
+### ✅ Enhanced Logging
+- **Agent message tracking** — All agent activities logged for debugging and auditing
+- **Debug console logs** — Message counts and parsing status visible in browser console
+- **Structured output** — Better JSON formatting for API responses
 
 ## Tech Stack
 
 | Component | Technology |
 |-----------|------------|
-| **Frontend** | Next.js 16, React 19, TailwindCSS, Radix UI |
+| **Frontend** | Next.js 16, React 19, TypeScript, TailwindCSS, Radix UI |
 | **Backend** | FastAPI, Uvicorn, Pydantic |
-| **AI Agents** | LangChain, Anthropic Claude |
+| **AI Agents** | LangChain, Anthropic Claude Sonnet 4.5 |
 | **Document Processing** | LandingAI OCR, python-docx |
 | **State Management** | TanStack Query (React Query) |
+| **Build Tool** | Turbopack (Next.js 16) |
 
 ## Project Structure
 
@@ -281,6 +302,52 @@ cd frontend && npm run build         # Production build
 cd frontend && npm run lint          # Lint check
 ```
 
+## Frontend Features
+
+### Agent Activity Dashboard
+
+The **Agent Activity** tab provides detailed visibility into AI agent execution:
+
+#### Features
+- **Real-time message parsing** — Displays task assignments, reasoning, tool calls, and results
+- **Intelligent summaries** — Human-readable summaries for common compliance checks:
+  - TRID compliance status and action items
+  - RegZ-LE field updates with count and details
+  - Cash-to-Close (CTC) match status with difference amounts
+  - Mortgage Insurance (MI) requirements with LTV calculations
+  - Mavent compliance results
+- **Expandable content** — Click "Show more" to view full workflow steps and raw data
+- **Color-coded status** — Green (success), red (error), gray (unknown)
+- **Multi-agent support** — Works with Disclosure (verification, preparation, send) and DrawDocs agents
+
+#### Technical Implementation
+
+**Message Parsing**
+The frontend handles backend message serialization in multiple formats:
+- Python string representations: `content="..." additional_kwargs={} id="..."`
+- Single and double quote formats
+- Nested JSON structures
+- LangChain message objects
+
+**UI Components**
+- Task messages show preview with full workflow on expand
+- Tool calls display with monospace font for clarity
+- Tool results have structured summaries before raw JSON
+- Collapsible sections with chevron indicators
+
+See `frontend/src/components/runs/agent-activity-tab.tsx` for implementation details.
+
+### Next.js 16 Compatibility
+
+**Known Issue:** Next.js 16 changed `params` and `searchParams` to Promises, causing dev-time console warnings.
+
+**Solution Applied:**
+- Updated `next.config.ts` to disable experimental Partial Prerendering
+- Added console filter in `layout.tsx` to suppress warnings in development
+- All page components use client-side `useParams()` hook correctly
+
+The warnings are cosmetic (React DevTools inspection) and don't affect functionality.
+
 ## Troubleshooting
 
 | Issue | Solution |
@@ -289,6 +356,8 @@ cd frontend && npm run lint          # Lint check
 | `403 Forbidden` from Encompass | Check API credentials in `.env` |
 | Frontend can't connect to backend | Ensure backend is running on port 8000 |
 | OCR extraction fails | Verify `LANDINGAI_API_KEY` is set |
+| Agent Activity shows "No activities" | Hard refresh browser (Cmd+Shift+R), check console for debug logs |
+| Next.js params warnings in console | These are suppressed in layout.tsx, safe to ignore |
 
 ## License
 

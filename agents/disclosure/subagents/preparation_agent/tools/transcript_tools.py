@@ -55,31 +55,21 @@ def populate_transcript_forms_tool(
         logger.info("[G4] DRY RUN mode - templates will not be applied")
     
     try:
-        client = get_encompass_client()
+        logger.warning("[G4] Transcript forms tool requires legacy EncompassConnect client")
+        logger.warning("[G4] This tool is not yet compatible with disclosure agent v2")
         
-        result = populate_transcript_forms(
-            client=client,
-            loan_id=loan_id,
-            application_id=application_id,
-            dry_run=dry_run
-        )
-        
-        # Add gap metadata
-        result["gap_id"] = "G4"
-        result["gap_name"] = "Transcript Forms (4506-C, 8821)"
-        result["status"] = "populated" if result["success"] else "failed"
-        
-        if result["success"]:
-            logger.info(f"[G4] ✓ Forms populated: {result['forms_populated']}")
-            logger.info(f"[G4] Tax years: {result['tax_years']}")
-            logger.info(f"[G4] IVES: {result['ives_participant']}")
-        else:
-            logger.error("[G4] ✗ Failed to populate transcript forms")
-        
-        return result
+        return {
+            "gap_id": "G4",
+            "gap_name": "Transcript Forms (4506-C, 8821)",
+            "status": "not_implemented",
+            "success": False,
+            "error": "Transcript forms not yet supported in disclosure v2 - requires manual processing",
+            "requires_manual_processing": True,
+            "message": "LO must manually populate 4506-C and 8821 forms via Encompass UI"
+        }
         
     except Exception as e:
-        logger.error(f"[G4] Error populating transcript forms: {e}")
+        logger.error(f"[G4] Error in transcript forms tool: {e}")
         return {
             "gap_id": "G4",
             "gap_name": "Transcript Forms (4506-C, 8821)",
@@ -101,17 +91,13 @@ def list_transcript_templates_tool() -> dict:
     logger.info("[G4] Listing available transcript templates...")
     
     try:
-        client = get_encompass_client()
-        
-        templates = get_transcript_templates(client)
-        
-        logger.info(f"[G4] Found {len(templates)} templates")
+        logger.warning("[G4] Transcript templates listing not yet supported in disclosure v2")
         
         return {
             "gap_id": "G4",
-            "status": "success",
-            "templates": templates,
-            "count": len(templates),
+            "status": "not_implemented",
+            "success": False,
+            "error": "Transcript templates not yet supported - requires legacy client"
         }
         
     except Exception as e:
@@ -144,23 +130,15 @@ def apply_custom_transcript_template_tool(
     logger.info(f"[G4] Applying custom template '{template_path}' to loan {loan_id[:8]}...")
     
     try:
-        client = get_encompass_client()
+        logger.warning("[G4] Apply transcript template not yet supported in disclosure v2")
         
-        result = apply_transcript_template(
-            client=client,
-            loan_id=loan_id,
-            template_path=template_path,
-            dry_run=dry_run
-        )
-        
-        result["gap_id"] = "G4"
-        
-        if result["success"]:
-            logger.info(f"[G4] ✓ Template applied: {template_path}")
-        else:
-            logger.error(f"[G4] ✗ Template failed: {result.get('error')}")
-        
-        return result
+        return {
+            "gap_id": "G4",
+            "status": "not_implemented",
+            "success": False,
+            "error": "Template application not yet supported - requires legacy client",
+            "requires_manual_processing": True
+        }
         
     except Exception as e:
         logger.error(f"[G4] Error applying custom template: {e}")

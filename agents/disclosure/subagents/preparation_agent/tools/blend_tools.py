@@ -12,7 +12,7 @@ from langchain_core.tools import tool
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent.parent.parent))
 
-from packages.shared.encompass_client import get_encompass_client
+from packages.shared import read_field
 
 logger = logging.getLogger(__name__)
 
@@ -38,11 +38,8 @@ def check_blend_orgid(loan_id: str) -> dict:
     logger.info("[G19] Blend ORGID check - requires manual verification by LO")
     
     try:
-        client = get_encompass_client()
-        
         # Read ORGID field
-        loan_data = client.get_loan_fields(loan_id, ["ORGID"])
-        orgid = loan_data.get("ORGID")
+        orgid = read_field(loan_id, "ORGID")
         
         result = {
             "gap_id": "G19",

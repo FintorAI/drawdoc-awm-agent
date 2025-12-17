@@ -14,7 +14,6 @@ from langchain_core.tools import tool
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent.parent))
 
 from packages.shared import (
-    get_encompass_client,
     read_fields,
     write_fields,
     get_loan_type,

@@ -1,0 +1,1314 @@
+{
+  "questionnaire_name": "Initial Needs List / Gap Analysis",
+  "version": "v2.0",
+  "sections": [
+    {
+      "section_id": "account_setup",
+      "title": "0. Account Setup & Contact Preferences",
+      "questions": [
+        {
+          "question_id": "basic_contact_info",
+          "prompt": "Please provide your basic contact information.",
+          "answer_type": "string",
+          "required_fields": [
+            "first_name",
+            "last_name",
+            "primary_phone",
+            "email"
+          ],
+          "required_documents": [],
+          "conditional_requirements": []
+        },
+        {
+          "question_id": "preferred_contact_method",
+          "prompt": "What is the best method to contact you?",
+          "answer_type": "multi_select",
+          "options": [
+            "Phone",
+            "Text",
+            "Email"
+          ],
+          "required_fields": [
+            "preferred_contact_methods[]"
+          ],
+          "required_documents": [],
+          "conditional_requirements": []
+        },
+        {
+          "question_id": "preferred_contact_time",
+          "prompt": "What is the best time to contact you?",
+          "answer_type": "multi_select",
+          "options": [
+            "Morning",
+            "Afternoon",
+            "Evening"
+          ],
+          "required_fields": [
+            "preferred_contact_times[]"
+          ],
+          "required_documents": [],
+          "conditional_requirements": []
+        },
+        {
+          "question_id": "upcoming_travel_plans",
+          "prompt": "Do you have any upcoming travel plans that will not allow you to have access to phone or email?",
+          "answer_type": "boolean",
+          "required_fields": [
+            "has_upcoming_travel_boolean",
+            "travel_dates_from",
+            "travel_dates_to"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "If has_upcoming_travel_boolean == true, collect travel date range."
+          ]
+        }
+      ]
+    },
+    {
+      "section_id": "current_status",
+      "title": "1. Current Status",
+      "questions": [
+        {
+          "question_id": "homebuying_stage",
+          "prompt": "Where are you in the homebuying process?",
+          "answer_type": "single_select",
+          "options": [
+            "Signed Purchase Agreement",
+            "Offer Pending/Found Property",
+            "Buying in 2-6 months",
+            "Researching options"
+          ],
+          "required_fields": [
+            "homebuying_stage"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "If homebuying_stage == 'Signed Purchase Agreement', collect a copy of the Signed Purchase Agreement document.",
+            "If homebuying_stage is any of ['Signed Purchase Agreement','Offer Pending/Found Property','Buying in 2-6 months','Researching options'], ask question 'real_estate_agent_info'.",
+            "After this section the loan will be flagged as TBD until further qualification."
+          ]
+        },
+        {
+          "question_id": "real_estate_agent_info",
+          "prompt": "Are you currently working with a real estate agent?",
+          "answer_type": "boolean",
+          "required_fields": [
+            "has_real_estate_agent_boolean",
+            "real_estate_agent_name",
+            "real_estate_agent_email",
+            "real_estate_agent_phone"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "Collect name, email, and phone only if has_real_estate_agent_boolean == true."
+          ]
+        },
+        {
+          "question_id": "target_counties",
+          "prompt": "Which county or counties do you intend on purchasing in?",
+          "answer_type": "list",
+          "required_fields": [
+            "intended_purchase_state",
+            "intended_purchase_county[]"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "Allow multiple counties per state.",
+            "If subject property is already identified, this should match the subject property county."
+          ]
+        }
+      ]
+    },
+    {
+      "section_id": "application_type",
+      "title": "2. Application Type",
+      "questions": [
+        {
+          "question_id": "joint_or_individual",
+          "prompt": "Are you applying for Joint or Individual Credit?",
+          "answer_type": "single_select",
+          "options": [
+            "Joint",
+            "Individual"
+          ],
+          "required_fields": [
+            "application_type"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "If application_type == 'Joint', collect full borrower and co-borrower profile and income/asset details for both. Loop through borrower information section for each borrower."
+          ]
+        }
+      ]
+    },
+    {
+      "section_id": "borrower_profile",
+      "title": "3. Borrower & Co-Borrower Profile",
+      "notes": "Ask these set of questions once if applying as an individual. Loop as many times as necessary if applying jointly.",
+      "questions": [
+        {
+          "question_id": "borrower_name",
+          "prompt": "Please provide your full legal name.",
+          "answer_type": "string",
+          "required_fields": [
+            "borrower_first_name",
+            "borrower_last_name",
+            "borrower_middle_name"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "Auto-populate these fields from login details if this is the first borrower, otherwise let the user type the names."
+          ]
+        },
+        {
+          "question_id": "marital_status",
+          "prompt": "What is your marital status?",
+          "answer_type": "single_select",
+          "options": [
+            "Married",
+            "Separated",
+            "Unmarried"
+          ],
+          "required_fields": [
+            "borrower_marital_status"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "If borrower_marital_status == 'Separated', collect Separation Agreement document."
+          ]
+        },
+        {
+          "question_id": "child_support_alimony_obligation",
+          "prompt": "Do you have any Child Support/Alimony Obligation (that you pay)?",
+          "answer_type": "single_select",
+          "options": [
+            "Alimony Obligation",
+            "Child Support",
+            "No"
+          ],
+          "required_fields": [
+            "has_alimony_obligation_boolean",
+            "alimony_obligation_monthly_amount",
+            "has_child_support_obligation_boolean",
+            "child_support_obligation_monthly_amount"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "If 'Alimony Obligation' selected, collect Divorce Decree and Monthly Amount.",
+            "If 'Child Support' selected, collect Child Support Agreement and Monthly Amount."
+          ]
+        },
+        {
+          "question_id": "child_support_alimony_income",
+          "prompt": "Do you receive Child Support/Alimony Income?",
+          "answer_type": "single_select",
+          "options": [
+            "Alimony Income",
+            "Child Support Income",
+            "No"
+          ],
+          "required_fields": [
+            "receives_alimony_income_boolean",
+            "alimony_income_monthly_amount",
+            "receives_child_support_income_boolean",
+            "child_support_income_monthly_amount"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "If 'Alimony Income' selected, collect Divorce Decree and Monthly Amount.",
+            "If 'Child Support Income' selected, collect Child Support Agreement and Monthly Amount."
+          ]
+        },
+        {
+          "question_id": "citizenship_status",
+          "prompt": "What is your citizenship status?",
+          "answer_type": "single_select",
+          "options": [
+            "U.S. Citizenship",
+            "Permanent Resident Alien",
+            "Non-Permanent Resident Alien"
+          ],
+          "required_fields": [
+            "borrower_citizenship_status"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "For Permanent or Non-Permanent Resident Alien, obtain documentation of status (e.g., green card, visa)."
+          ]
+        },
+        {
+          "question_id": "ssn_and_dob",
+          "prompt": "Please provide your Social Security Number and Date of Birth.",
+          "answer_type": "string",
+          "required_fields": [
+            "borrower_ssn",
+            "borrower_dob"
+          ],
+          "required_documents": [],
+          "conditional_requirements": []
+        },
+        {
+          "question_id": "current_address",
+          "prompt": "What is your current address?",
+          "answer_type": "string",
+          "required_fields": [
+            "borrower_current_address_street",
+            "borrower_current_address_city",
+            "borrower_current_address_state",
+            "borrower_current_address_zip",
+            "borrower_years_at_current_address"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "Verify the address via Google API.",
+            "Keep asking for additional addresses until total years is at least 2 years."
+          ]
+        },
+        {
+          "question_id": "previous_addresses",
+          "prompt": "Please list your previous addresses to cover at least 2 years of address history.",
+          "answer_type": "list",
+          "required_fields": [
+            "borrower_previous_address_street[]",
+            "borrower_previous_address_city[]",
+            "borrower_previous_address_state[]",
+            "borrower_previous_address_zip[]",
+            "borrower_previous_address_years[]"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "Only required if borrower_years_at_current_address < 2.",
+            "Verify each address via Google API."
+          ]
+        }
+      ]
+    },
+    {
+      "section_id": "borrower_housing",
+      "title": "4. Current Housing Situation",
+      "questions": [
+        {
+          "question_id": "rent_or_own",
+          "prompt": "Do you currently rent or own?",
+          "answer_type": "single_select",
+          "options": [
+            "Rent",
+            "Own"
+          ],
+          "required_fields": [
+            "borrower_current_housing_status"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "If 'Rent', ask monthly rent payment and first-time homebuyer questions.",
+            "If 'Own', ask monthly housing payment and property details."
+          ]
+        },
+        {
+          "question_id": "monthly_rent_payment",
+          "prompt": "How much is your monthly rent payment?",
+          "answer_type": "number",
+          "required_fields": [
+            "monthly_rent_amount"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "Only required if borrower_current_housing_status == 'Rent'."
+          ]
+        },
+        {
+          "question_id": "first_time_homebuyer",
+          "prompt": "Is this the first time purchasing a home?",
+          "answer_type": "boolean",
+          "required_fields": [
+            "first_time_homebuyer_boolean"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "If first_time_homebuyer_boolean == false, ask about previous property ownership details."
+          ]
+        },
+        {
+          "question_id": "previous_property_ownership",
+          "prompt": "What type of property did you own: primary residence (PR), FHA secondary residence (SR), second home (SH), or investment property (IP)?",
+          "answer_type": "single_select",
+          "options": [
+            "PR",
+            "SR",
+            "SH",
+            "IP"
+          ],
+          "required_fields": [
+            "previous_property_type"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "Only required if first_time_homebuyer_boolean == false."
+          ]
+        },
+        {
+          "question_id": "previous_property_title",
+          "prompt": "How did you hold title to the property: by yourself (S), jointly with your spouse (SP), or jointly with another person (O)?",
+          "answer_type": "single_select",
+          "options": [
+            "S",
+            "SP",
+            "O"
+          ],
+          "required_fields": [
+            "previous_property_title_type"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "Only required if first_time_homebuyer_boolean == false."
+          ]
+        },
+        {
+          "question_id": "owned_in_last_3_years",
+          "prompt": "Have you owned in the last 3 years?",
+          "answer_type": "boolean",
+          "required_fields": [
+            "owned_property_last_3_years_boolean",
+            "previous_ownership_from_date",
+            "previous_ownership_to_date"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "If owned_property_last_3_years_boolean == true, collect ownership dates."
+          ]
+        },
+        {
+          "question_id": "monthly_housing_payment_owned",
+          "prompt": "What is your monthly housing payment (including property taxes, insurance, mortgage insurance, and HOA dues)?",
+          "answer_type": "number",
+          "required_fields": [
+            "current_monthly_housing_payment_amount"
+          ],
+          "required_documents": [
+            "Mortgage Statement",
+            "Homeowners Insurance Declaration Page",
+            "Property Tax Bill",
+            "HOA Statement (if applicable)"
+          ],
+          "conditional_requirements": [
+            "Only required if borrower_current_housing_status == 'Own'."
+          ]
+        },
+        {
+          "question_id": "current_property_type",
+          "prompt": "What type of property do you currently own?",
+          "answer_type": "single_select",
+          "options": [
+            "SFR",
+            "Townhome",
+            "Condo",
+            "Multi",
+            "Manufactured",
+            "Land"
+          ],
+          "required_fields": [
+            "current_property_type"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "Only required if borrower_current_housing_status == 'Own'."
+          ]
+        }
+      ]
+    },
+    {
+      "section_id": "real_estate_owned",
+      "title": "5. Other Real Estate Owned (REO)",
+      "questions": [
+        {
+          "question_id": "owns_other_properties",
+          "prompt": "Do you own or are you on title on any properties or land excluding your primary residence?",
+          "answer_type": "boolean",
+          "required_fields": [
+            "owns_other_properties_boolean"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "If true, collect REO property details for each property."
+          ]
+        },
+        {
+          "question_id": "reo_property_is_rental",
+          "prompt": "Is the property a rental?",
+          "answer_type": "boolean",
+          "required_fields": [
+            "reo_property_is_rental_boolean"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "If true, collect Rental Agreement and rental details.",
+            "If false, collect property address."
+          ]
+        },
+        {
+          "question_id": "reo_short_term_rental",
+          "prompt": "Is it a short term lease vacation rental (such as VRBO or Airbnb)?",
+          "answer_type": "boolean",
+          "required_fields": [
+            "reo_is_short_term_rental_boolean"
+          ],
+          "required_documents": [
+            "Rental Agreement"
+          ],
+          "conditional_requirements": [
+            "Only required if reo_property_is_rental_boolean == true."
+          ]
+        },
+        {
+          "question_id": "reo_long_term_lease",
+          "prompt": "Is there a long term lease on the property?",
+          "answer_type": "boolean",
+          "required_fields": [
+            "reo_has_long_term_lease_boolean"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "Only required if reo_property_is_rental_boolean == true."
+          ]
+        },
+        {
+          "question_id": "reo_ownership_duration",
+          "prompt": "Do you own for less than 1 year?",
+          "answer_type": "boolean",
+          "required_fields": [
+            "reo_owned_less_than_1_year_boolean",
+            "reo_ownership_from_date",
+            "reo_ownership_to_date"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "Collect From/To dates regardless of answer."
+          ]
+        },
+        {
+          "question_id": "reo_property_address",
+          "prompt": "What is the property address?",
+          "answer_type": "string",
+          "required_fields": [
+            "reo_property_street",
+            "reo_property_city",
+            "reo_property_state",
+            "reo_property_zip"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "Verify the address via Google API."
+          ]
+        }
+      ]
+    },
+    {
+      "section_id": "veteran_status",
+      "title": "6. Veteran / Military Status",
+      "questions": [
+        {
+          "question_id": "veteran_or_active_duty",
+          "prompt": "Are you a veteran or active duty?",
+          "answer_type": "boolean",
+          "required_fields": [
+            "is_veteran_or_active_duty_boolean"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "If true, collect military service details."
+          ]
+        },
+        {
+          "question_id": "branch_of_service",
+          "prompt": "What is the branch of Service?",
+          "answer_type": "single_select",
+          "options": [
+            "Army",
+            "Navy",
+            "Marine",
+            "Airforce",
+            "National Guard",
+            "Other"
+          ],
+          "required_fields": [
+            "military_branch_of_service"
+          ],
+          "required_documents": [
+            "DD-214"
+          ],
+          "conditional_requirements": [
+            "Only required if is_veteran_or_active_duty_boolean == true."
+          ]
+        },
+        {
+          "question_id": "active_or_retired",
+          "prompt": "Are you currently active duty or retired?",
+          "answer_type": "single_select",
+          "options": [
+            "Active",
+            "Retired"
+          ],
+          "required_fields": [
+            "military_status"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "If 'Active', collect VA Active Duty Orders.",
+            "If 'Retired', ask about VA disability."
+          ]
+        },
+        {
+          "question_id": "va_active_duty_orders",
+          "prompt": "Please provide your VA Active Duty Orders.",
+          "answer_type": "document",
+          "required_fields": [],
+          "required_documents": [
+            "VA Active Duty Orders"
+          ],
+          "conditional_requirements": [
+            "Only required if military_status == 'Active'."
+          ]
+        },
+        {
+          "question_id": "va_disability",
+          "prompt": "Do you have any disability with the VA?",
+          "answer_type": "boolean",
+          "required_fields": [
+            "has_va_disability_boolean"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "Only required if military_status == 'Retired'."
+          ]
+        },
+        {
+          "question_id": "va_disability_details",
+          "prompt": "What is the percentage of disability and monthly VA disability amount?",
+          "answer_type": "string",
+          "required_fields": [
+            "va_disability_percentage",
+            "va_disability_monthly_amount"
+          ],
+          "required_documents": [
+            "VA Disability Award Letter"
+          ],
+          "conditional_requirements": [
+            "Only required if has_va_disability_boolean == true."
+          ]
+        }
+      ]
+    },
+    {
+      "section_id": "credit_information",
+      "title": "7. Credit Information & Derogatory Events",
+      "questions": [
+        {
+          "question_id": "credit_freeze_or_lock",
+          "prompt": "Is there a freeze or lock on any credit report?",
+          "answer_type": "boolean",
+          "required_fields": [
+            "has_credit_freeze_boolean"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "If applying jointly and has_credit_freeze_boolean == true, ask which borrower (Borrower, Co-Borrower, or Both).",
+            "Borrower(s) must temporarily lift the freeze for the lender to pull credit."
+          ]
+        },
+        {
+          "question_id": "credit_freeze_who",
+          "prompt": "Whose credit report has a freeze or lock?",
+          "answer_type": "single_select",
+          "options": [
+            "Borrower",
+            "Co-Borrower",
+            "Both"
+          ],
+          "required_fields": [
+            "credit_freeze_borrower_type"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "Only required if has_credit_freeze_boolean == true and application_type == 'Joint'."
+          ]
+        },
+        {
+          "question_id": "credit_score_range",
+          "prompt": "What is your current Credit Score?",
+          "answer_type": "single_select",
+          "options": [
+            "Excellent 740+",
+            "Good 700-739",
+            "Average 660-699",
+            "Fair 600-659",
+            "Poor 599 or less"
+          ],
+          "required_fields": [
+            "borrower_credit_score_range"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "If applying jointly, collect credit score for each borrower."
+          ]
+        },
+        {
+          "question_id": "co_borrower_occupancy",
+          "prompt": "Is the Co-borrower going to occupy the property?",
+          "answer_type": "boolean",
+          "required_fields": [
+            "co_borrower_will_occupy_boolean"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "Only required if application_type == 'Joint'."
+          ]
+        },
+        {
+          "question_id": "derogatory_events",
+          "prompt": "Has there been any bankruptcies, short-sales, foreclosures, or loan modifications in the last 10 years?",
+          "answer_type": "single_select",
+          "options": [
+            "No",
+            "Bankruptcy",
+            "Foreclosure",
+            "Both BK and Foreclosure",
+            "Loan Modification"
+          ],
+          "required_fields": [
+            "has_derogatory_event_boolean",
+            "derogatory_event_type"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "If any derogatory event selected, collect details for borrower and co-borrower (if joint)."
+          ]
+        },
+        {
+          "question_id": "bankruptcy_details",
+          "prompt": "Please provide bankruptcy details.",
+          "answer_type": "string",
+          "required_fields": [
+            "borrower_bankruptcy_how_long_ago",
+            "co_borrower_bankruptcy_how_long_ago"
+          ],
+          "required_documents": [
+            "BK Paperwork (Bankruptcy petition and discharge papers)"
+          ],
+          "conditional_requirements": [
+            "Only required if derogatory_event_type includes 'Bankruptcy' or 'Both BK and Foreclosure'.",
+            "If applying jointly, collect for co-borrower as well."
+          ]
+        },
+        {
+          "question_id": "foreclosure_details",
+          "prompt": "Please provide foreclosure details.",
+          "answer_type": "string",
+          "required_fields": [
+            "borrower_foreclosure_how_long_ago",
+            "co_borrower_foreclosure_how_long_ago"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "Only required if derogatory_event_type includes 'Foreclosure' or 'Both BK and Foreclosure'.",
+            "If applying jointly, collect for co-borrower as well."
+          ]
+        },
+        {
+          "question_id": "loan_modification_details",
+          "prompt": "Please provide loan modification details.",
+          "answer_type": "string",
+          "required_fields": [
+            "borrower_loan_modification_how_long_ago",
+            "co_borrower_loan_modification_how_long_ago"
+          ],
+          "required_documents": [
+            "Loan Modification Paperwork"
+          ],
+          "conditional_requirements": [
+            "Only required if derogatory_event_type == 'Loan Modification'.",
+            "If applying jointly, collect for co-borrower as well."
+          ]
+        }
+      ]
+    },
+    {
+      "section_id": "income_and_employment",
+      "title": "8. Income & Employment",
+      "questions": [
+        {
+          "question_id": "self_employed",
+          "prompt": "Are you self employed?",
+          "answer_type": "boolean",
+          "required_fields": [
+            "is_self_employed_boolean"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "If true, ask self-employment related questions.",
+            "If false, ask W-2 employment questions."
+          ]
+        },
+        {
+          "question_id": "annual_income",
+          "prompt": "Approximately what is your annual income?",
+          "answer_type": "number",
+          "required_fields": [
+            "annual_income_amount"
+          ],
+          "required_documents": [],
+          "conditional_requirements": []
+        },
+        {
+          "question_id": "time_off_work",
+          "prompt": "Have you taken any extensive time off work in the past 24 months?",
+          "answer_type": "boolean",
+          "required_fields": [
+            "has_time_off_work_boolean"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "If true, collect time off details."
+          ]
+        },
+        {
+          "question_id": "time_off_details",
+          "prompt": "How long and from when to when?",
+          "answer_type": "string",
+          "required_fields": [
+            "time_off_months",
+            "time_off_from_date",
+            "time_off_to_date"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "Only required if has_time_off_work_boolean == true."
+          ]
+        },
+        {
+          "question_id": "independent_contractor",
+          "prompt": "Are you an Independent Contractor?",
+          "answer_type": "boolean",
+          "required_fields": [
+            "is_independent_contractor_boolean"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "If false, collect 1040s and 1099s.",
+            "If true, collect contractor employment information."
+          ]
+        },
+        {
+          "question_id": "contractor_employment_info",
+          "prompt": "Please provide your contractor employment information.",
+          "answer_type": "string",
+          "required_fields": [
+            "contractor_employment_from_date",
+            "contractor_employment_to_date",
+            "contractor_contact_information",
+            "contractor_employer_name",
+            "contractor_employer_address"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "Only required if is_independent_contractor_boolean == true."
+          ]
+        },
+        {
+          "question_id": "ownership_interest_25_percent",
+          "prompt": "Do you have ownership interest of 25% or more in this business?",
+          "answer_type": "boolean",
+          "required_fields": [
+            "has_25_percent_ownership_boolean"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "Only required if is_self_employed_boolean == true or is_independent_contractor_boolean == true."
+          ]
+        },
+        {
+          "question_id": "tax_returns_filed",
+          "prompt": "Please list the most recent two years of tax returns that you have filed.",
+          "answer_type": "string",
+          "required_fields": [
+            "tax_return_dates[]"
+          ],
+          "required_documents": [
+            "1040s",
+            "1099s"
+          ],
+          "conditional_requirements": [
+            "Only required if is_self_employed_boolean == true or is_independent_contractor_boolean == true."
+          ]
+        },
+        {
+          "question_id": "business_duration",
+          "prompt": "How long have you been with this business?",
+          "answer_type": "string",
+          "required_fields": [
+            "business_from_date",
+            "business_to_date"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "Only required if is_self_employed_boolean == true."
+          ]
+        },
+        {
+          "question_id": "business_type",
+          "prompt": "What type of company are you affiliated with?",
+          "answer_type": "single_select",
+          "options": [
+            "Sole Proprietorship",
+            "Partnership",
+            "C-Corporation (Filed)",
+            "S-Corporation (Filed)",
+            "Limited Liability Corporation (Files)"
+          ],
+          "required_fields": [
+            "business_entity_type"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "If 'Sole Proprietorship', collect Tax Return.",
+            "If 'Partnership', collect 1065s and Personal Tax returns.",
+            "If 'C-Corporation (Filed)', collect Form 1120.",
+            "If 'S-Corporation (Filed)', collect Tax Return.",
+            "If 'Limited Liability Corporation (Files)', collect Tax Return."
+          ]
+        },
+        {
+          "question_id": "w2_employer_duration",
+          "prompt": "How long have you been with your current employer?",
+          "answer_type": "string",
+          "required_fields": [
+            "employer_tenure_years"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "Only required if is_self_employed_boolean == false.",
+            "If employer_tenure_years < 2, complete 2 year employment history."
+          ]
+        },
+        {
+          "question_id": "employer_info",
+          "prompt": "Please provide employer contact info.",
+          "answer_type": "string",
+          "required_fields": [
+            "employer_name",
+            "employer_address_street",
+            "employer_address_city",
+            "employer_address_state",
+            "employer_address_zip"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "Verify address through Google API.",
+            "Only required if is_self_employed_boolean == false."
+          ]
+        },
+        {
+          "question_id": "hr_contact_info",
+          "prompt": "Please provide Employer / Human Resources Contact info.",
+          "answer_type": "string",
+          "required_fields": [
+            "hr_contact_name",
+            "hr_contact_phone",
+            "hr_contact_email"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "Only required if is_self_employed_boolean == false."
+          ]
+        },
+        {
+          "question_id": "variable_income",
+          "prompt": "Have you received any bonus, overtime or commission over the past 24 months?",
+          "answer_type": "boolean",
+          "required_fields": [
+            "has_variable_income_boolean"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "If true, collect details for each type of variable income."
+          ]
+        },
+        {
+          "question_id": "bonus_details",
+          "prompt": "Please provide bonus income details.",
+          "answer_type": "string",
+          "required_fields": [
+            "bonus_amount",
+            "bonus_frequency",
+            "has_received_bonus_boolean"
+          ],
+          "frequency_options": [
+            "Weekly",
+            "Monthly",
+            "Quarterly",
+            "Yearly"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "Only required if has_variable_income_boolean == true and receives bonus."
+          ]
+        },
+        {
+          "question_id": "overtime_details",
+          "prompt": "Please provide overtime income details.",
+          "answer_type": "string",
+          "required_fields": [
+            "overtime_amount",
+            "overtime_frequency"
+          ],
+          "frequency_options": [
+            "Weekly",
+            "Monthly",
+            "Quarterly",
+            "Yearly"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "Only required if has_variable_income_boolean == true and receives overtime."
+          ]
+        },
+        {
+          "question_id": "commission_details",
+          "prompt": "Please provide commission income details.",
+          "answer_type": "string",
+          "required_fields": [
+            "commission_amount",
+            "commission_frequency"
+          ],
+          "frequency_options": [
+            "Weekly",
+            "Monthly",
+            "Quarterly",
+            "Yearly"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "Only required if has_variable_income_boolean == true and receives commission."
+          ]
+        },
+        {
+          "question_id": "position_pay_change",
+          "prompt": "Has there been any recent change in position or pay rate?",
+          "answer_type": "boolean",
+          "required_fields": [
+            "has_position_pay_change_boolean"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "If true, collect old and new position pay rates."
+          ]
+        },
+        {
+          "question_id": "position_pay_change_details",
+          "prompt": "Please provide old and new position pay rate.",
+          "answer_type": "string",
+          "required_fields": [
+            "old_position_pay_rate",
+            "new_position_pay_rate"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "Only required if has_position_pay_change_boolean == true."
+          ]
+        }
+      ],
+      "notes": "Consider connecting to LinkedIn for employment history."
+    },
+    {
+      "section_id": "subject_property",
+      "title": "9. Subject Property Information",
+      "questions": [
+        {
+          "question_id": "subject_property_type",
+          "prompt": "What type of property are you intending on purchasing?",
+          "answer_type": "single_select",
+          "options": [
+            "SFR",
+            "Townhome",
+            "Condo",
+            "Multi",
+            "Manufactured"
+          ],
+          "required_fields": [
+            "subject_property_type"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "If 'Condo', may require condo questionnaire, HOA docs, and master insurance later.",
+            "If 'Multi', confirm number of units and which unit will be owner-occupied.",
+            "If 'Manufactured', may require HUD tags, engineer report, and additional property eligibility checks."
+          ]
+        },
+        {
+          "question_id": "subject_property_use",
+          "prompt": "How will you use the property?",
+          "answer_type": "single_select",
+          "options": [
+            "Primary Residence",
+            "Second Home",
+            "Investment Property"
+          ],
+          "required_fields": [
+            "subject_property_occupancy"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "If 'Investment Property', rental income and leases may be needed.",
+            "If 'Second Home', confirm distance from primary residence."
+          ]
+        },
+        {
+          "question_id": "planned_ownership_duration",
+          "prompt": "How long do you plan on owning the property?",
+          "answer_type": "number",
+          "required_fields": [
+            "planned_ownership_years"
+          ],
+          "required_documents": [],
+          "conditional_requirements": []
+        }
+      ]
+    },
+    {
+      "section_id": "monthly_payment",
+      "title": "10. Monthly Payment Info",
+      "questions": [
+        {
+          "question_id": "monthly_payment_comfort",
+          "prompt": "Including property taxes, insurance and HOA (if applicable) what is your monthly payment comfort level for the new mortgage?",
+          "answer_type": "number",
+          "required_fields": [
+            "target_monthly_payment_amount"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "Use this as a constraint when evaluating maximum qualifying loan amount and product structure."
+          ]
+        }
+      ]
+    },
+    {
+      "section_id": "assets",
+      "title": "11. Assets & Down Payment",
+      "questions": [
+        {
+          "question_id": "available_assets",
+          "prompt": "What is the total amount of available assets?",
+          "answer_type": "number",
+          "required_fields": [
+            "total_available_assets_amount"
+          ],
+          "required_documents": [],
+          "conditional_requirements": []
+        },
+        {
+          "question_id": "assets_for_downpayment",
+          "prompt": "Amount of available assets to be applied to the down payment?",
+          "answer_type": "number",
+          "required_fields": [
+            "assets_for_downpayment_amount"
+          ],
+          "required_documents": [],
+          "conditional_requirements": []
+        },
+        {
+          "question_id": "downpayment_source",
+          "prompt": "What is the source of your downpayment?",
+          "answer_type": "multi_select",
+          "options": [
+            "Gift",
+            "Bank Accounts",
+            "Retirement accounts"
+          ],
+          "required_fields": [
+            "downpayment_source_types[]"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "If 'Gift' selected, collect gift documentation.",
+            "If 'Bank Accounts' selected, collect Bank Statement.",
+            "If 'Retirement accounts' selected, collect 401K/retirement account statements."
+          ]
+        },
+        {
+          "question_id": "gift_documentation",
+          "prompt": "Please provide gift fund documentation.",
+          "answer_type": "document",
+          "required_fields": [
+            "gift_donor_name",
+            "gift_amount"
+          ],
+          "required_documents": [
+            "Gift Letter"
+          ],
+          "conditional_requirements": [
+            "Only required if 'Gift' is selected as downpayment source."
+          ]
+        },
+        {
+          "question_id": "bank_statements",
+          "prompt": "Please provide bank account statements.",
+          "answer_type": "document",
+          "required_fields": [],
+          "required_documents": [
+            "Bank Statement (1-2 months, all pages)"
+          ],
+          "conditional_requirements": [
+            "Only required if 'Bank Accounts' is selected as downpayment source."
+          ]
+        },
+        {
+          "question_id": "retirement_statements",
+          "prompt": "Please provide retirement account statements.",
+          "answer_type": "document",
+          "required_fields": [],
+          "required_documents": [
+            "401K/Retirement Account Statement"
+          ],
+          "conditional_requirements": [
+            "Only required if 'Retirement accounts' is selected as downpayment source."
+          ]
+        }
+      ]
+    },
+    {
+      "section_id": "declarations",
+      "title": "12. Declarations (Demographics)",
+      "notes": "You may choose to list information about race & ethnicity below. This information is voluntary.",
+      "questions": [
+        {
+          "question_id": "ethnicity",
+          "prompt": "What is your ethnicity?",
+          "answer_type": "single_select",
+          "options": [
+            "Hispanic or Latino",
+            "Not Hispanic or Latino",
+            "I do not wish to provide this information"
+          ],
+          "required_fields": [
+            "borrower_ethnicity"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "If 'Hispanic or Latino', ask for specific origin."
+          ]
+        },
+        {
+          "question_id": "hispanic_origin",
+          "prompt": "Please specify Hispanic or Latino origin.",
+          "answer_type": "single_select",
+          "options": [
+            "Mexican",
+            "Puerto Rican",
+            "Cuban",
+            "Other Hispanic or Latino"
+          ],
+          "required_fields": [
+            "borrower_hispanic_origin",
+            "borrower_hispanic_origin_other"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "Only required if borrower_ethnicity == 'Hispanic or Latino'.",
+            "If 'Other Hispanic or Latino', allow free text entry (e.g., Argentinean, Colombian, Dominican, Nicaraguan, Salvadoran, Spaniard, etc.)."
+          ]
+        },
+        {
+          "question_id": "gender",
+          "prompt": "What is your gender?",
+          "answer_type": "single_select",
+          "options": [
+            "Female",
+            "Male",
+            "I do not wish to provide this information"
+          ],
+          "required_fields": [
+            "borrower_gender"
+          ],
+          "required_documents": [],
+          "conditional_requirements": []
+        },
+        {
+          "question_id": "race",
+          "prompt": "What is your race?",
+          "answer_type": "single_select",
+          "options": [
+            "American Indian or Alaska Native",
+            "Asian",
+            "Black or African American",
+            "Native Hawaiian or Other Pacific Islander",
+            "White",
+            "I do not wish to provide this information"
+          ],
+          "required_fields": [
+            "borrower_race"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "If 'American Indian or Alaska Native', collect tribe name.",
+            "If 'Asian', ask for specific Asian origin.",
+            "If 'Native Hawaiian or Other Pacific Islander', ask for specific origin."
+          ]
+        },
+        {
+          "question_id": "tribe_name",
+          "prompt": "Print name of enrolled or principle tribe.",
+          "answer_type": "string",
+          "required_fields": [
+            "borrower_tribe_name"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "Only required if borrower_race == 'American Indian or Alaska Native'."
+          ]
+        },
+        {
+          "question_id": "asian_origin",
+          "prompt": "Please specify Asian origin.",
+          "answer_type": "single_select",
+          "options": [
+            "Asian Indian",
+            "Japanese",
+            "Chinese",
+            "Filipino",
+            "Korean",
+            "Vietnamese",
+            "Other Asian"
+          ],
+          "required_fields": [
+            "borrower_asian_origin"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "Only required if borrower_race == 'Asian'."
+          ]
+        },
+        {
+          "question_id": "pacific_islander_origin",
+          "prompt": "Please specify Native Hawaiian or Other Pacific Islander origin.",
+          "answer_type": "single_select",
+          "options": [
+            "Native Hawaiian",
+            "Guamanian or Chamorro",
+            "Samoan",
+            "Other Pacific Islander"
+          ],
+          "required_fields": [
+            "borrower_pacific_islander_origin",
+            "borrower_pacific_islander_origin_other"
+          ],
+          "required_documents": [],
+          "conditional_requirements": [
+            "Only required if borrower_race == 'Native Hawaiian or Other Pacific Islander'.",
+            "If 'Other Pacific Islander', allow free text entry (e.g., Fijian, Tongan, etc.)."
+          ]
+        }
+      ]
+    }
+  ]
+}

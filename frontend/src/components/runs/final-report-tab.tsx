@@ -30,6 +30,7 @@ import { Button } from "@/components/ui/button";
 import type { RunDetail, AgentResultDetail } from "@/lib/api";
 import type { AgentType } from "@/types/agents";
 import { getSubAgents } from "@/types/agents";
+import { ExecutiveSummary } from "@/components/disclosure";
 
 // =============================================================================
 // TYPES
@@ -189,13 +190,20 @@ function extractFlaggedItems(runDetail: RunDetail): FlaggedItem[] {
 
 function extractFieldChanges(runDetail: RunDetail): FieldChange[] {
   const changes: FieldChange[] = [];
+  const agentType = runDetail.agent_type || "drawdocs";
 
-  // Extract from preparation output
+  // Extract from preparation output (Drawdocs)
   const prepOutput = runDetail.agents.preparation?.output as {
     results?: {
       field_mappings?: Record<string, { value: string; attachment_id?: string }>;
     };
+    // Disclosure agent specific fields
+    fields_populated?: string[];
+    regz_le_result?: {
+      updates_made?: Record<string, unknown>;
+    };
   };
+  
   if (prepOutput?.results?.field_mappings) {
     Object.entries(prepOutput.results.field_mappings).forEach(([fieldId, mapping]) => {
       if (mapping.value && mapping.value !== "" && mapping.value !== "0") {
@@ -207,6 +215,40 @@ function extractFieldChanges(runDetail: RunDetail): FieldChange[] {
           source: mapping.attachment_id || "Document",
           agent: "preparation",
         });
+      }
+    });
+  }
+
+  // Extract from disclosure preparation agent's RegZ-LE updates
+  if (agentType === "disclosure" && prepOutput?.regz_le_result?.updates_made) {
+    Object.entries(prepOutput.regz_le_result.updates_made).forEach(([fieldId, value]) => {
+      changes.push({
+        fieldId,
+        fieldName: fieldId,
+        oldValue: null,
+        newValue: String(value),
+        source: "RegZ-LE Form",
+        agent: "preparation",
+      });
+    });
+  }
+
+  // Extract from disclosure preparation agent's fields_populated list
+  // (includes field IDs that were successfully written)
+  if (agentType === "disclosure" && prepOutput?.fields_populated) {
+    // Filter out duplicates already added from regz_le_result
+    const existingFieldIds = new Set(changes.map(c => c.fieldId));
+    prepOutput.fields_populated.forEach((fieldId: string) => {
+      if (!existingFieldIds.has(fieldId)) {
+        changes.push({
+          fieldId,
+          fieldName: fieldId,
+          oldValue: null,
+          newValue: "Updated",
+          source: "Preparation Agent",
+          agent: "preparation",
+        });
+        existingFieldIds.add(fieldId);
       }
     });
   }
@@ -228,6 +270,36 @@ function extractFieldChanges(runDetail: RunDetail): FieldChange[] {
           source: field.document_filename || "Verification",
           agent: "verification",
         });
+      }
+    });
+  }
+
+  // Extract field writes from logs (for disclosure agent)
+  if (agentType === "disclosure" && runDetail.logs) {
+    const existingFieldIds = new Set(changes.map(c => c.fieldId));
+    
+    runDetail.logs.forEach(log => {
+      // Look for [WRITE] success messages
+      const writeMatch = log.message.match(/\[WRITE\] ✓.*?\(([^)]+)\)\s*=\s*(.+)$/);
+      if (writeMatch) {
+        const fieldId = writeMatch[1];
+        const value = writeMatch[2];
+        
+        // Update existing or add new
+        const existingIdx = changes.findIndex(c => c.fieldId === fieldId);
+        if (existingIdx >= 0) {
+          changes[existingIdx].newValue = value;
+          changes[existingIdx].source = "Field Write";
+        } else if (!existingFieldIds.has(fieldId)) {
+          changes.push({
+            fieldId,
+            fieldName: fieldId,
+            oldValue: null,
+            newValue: value,
+            source: "Field Write",
+            agent: "preparation",
+          });
+        }
       }
     });
   }
@@ -265,34 +337,67 @@ function SummaryCard({ runDetail, flaggedItems, fieldChanges }: SummaryCardProps
     documents_processed?: number;
     total_documents_found?: number;
   };
-
-  const stats = [
-    {
-      label: "Documents Processed",
-      value: prepOutput?.documents_processed || 0,
-      total: prepOutput?.total_documents_found,
-      icon: FileText,
-      color: "text-blue-600",
-    },
-    {
-      label: "Fields Updated",
-      value: fieldChanges.length,
-      icon: Pencil,
-      color: "text-emerald-600",
-    },
-    {
-      label: "Errors",
-      value: errorCount,
-      icon: XCircle,
-      color: errorCount > 0 ? "text-red-600" : "text-slate-400",
-    },
-    {
-      label: "Warnings",
-      value: warningCount,
-      icon: AlertTriangle,
-      color: warningCount > 0 ? "text-amber-600" : "text-slate-400",
-    },
-  ];
+  
+  const agentType = runDetail.agent_type || "drawdocs";
+  
+  // Different stats for disclosure vs drawdocs
+  const stats = agentType === "disclosure"
+    ? [
+        // For disclosure: show forms validated instead of documents
+        {
+          label: "Forms Validated",
+          value: runDetail.agents.verification?.output?.form_validation?.forms_passed || 0,
+          total: runDetail.agents.verification?.output?.form_validation?.forms_checked,
+          icon: FileText,
+          color: "text-blue-600",
+        },
+        {
+          label: "Fields Updated",
+          value: fieldChanges.length,
+          icon: Pencil,
+          color: "text-emerald-600",
+        },
+        {
+          label: "Errors",
+          value: errorCount,
+          icon: XCircle,
+          color: errorCount > 0 ? "text-red-600" : "text-slate-400",
+        },
+        {
+          label: "Warnings",
+          value: warningCount,
+          icon: AlertTriangle,
+          color: warningCount > 0 ? "text-amber-600" : "text-slate-400",
+        },
+      ]
+    : [
+        // For drawdocs: show documents processed
+        {
+          label: "Documents Processed",
+          value: prepOutput?.documents_processed || 0,
+          total: prepOutput?.total_documents_found,
+          icon: FileText,
+          color: "text-blue-600",
+        },
+        {
+          label: "Fields Updated",
+          value: fieldChanges.length,
+          icon: Pencil,
+          color: "text-emerald-600",
+        },
+        {
+          label: "Errors",
+          value: errorCount,
+          icon: XCircle,
+          color: errorCount > 0 ? "text-red-600" : "text-slate-400",
+        },
+        {
+          label: "Warnings",
+          value: warningCount,
+          icon: AlertTriangle,
+          color: warningCount > 0 ? "text-amber-600" : "text-slate-400",
+        },
+      ];
 
   return (
     <Card>
@@ -2045,6 +2150,11 @@ export function FinalReportTab({ runDetail, isLoading, className }: FinalReportT
         </div>
         <ExportButton runDetail={runDetail} />
       </div>
+
+      {/* Executive Summary - NEW (Disclosure only) */}
+      {agentType === "disclosure" && (
+        <ExecutiveSummary runDetail={runDetail} />
+      )}
 
       {/* Summary Stats */}
       <SummaryCard
