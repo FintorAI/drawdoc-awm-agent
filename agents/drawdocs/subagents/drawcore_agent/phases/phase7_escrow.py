@@ -261,14 +261,22 @@ def process_escrow_phase(
             })
             return result
         
-        # Convert to floats
+        # Convert to floats (strip commas first)
         try:
-            monthly_tax = float(monthly_tax) if monthly_tax else 0
-            monthly_insurance = float(monthly_insurance) if monthly_insurance else 0
-            monthly_mi = float(monthly_mi) if monthly_mi else 0
-            monthly_flood = float(monthly_flood) if monthly_flood else 0
+            # Helper to clean and convert numeric strings
+            def clean_float(value):
+                if not value or value == "":
+                    return 0
+                # Remove commas and convert to float
+                return float(str(value).replace(",", ""))
+            
+            monthly_tax = clean_float(monthly_tax)
+            monthly_insurance = clean_float(monthly_insurance)
+            monthly_mi = clean_float(monthly_mi)
+            monthly_flood = clean_float(monthly_flood)
         except (ValueError, TypeError) as e:
             logger.error(f"[PHASE 7] Error converting amounts to float: {e}")
+            logger.error(f"[PHASE 7] Values: tax={monthly_tax}, insurance={monthly_insurance}, mi={monthly_mi}, flood={monthly_flood}")
             result["status"] = "failed"
             result["issues"].append({
                 "type": "error",
@@ -414,4 +422,8 @@ def calculate_state_tax_if_new_construction(
         return tax_summary
     
     return None
+
+
+
+
 

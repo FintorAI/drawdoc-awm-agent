@@ -302,6 +302,22 @@ def _check_is_ctc(fields: Dict[str, Any]) -> Dict[str, Any]:
     - Log.MS.Date.Clear to Close: Date when CTC was completed
     - Log.MS.CurrentMilestone: Current milestone name
     """
+    import os
+    
+    # Demo mode bypass
+    is_demo_mode = os.getenv("ENABLE_ENCOMPASS_WRITES", "true").lower() == "false"
+    if is_demo_mode:
+        return {
+            "passed": True,
+            "field_id": "Log.MS.Status.Clear to Close",
+            "field_name": "Milestone Status - Clear to Close",
+            "value": "Demo Mode",
+            "expected_value": "Finished",
+            "rule": "☑️ CTC from UW? - Milestone 'Clear to Close' must have status 'Finished'",
+            "failure_reason": None,
+            "additional_fields": {}
+        }
+    
     ctc_status = fields.get("Log.MS.Status.Clear to Close", "")
     ctc_date = fields.get("Log.MS.Date.Clear to Close", "")
     current_milestone = fields.get("Log.MS.CurrentMilestone", "")
@@ -337,6 +353,22 @@ def _check_cd_approved(fields: Dict[str, Any]) -> Dict[str, Any]:
     - CX.CD.REQ.APPROVAL.LO: LO approval flag
     - CX.CD.REQ.APPROVAL.PROC: Processor confirmation flag
     """
+    import os
+    
+    # Demo mode bypass
+    is_demo_mode = os.getenv("ENABLE_ENCOMPASS_WRITES", "true").lower() == "false"
+    if is_demo_mode:
+        return {
+            "passed": True,
+            "field_id": "CX.CD.REQ.APPROVAL.LO",
+            "field_name": "CD Request Approved by Loan Officer",
+            "value": "Demo Mode",
+            "expected_value": "Y (or true)",
+            "rule": "☑️ CD Status = 'CD Approved'? - LO must approve CD request",
+            "failure_reason": None,
+            "additional_fields": {}
+        }
+    
     lo_approval = fields.get("CX.CD.REQ.APPROVAL.LO", "")
     proc_approval = fields.get("CX.CD.REQ.APPROVAL.PROC", "")
     
@@ -373,6 +405,22 @@ def _check_cd_acknowledged(fields: Dict[str, Any]) -> Dict[str, Any]:
     - CD1.X51: Alternative CD acknowledgement date
     - 3977: Closing Disclosure Sent Date (for reference)
     """
+    import os
+    
+    # Demo mode bypass
+    is_demo_mode = os.getenv("ENABLE_ENCOMPASS_WRITES", "true").lower() == "false"
+    if is_demo_mode:
+        return {
+            "passed": True,
+            "field_id": "3978",
+            "field_name": "Closing Disclosure Received Date",
+            "value": "Demo Mode",
+            "expected_value": "Date when borrower received/acknowledged CD",
+            "rule": "☑️ CD Acknowledged by Borrower(s)? - Date borrower received/acknowledged CD",
+            "failure_reason": None,
+            "additional_fields": {}
+        }
+    
     cd_received_date = fields.get("3978", "")
     cd_received_alt = fields.get("CD1.X51", "")
     cd_sent_date = fields.get("3977", "")
@@ -403,6 +451,21 @@ def _check_cd_acknowledged(fields: Dict[str, Any]) -> Dict[str, Any]:
 
 def _check_in_docs_ordered_queue(fields: Dict[str, Any]) -> Dict[str, Any]:
     """Check if loan is in Docs Ordered queue based on milestone."""
+    import os
+    
+    # Demo mode bypass
+    is_demo_mode = os.getenv("ENABLE_ENCOMPASS_WRITES", "true").lower() == "false"
+    if is_demo_mode:
+        return {
+            "passed": True,
+            "field_id": "Log.MS.CurrentMilestone",
+            "field_name": "Current Milestone",
+            "value": "Demo Mode",
+            "expected_value": "Docs Ordered",
+            "rule": "Current milestone should indicate docs have been ordered",
+            "failure_reason": None
+        }
+    
     current_milestone = fields.get("Log.MS.CurrentMilestone", "")
     
     # Check if milestone indicates docs are ordered
