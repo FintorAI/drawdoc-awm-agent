@@ -1,0 +1,110 @@
+DISCLOSURE AGENT - FIELDS WITH UNKNOWN IDs
+
+========================================
+FACT ACT DISCLOSURE FORM (G2 - CRITICAL)
+========================================
+- Material Terms Credit checkbox (Transaction)
+- Credit Score Disclosure checkbox (Settlement Service)
+
+
+========================================
+HOME COUNSELING FORM (G3)
+========================================
+- HUD agency list selection fields
+- Service selection checkboxes
+
+
+========================================
+2015 ITEMIZATION FORM (G5)
+========================================
+- Itemize fees when printing checkbox
+
+
+========================================
+SSPL FORM (G6)
+========================================
+- Template applied detection field
+- Service list fields
+
+
+========================================
+ABA (AFFILIATE BUSINESS ARRANGEMENT) FORM (G7)
+========================================
+- Form blank detection field
+- AWM Affiliate template application field
+- Settlement box checkbox
+- Purchase/Sale/Refinance box checkbox
+
+
+========================================
+URLA PAGE 3 (G9)
+========================================
+- Include lender info page in borrower package checkbox
+
+
+========================================
+1003 URLA PART 1 (G10)
+========================================
+- Citizenship field
+- Former Address fields
+
+
+========================================
+BORROWER SUMMARY - ORIGINATION (G12)
+========================================
+- Consent validity days field (60 days)
+- Company's Agent Information field (CoreLogic Inc.)
+- CoreLogic address field (40 Pacifica Suite 900)
+
+
+========================================
+DISCLOSURE SUMMARY / COMMENTS (G13)
+========================================
+- Comments/Notes section field
+
+
+========================================
+eCONSENT FORM (G15)
+========================================
+- eConsent reason field
+
+
+========================================
+COMPANY LICENSE FORM (G17)
+========================================
+- Company License #204 field
+
+
+========================================
+REGZ-LE FORM (G18)
+========================================
+- Disbursement field
+- 0 percent Payment Option field
+- Number of Days field (Biweekly/Interim Interest/Classic HELOC - should be 365)
+
+
+========================================
+eFOLDER PRODUCTS (G20)
+========================================
+- Fixed Rate Conventional PMI Disclosure checkbox
+
+
+========================================
+SUMMARY
+========================================
+Total Unknown Fields: 20+
+
+By Priority:
+CRITICAL: 2 fields (FACT Act checkboxes)
+HIGH: 3 fields (Itemization, URLA Part 1)
+MEDIUM: 10+ fields (Home Counseling, SSPL, Borrower Summary, Comments, eConsent, Company License)
+LOW: 5+ fields (ABA, RegZ-LE, eFolder)
+
+Most Critical to Map First:
+1. FACT Act Disclosure - Material Terms Credit checkbox
+2. FACT Act Disclosure - Credit Score Disclosure checkbox
+3. 2015 Itemization - Itemize fees when printing checkbox
+4. URLA Part 1 - Citizenship field
+5. Borrower Summary - Consent validity days field
+
+

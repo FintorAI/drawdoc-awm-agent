@@ -1,7 +1,7 @@
 # Disclosure Verification Agent (v2)
 
-**Version**: 2.0 (LE-focused)  
-**Last Updated**: December 3, 2025  
+**Version**: 2.0 (LE-focused with 11 GAPS validations)  
+**Last Updated**: December 18, 2025  
 
 [🔙 Back to Main Disclosure README](../../README.md)
 
@@ -89,6 +89,30 @@ Validates SOP-required forms:
 │  Output: Blocking issues (if any) + field status           │
 └────────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## GAPS Implementations
+
+This agent implements 11 GAPS from the Disclosure Desk SOP:
+
+| Gap | Name | Status | Tool |
+|-----|------|--------|------|
+| G1 | Phone/Email Hard Stop | ✅ Full | `check_hard_stops()` |
+| G2 | FACT Act Checkboxes | 🚧 Partial | `validate_fact_act_checkboxes()` |
+| G8 | 15-Day Closing Rule | ✅ Full | `check_closing_date_rule()` |
+| G9 | USPS Address Validation | ✅ Full API | `verify_usps_address()` |
+| G10 | URLA Part 1 Validations | 🚧 Partial | `validate_urla_part1()` |
+| G11 | LO NMLS Validation | ✅ Full | `validate_lo_nmls()` |
+| G12 | Borrower Summary | 🚧 Partial | `validate_borrower_summary()` |
+| G13 | Comments/Notes Review | 🚧 Manual | `check_comments_notes()` |
+| G14 | Credit Validation | ✅ Full | `validate_credit_info()` |
+| G15 | Consent 60-Day | 🚧 Partial | `validate_econsent()` |
+| G17 | Company License | 🚧 Manual | `check_company_license()` |
+
+**Legend**: ✅ Full = All fields mapped | 🚧 Partial = Some fields UNKNOWN, requires manual verification
+
+See [`GAPS.md`](../../GAPS.md) for detailed field mappings.
 
 ---
 
@@ -462,4 +486,22 @@ verification_agent/
 
 ---
 
-*Last updated: December 3, 2025 - v2 LE-focused implementation*
+## API Integrations
+
+### USPS Address Validation API (G9) ✅
+- **Endpoint**: `https://api.usps.com/addresses/v3/address`
+- **Authentication**: OAuth2 client credentials
+- **Required**: `USPS_CLIENT_ID`, `USPS_CLIENT_SECRET` in `.env`
+- **Features**: 
+  - Validates and standardizes addresses
+  - Returns ZIP+4 codes
+  - Graceful error handling if credentials missing
+
+### Encompass Transcript Forms API (G4) ✅
+*(Shared with Preparation Agent)*
+- Verifies borrower consent forms
+- Auto-populates 4506-C and 8821 forms
+
+---
+
+*Last updated: December 18, 2025 - v2 LE-focused with complete GAPS validations*

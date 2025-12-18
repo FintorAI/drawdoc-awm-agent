@@ -1,7 +1,7 @@
 # Send Agent (v2) 🆕
 
-**Version**: 2.0 (NEW in v2)  
-**Last Updated**: December 3, 2025  
+**Version**: 2.0 (NEW in v2 with 2 GAPS implementations)  
+**Last Updated**: December 18, 2025  
 
 [🔙 Back to Main Disclosure README](../../README.md)
 
@@ -67,6 +67,29 @@ The **Send Agent** is the third and final agent in the Disclosure v2 workflow. I
 │  Output: Tracking ID (if ordered) or blocking issues       │
 └────────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## GAPS Implementations
+
+This agent implements 2 GAPS from the Disclosure Desk SOP:
+
+| Gap | Name | Status | Tool Module |
+|-----|------|--------|-------------|
+| G16 | Audit Exception Filter | ✅ Full | `audit_tools.py` |
+| G21 | LO Review Workflow | 🚧 Manual | `review_tools.py` |
+
+**G16 Details**: 
+- Filters out acceptable audit exceptions (Error 26.4, HMDA Alerts)
+- Blocks only on critical/unresolved issues
+- Integrated into `audit_loan()` flow
+
+**G21 Details**:
+- Manual workflow for LO review and approval
+- Logs review status and comments
+- Phase 2: Full automation with approval API
+
+See [`GAPS.md`](../../GAPS.md) for implementation details.
 
 ---
 
@@ -445,7 +468,9 @@ send_agent/
 └── tools/
     ├── mavent_tools.py        # Mavent compliance checks
     ├── atr_qm_tools.py        # ATR/QM flag checks
-    └── order_tools.py         # eDisclosures ordering
+    ├── order_tools.py         # eDisclosures ordering + G16 audit filtering
+    ├── audit_tools.py         # G16: Audit exception filtering
+    └── review_tools.py        # G21: LO review workflow
 ```
 
 ---
@@ -461,4 +486,22 @@ send_agent/
 
 ---
 
-*Last updated: December 3, 2025 - v2 LE-focused implementation*
+## Audit Exception Filtering (G16)
+
+The Send Agent includes intelligent audit exception filtering:
+
+**Acceptable Exceptions** (do not block):
+- Error 26.4 (Missing 1003 Signature - handled separately)
+- HMDA-related alerts (informational only)
+- Non-critical formatting warnings
+
+**Blocking Exceptions**:
+- Critical data errors
+- Required field missing errors
+- Compliance violations
+
+This filter is automatically applied during the `audit_loan()` step to prevent false positives from blocking legitimate disclosures.
+
+---
+
+*Last updated: December 18, 2025 - v2 LE-focused with GAPS compliance tools*

@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import type { LogEntry, RunDetail } from "@/lib/api";
 import type { TimelineEvent, AgentName, LogLevel } from "@/types/log-events";
-import { parseLogEntries, filterByAgent, filterByLevel, filterBySearch } from "@/lib/log-parser";
+import { parseLogEntries, filterByAgent, filterByLevel, filterBySearch, filterMaventErrors } from "@/lib/log-parser";
 import { TimelineEventItem } from "./timeline-event";
 
 // =============================================================================
@@ -86,6 +86,8 @@ export function TimelineTab({ runDetail, isLoading, className, agentType = "draw
   
   const filteredEvents = React.useMemo(() => {
     let events = allEvents;
+    // Filter out Mavent error events from timeline
+    events = filterMaventErrors(events);
     events = filterByAgent(events, agentFilter);
     events = filterByLevel(events, levelFilter);
     events = filterBySearch(events, searchQuery);

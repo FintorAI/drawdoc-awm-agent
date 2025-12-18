@@ -56,7 +56,7 @@ export function ComplianceChecksCard({ maventData, atrQmData, className }: Compl
               <h4 className="text-sm font-semibold">Mavent Compliance</h4>
               {maventData.error ? (
                 <Badge variant="destructive" className="text-xs">
-                  Error
+                  FAILED
                 </Badge>
               ) : maventPassed ? (
                 <CheckCircle2 className="h-5 w-5 text-emerald-600" />
@@ -67,12 +67,8 @@ export function ComplianceChecksCard({ maventData, atrQmData, className }: Compl
             
             {maventData.error ? (
               <div className="p-3 rounded-md bg-red-50 border border-red-200">
-                <div className="flex items-start gap-2">
-                  <AlertTriangle className="h-4 w-4 text-red-600 flex-shrink-0 mt-0.5" />
-                  <div className="space-y-1">
-                    <p className="text-xs font-medium text-red-900">Compliance Check Failed</p>
-                    <p className="text-xs text-red-800">{maventData.error}</p>
-                  </div>
+                <div className="flex items-center justify-center">
+                  <p className="text-sm font-semibold text-red-900">FAILED</p>
                 </div>
               </div>
             ) : (

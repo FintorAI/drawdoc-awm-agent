@@ -190,6 +190,9 @@ function AgentStatusCardSkeleton({ className }: { className?: string }) {
     executionTimestamp,
     pipelineType,
   }: AgentStatusCardProps) {
+    // Preserve elapsed time when agent finishes to prevent reset to 0
+    const lastElapsedRef = React.useRef<number>(0);
+    
     if (isLoading) {
       return <AgentStatusCardSkeleton className={className} />;
     }
@@ -200,6 +203,16 @@ function AgentStatusCardSkeleton({ className }: { className?: string }) {
     const isSuccess = status === "success";
     const isFailed = status === "failed";
     const isBlocked = status === "blocked";
+    
+    // Update last elapsed time if we have a valid value
+    if (result?.elapsed_seconds && result.elapsed_seconds > 0) {
+      lastElapsedRef.current = result.elapsed_seconds;
+    }
+    
+    // Use the preserved value if current value is 0 or undefined
+    const displayElapsedSeconds = (result?.elapsed_seconds && result.elapsed_seconds > 0) 
+      ? result.elapsed_seconds 
+      : lastElapsedRef.current;
   
     return (
       <button
@@ -259,11 +272,11 @@ function AgentStatusCardSkeleton({ className }: { className?: string }) {
               <span className="text-blue-600">
                 <LiveDuration startTime={executionTimestamp} />
               </span>
-            ) : (result?.elapsed_seconds !== undefined && result.elapsed_seconds > 0) ? (
+            ) : (displayElapsedSeconds > 0) ? (
               <span className={cn(
                 isFailed ? "text-red-600" : "text-muted-foreground"
               )}>
-                {formatDuration(result.elapsed_seconds)}
+                {formatDuration(displayElapsedSeconds)}
               </span>
             ) : (
               <span className="text-slate-400">—</span>

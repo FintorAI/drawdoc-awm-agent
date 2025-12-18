@@ -1,8 +1,8 @@
 # Disclosure Preparation Agent (v2)
 
-**Version**: 2.0 (LE-focused)  
-**Last Updated**: December 3, 2025  
-**Status**: ✅ Implemented and tested
+**Version**: 2.0 (LE-focused with 8 GAPS implementations)  
+**Last Updated**: December 18, 2025  
+**Status**: ✅ Implemented and tested with GAPS tools
 
 [🔙 Back to Main Disclosure README](../../README.md)
 
@@ -82,6 +82,29 @@ AI-based field derivation for missing LE fields:
 │  Output: Updated LE ready for compliance checks            │
 └────────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## GAPS Implementations
+
+This agent implements 8 GAPS from the Disclosure Desk SOP:
+
+| Gap | Name | Status | Tool Module |
+|-----|------|--------|-------------|
+| G3 | Home Counseling | 🚧 API Pending | `counseling_tools.py` |
+| G4 | Transcript Forms | ✅ Full API | `transcript_tools.py` |
+| G5 | 2015 Itemization | 🚧 Partial | `itemization_tools.py` |
+| G6 | SSPL Management | 🚧 Partial | `sspl_tools.py` |
+| G7 | ABA Template | 🚧 Manual | `template_tools.py` |
+| G18 | RegZ-LE Fields | 🚧 Partial | `regz_le_tools.py` |
+| G19 | Blend ORGID | ✅ Read-only | `blend_tools.py` |
+| G20 | eFolder Products | 🚧 Partial | `efolder_tools.py` |
+
+**Legend**: ✅ Full = Complete implementation | 🚧 Partial = Some fields UNKNOWN or manual steps required
+
+**G4 Highlight**: Transcript Forms API fully eliminates need for ~20 field ID mappings
+
+See [`GAPS.md`](../../GAPS.md) for detailed implementation notes.
 
 ---
 
@@ -536,11 +559,18 @@ preparation_agent/
 ├── README.md                      # This file
 ├── __init__.py
 └── tools/
-    ├── regz_le_tools.py          # RegZ-LE updates (v2)
+    ├── regz_le_tools.py          # RegZ-LE updates (v2) + G18
     ├── ctc_tools.py              # CTC matching (v2)
     ├── mi_tools.py               # MI calculation
     ├── field_derivation_tools.py # AI field population
-    └── field_normalization_tools.py # Value formatting
+    ├── field_normalization_tools.py # Value formatting
+    ├── transcript_tools.py       # G4: Transcript Forms API
+    ├── counseling_tools.py       # G3: Home Counseling
+    ├── itemization_tools.py      # G5: 2015 Itemization
+    ├── sspl_tools.py             # G6: SSPL Management
+    ├── template_tools.py         # G7: ABA Template
+    ├── blend_tools.py            # G19: Blend ORGID
+    └── efolder_tools.py          # G20: eFolder Products
 ```
 
 ---
@@ -556,4 +586,22 @@ preparation_agent/
 
 ---
 
-*Last updated: December 3, 2025 - v2 LE-focused implementation*
+## API Integrations
+
+### Encompass Transcript Forms API (G4) ✅
+- **Endpoint**: Encompass Developer Connect v3 API
+- **Methods**: 
+  - `GET /v3/settings/templates/transcriptRequests` - List templates
+  - `PATCH /v3/loans/{loanId}` - Apply template
+  - `PATCH /v3/loans/{loanId}/applications/{applicationId}/transcriptRequests` - Manage records
+- **Benefits**: Eliminates need for ~20+ field ID mappings
+- **Status**: Ready for production use
+
+### HUD Housing Counseling API (G3) ⏳
+- **Status**: API endpoint TBD
+- **Current**: Manual agency selection with logging
+- **Future**: Auto-populate agencies via HUD API
+
+---
+
+*Last updated: December 18, 2025 - v2 LE-focused with complete GAPS implementations*

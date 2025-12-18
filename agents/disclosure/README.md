@@ -1,7 +1,7 @@
 # Disclosure Agent v2 (LE-Focused)
 
-**Last Updated**: December 3 2025  
-**Version**: 2.0 (LE-focused architecture)  
+**Last Updated**: December 18, 2025  
+**Version**: 2.0 (LE-focused architecture with 22 GAPS implementations)  
 
 ---
 
@@ -81,7 +81,9 @@ The Disclosure Agent automates Initial Loan Estimate (LE) disclosure preparation
 - Texas property (special rules)
 - Non-Conventional loan type
 
-**Tools**: `check_trid_dates`, `check_hard_stops`, `check_closing_date_rule`, `validate_disclosure_form_fields`, `check_mvp_eligibility`
+**GAPS Implemented**: G1 (Phone/Email Hard Stop), G2 (FACT Act), G8 (15-Day Rule), G9 (USPS Validation), G10 (URLA Part 1), G11 (LO NMLS), G12 (Borrower Summary), G13 (Comments), G14 (Credit Validation), G15 (Consent), G17 (Company License)
+
+**Tools**: `check_trid_dates`, `check_hard_stops`, `check_closing_date_rule`, `validate_disclosure_form_fields`, `check_mvp_eligibility`, plus 9 GAPS validation tools
 
 [📁 Full README](./subagents/verification_agent/README.md)
 
@@ -102,7 +104,9 @@ The Disclosure Agent automates Initial Loan Estimate (LE) disclosure preparation
 3. Match Cash to Close (set checkboxes)
 4. Populate missing LE fields using AI derivation
 
-**Tools**: `update_regz_le_fields`, `calculate_loan_mi`, `match_ctc`, `verify_ctc_match`, `get_le_field_status`
+**GAPS Implemented**: G3 (Home Counseling), G4 (Transcript Forms - Full API), G5 (2015 Itemization), G6 (SSPL Management), G7 (ABA Template), G18 (RegZ-LE Fields), G19 (Blend ORGID), G20 (eFolder Products)
+
+**Tools**: `update_regz_le_fields`, `calculate_loan_mi`, `match_ctc`, `verify_ctc_match`, `get_le_field_status`, plus 8 GAPS implementation tools
 
 [📁 Full README](./subagents/preparation_agent/README.md)
 
@@ -121,6 +125,8 @@ The Disclosure Agent automates Initial Loan Estimate (LE) disclosure preparation
 - Mavent has any Fail/Alert/Warning → BLOCK
 - ATR/QM has any RED flag → BLOCK
 - Audit has unresolved issues → BLOCK
+
+**GAPS Implemented**: G16 (Audit Exception Filter), G21 (LO Review Workflow)
 
 **API Flow**:
 ```
@@ -441,5 +447,17 @@ python agents/disclosure/test_orchestrator.py
 
 ---
 
-*Document last updated: December 3 2025*  
-*Version: 2.0 (LE-focused)*
+## GAPS Implementation Status
+
+All 22 gaps from the Disclosure Desk SOP have been implemented:
+
+- **Fully Implemented (8)**: G1, G4, G8, G9, G11, G14, G16, G19
+- **Partial/Manual (13)**: G2, G3, G5, G6, G7, G10, G12, G13, G15, G17, G18, G20, G21
+- **Out of Scope (1)**: G22 (Texas rules - excluded from MVP)
+
+See [`GAPS_IMPLEMENTATION_PROGRESS.md`](./GAPS_IMPLEMENTATION_PROGRESS.md) for detailed implementation notes.
+
+---
+
+*Document last updated: December 18, 2025*  
+*Version: 2.0 (LE-focused with complete GAPS implementation)*

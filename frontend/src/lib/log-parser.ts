@@ -129,3 +129,23 @@ export function filterBySearch(events: TimelineEvent[], query: string): Timeline
   );
 }
 
+/**
+ * Filter out Mavent error events from timeline
+ * When a Mavent check has an error, we don't want to show the error details in the timeline
+ */
+export function filterMaventErrors(events: TimelineEvent[]): TimelineEvent[] {
+  return events.filter(event => {
+    // Check if this is a Mavent-related error event
+    const isMaventEvent = event.event_type === 'mavent_check' || 
+                          event.title.toLowerCase().includes('mavent') ||
+                          (event.agent === 'send' && event.title.toLowerCase().includes('compliance'));
+    
+    // If it's a Mavent event with an error, filter it out
+    if (isMaventEvent && event.level === 'error' && event.metadata?.error) {
+      return false;
+    }
+    
+    return true;
+  });
+}
+
